@@ -1,0 +1,11 @@
+{
+    "ipv4_address": {
+        "type": "string",
+        "format": "ipv4"
+    },
+    "ipv4_cidr": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 32
+    }
+}

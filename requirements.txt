@@ -1,0 +1,10 @@
+ansible
+black
+flake8
+jsonref
+invoke
+pytest
+jsonschema
+ruamel.yaml
+tox
+yamllint

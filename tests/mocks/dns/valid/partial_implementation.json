@@ -1,0 +1,8 @@
+{
+    "dns_servers": [
+        {
+            "name": "ntp-east",
+            "address": "10.1.1.1"
+        }
+    ]
+}

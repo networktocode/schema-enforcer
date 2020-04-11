@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "schemas/syslog_servers",
+    "description": "Syslog Server Configuration schema.",
+    "type": "object",
+    "properties": {
+        "syslog_servers": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": "string",
+                        "format": "ipv4"
+                    },
+                    "vrf": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "address"
+                ]
+            },
+            "uniqueItems": true
+        }
+    },
+    "required": [
+        "syslog_servers"
+    ]
+}

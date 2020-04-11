@@ -1,0 +1,3 @@
+---
+syslog_servers:
+  - address: "10.14.14.14"
