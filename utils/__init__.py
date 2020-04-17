@@ -3,6 +3,11 @@ import json
 import glob
 from collections.abc import Mapping, Sequence
 
+from ansible.inventory.host import Host
+from ansible.inventory.manager import InventoryManager
+from ansible.parsing.dataloader import DataLoader
+from ansible.vars.manager import VariableManager
+from ansible.template import Templar
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
 import jsonref
@@ -18,6 +23,42 @@ YAML_HANDLER = YAML()
 YAML_HANDLER.indent(sequence=4, offset=2)
 YAML_HANDLER.explicit_start = True
 VALIDATION_ERROR_ATTRS = ["message", "schema_path", "validator", "validator_value"]
+
+
+# Referenced https://github.com/fgiorgetti/qpid-dispatch-tests/ for the below class
+class AnsibleInventory(object):
+    def __init__(self, inventory: str = None, extra_vars: dict = None):
+        self.inventory = inventory
+        self.loader = DataLoader()
+        self.inv_mgr = InventoryManager(loader=self.loader, sources=self.inventory)
+        self.var_mgr = VariableManager(loader=self.loader, inventory=self.inv_mgr)
+        # TODO As of Ansible==2.8.0 the extra_vars property cannot be set to VariableManager
+        #      This needs to be investigated and fixed properly
+        self.extra_vars = extra_vars or dict()
+
+    def get_hosts_containing(self, var: str = None) -> list:
+        hosts = []
+
+        for host in self.inv_mgr.get_hosts():
+            # If no specific var provided, then add it to the list
+            if not var:
+                hosts.append(host)
+                continue
+
+            # If var is provided and not part of host vars, ignore it
+            host_vars = self.var_mgr.get_vars(host=host)
+            if var not in host_vars:
+                continue
+
+            # Var has been found so adding it
+            hosts.append(host)
+
+        return hosts
+
+    def get_host_vars(self, host: Host):
+        data = self.var_mgr.get_vars(host=host)
+        templar = Templar(variables=data, loader=self.loader)
+        return templar.template(data, fail_on_undefined=False)
 
 
 def load_config():
@@ -437,6 +478,8 @@ def dump_schema_vars(output_dir, schema_properties, variables):
         >>>
     """
     os.makedirs(output_dir, exist_ok=True)
+    # Somewhat of a hack to remove non basic object types from data structure
+    variables = json.loads(json.dumps(variables))
     for schema, properties in schema_properties.items():
         schema_data = {}
         for prop in properties:
@@ -450,7 +493,7 @@ def dump_schema_vars(output_dir, schema_properties, variables):
             dump_data_to_yaml(schema_data, yaml_file)
 
 
-def generate_hostvars(ansible_hostvars, schema_path, output_path):
+def generate_hostvars(inventory_path, schema_path, output_path):
     """
     Generates variable files per host per schema file.
 
@@ -490,7 +533,9 @@ def generate_hostvars(ansible_hostvars, schema_path, output_path):
     """
     schema_files = glob.glob(f"{schema_path}/*.json")
     schema_properties = get_schema_properties(schema_files)
-    for host, variables in ansible_hostvars.items():
+    inventory = AnsibleInventory(inventory_path)
+    hosts = inventory.get_hosts_containing()
+    for host in hosts:
         print(f"Generating var files for {host}")
         output_dir = f"{output_path}/{host}"
-        dump_schema_vars(output_dir, schema_properties, variables)
+        dump_schema_vars(output_dir, schema_properties, inventory.get_host_vars(host))
