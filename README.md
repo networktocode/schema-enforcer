@@ -195,24 +195,6 @@ csr1    csr2    eos1    junos1
 ntp.yml   snmp.yml
 ```
 
-### Example
-
-Environment
-***********
-
-```shell
-(.venv) $ cat examples/schema.cfg
-json_schema_path: "schema/json"
-yaml_schema_path: "schema/yaml"
-json_schema_definitions: "schema/json/schemas"
-yaml_schema_definitions: "schema/yaml/schemas"
-json_full_schema_definitions: "schema/json/full_schemas"
-device_variables: "examples/hostvars"
-(.venv) $ cat schema.cfg
-json_full_schema_definitions: "/tmp/full_schemas"
-device_variables: "../project/hostvars"
-```
-
 ## Using Invoke
 
 
