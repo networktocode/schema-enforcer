@@ -1,4 +1,4 @@
-# Network Schema
+# JSON Schema Testing
 
 This repository provides a framework for building and testing [JSONSchema](https://json-schema.org/understanding-json-schema/index.html) definitions.
 [JSONRef](http://jsonref.readthedocs.org/) is used to resolve JSON references within Schema definitions.
