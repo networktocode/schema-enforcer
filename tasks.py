@@ -10,8 +10,6 @@ CFG = defaultdict(str)
 SCHEMA_TEST_DIR = "tests"
 # The build and install phase do not require all packages
 if os.sys.argv[1] not in {"build", "install", "--list"}:
-    import json
-
     try:
         import utils
     except ModuleNotFoundError:
