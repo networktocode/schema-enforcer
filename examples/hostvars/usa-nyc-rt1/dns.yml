@@ -1,4 +1,4 @@
 ---
 dns_servers:
-  - address: "10.12.12.12"
-  - address: "10.13.13.13"
+  - address: "10.14.14.14"
+  - address: "10.15.15.15"

@@ -1,0 +1,2 @@
+---
+dns_servers: "{{ location_dns_servers | default(region_dns_servers) }}"
