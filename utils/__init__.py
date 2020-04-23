@@ -27,7 +27,13 @@ VALIDATION_ERROR_ATTRS = ["message", "schema_path", "validator", "validator_valu
 
 # Referenced https://github.com/fgiorgetti/qpid-dispatch-tests/ for the below class
 class AnsibleInventory(object):
-    def __init__(self, inventory: str = None, extra_vars: dict = None):
+    def __init__(self, inventory=None, extra_vars=None):
+        """Imitates Ansible Inventory Loader.
+
+        Args:
+            inventory (str): Path to Ansible Inventory files.
+            extra_vars (dict): Extra Vars passed at run time.
+        """
         self.inventory = inventory
         self.loader = DataLoader()
         self.inv_mgr = InventoryManager(loader=self.loader, sources=self.inventory)
@@ -36,7 +42,17 @@ class AnsibleInventory(object):
         #      This needs to be investigated and fixed properly
         self.extra_vars = extra_vars or dict()
 
-    def get_hosts_containing(self, var: str = None) -> list:
+    def get_hosts_containing(self, var=None):
+        """Gets hosts that have a value for ``var``.
+
+        If ``var`` is None, then all hosts in inventory will be returned.
+
+        Args:
+            var (str): The variable to use to restrict hosts.
+
+        Returns:
+            list: All ansible.inventory.host.Host objects that define ``var``.
+        """
         hosts = []
 
         for host in self.inv_mgr.get_hosts():
@@ -55,7 +71,16 @@ class AnsibleInventory(object):
 
         return hosts
 
-    def get_host_vars(self, host: Host):
+
+    def get_host_vars(self, host):
+        """Retrieves Jinja2 rendered variables for ``host``.
+
+        Args:
+            host (ansible.inventory.host.Host): The host to retrieve variable data.
+
+        Returns:
+            dict: The variables defined by the ``host`` in Ansible Inventory.
+        """
         data = self.var_mgr.get_vars(host=host)
         templar = Templar(variables=data, loader=self.loader)
         return templar.template(data, fail_on_undefined=False)
@@ -506,7 +531,7 @@ def generate_hostvars(inventory_path, schema_path, output_path):
     then a var file will not be written for that host.
 
     Args:
-        ansible_hostvars (dict): The ``hostvars`` data as defined by Ansible.
+        inventory_path (str): The path to Ansible inventory.
         schema_path (str): The path to the schema definition directory.
         output_path (str): The path to write var files to.
 
@@ -538,4 +563,5 @@ def generate_hostvars(inventory_path, schema_path, output_path):
     for host in hosts:
         print(f"Generating var files for {host}")
         output_dir = f"{output_path}/{host}"
-        dump_schema_vars(output_dir, schema_properties, inventory.get_host_vars(host))
+        host_vars = inventory.get_host_vars(host)
+        dump_schema_vars(output_dir, schema_properties, host_vars)

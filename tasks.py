@@ -225,7 +225,6 @@ def generate_hostvars(
         output_path (str): The path to store the variable files.
         schema_path (str): The path to JSONSchema schema definitions.
         inventory_path (str): The path to ansible inventory.
-                              Default will use values defined by ansible.cfg.
 
     Example:
         $ ls example/hostvars
