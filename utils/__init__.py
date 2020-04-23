@@ -53,24 +53,16 @@ class AnsibleInventory(object):
         Returns:
             list: All ansible.inventory.host.Host objects that define ``var``.
         """
-        hosts = []
+        all_hosts = self.inv_mgr.get_hosts()
+        if var is None:
+            return all_hosts
 
-        for host in self.inv_mgr.get_hosts():
-            # If no specific var provided, then add it to the list
-            if not var:
-                hosts.append(host)
-                continue
-
-            # If var is provided and not part of host vars, ignore it
-            host_vars = self.var_mgr.get_vars(host=host)
-            if var not in host_vars:
-                continue
-
-            # Var has been found so adding it
-            hosts.append(host)
-
-        return hosts
-
+        # Only add hosts that define the variable.
+        hosts_with_var = [
+            host for host in all_hosts
+            if var in self.var_mgr.get_vars(host=host)
+        ]
+        return hosts_with_var
 
     def get_host_vars(self, host):
         """Retrieves Jinja2 rendered variables for ``host``.
