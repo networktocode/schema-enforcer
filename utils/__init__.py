@@ -475,13 +475,11 @@ def generate_hostvars(inventory_path, schema_path, output_path):
         None: Var files are written per schema per host.
 
     Example:
-        >>> with open(inventory_artifact) as fh:
-        ...     ansible_hostvars = json.load(fh)
-        ...
+        >>> inventory_path = "inventory"
         >>> schema_path = "schema/json/schemas"
         >>> os.listdir(schema_path)
         ['bgp.json', 'ntp.json']
-        >>> ouput_dir = "inventory/hostvars"
+        >>> ouput_dir = "hostvars"
         >>> os.listdir(output_dir)
         []
         >>> generate_hostvars(ansible_inventory, schema_path, output_path)
