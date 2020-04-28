@@ -46,6 +46,7 @@ def test_load_config():
         "yaml_schema_definitions": "examples/schema/yaml/schemas",
         "json_full_schema_definitions": "examples/schema/json/full_schemas",
         "device_variables": "examples/hostvars",
+        "inventory_path": "examples/inventory",
     }
     assert actual == mock
 
@@ -223,9 +224,10 @@ def test_dump_schema_vars():
 def test_generate_hostvars():
     schema_path = "tests/mocks/schema/json/schemas"
     output_path = "tests/mocks/utils/hostvars"
+    inventory_path = "tests/mocks/inventory"
     assert not os.path.isdir(output_path)
-    utils.generate_hostvars(ANSIBLE_HOST_VARIABLES, schema_path, output_path)
-    hosts = ("host1", "host2")
+    utils.generate_hostvars(inventory_path, schema_path, output_path)
+    hosts = ("host3", "host4")
     files = ("dns.yml", "ntp.yml")
     for host, file in itertools.product(hosts, files):
         with open(f"{output_path}/{host}/{file}", encoding="utf-8") as fh:
@@ -234,7 +236,7 @@ def test_generate_hostvars():
             mock = fh.read()
 
         assert actual == mock
+        assert len(os.listdir(f"{output_path}/{host}/")) == 2
 
-    assert len(os.listdir(f"{output_path}/host1/")) == 2
     shutil.rmtree(output_path)
     assert not os.path.isdir(output_path)

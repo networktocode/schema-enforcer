@@ -10,8 +10,6 @@ CFG = defaultdict(str)
 SCHEMA_TEST_DIR = "tests"
 # The build and install phase do not require all packages
 if os.sys.argv[1] not in {"build", "install", "--list"}:
-    import json
-
     try:
         import utils
     except ModuleNotFoundError:
@@ -227,7 +225,6 @@ def generate_hostvars(
         output_path (str): The path to store the variable files.
         schema_path (str): The path to JSONSchema schema definitions.
         inventory_path (str): The path to ansible inventory.
-                              Default will use values defined by ansible.cfg.
 
     Example:
         $ ls example/hostvars
