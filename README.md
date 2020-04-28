@@ -102,6 +102,8 @@ yaml_schema_definitions: "schema/yaml/schemas"
 
 json_full_schema_definitions: "schema/json/full_schemas"
 
+device_variables: "hostvars"
+inventory_path: "inventory"
 ```
 
 #### json_schema_path
@@ -189,10 +191,27 @@ Example
 *******
 
 ```shell
-(.venv) $ ls examples/hostvars/
+(.venv) $ ls hostvars/
 csr1    csr2    eos1    junos1
-(.venv) $ ls examples/hostvars/csr1/
+(.venv) $ ls hostvars/csr1/
 ntp.yml   snmp.yml
+```
+
+#### inventory_path
+
+Description
+***********
+
+Defines the path to Ansible Inventory. This supports Ansible Inventory Practices.
+
+Example
+*******
+
+```shell
+(.venv) $ ls inventory/
+hosts    group_vars/    host_vars/
+(.venv) $ ls inventory/group_vars/
+all.yml    ios.yml    eos.yml    nyc.yml
 ```
 
 ## Using Invoke
@@ -557,19 +576,19 @@ The default uses `json_schema_definitions` defined in the schema.cfg file.
 
 #### inventory_path (str)
 
-The path to pass to the `ansible-inventory` command to specify the path to the inventory to load.
-The default is to not specify an inventory and leave it to an `ansible.cfg` file or Environment settings.
+The path to Ansible Inventory.
+The default uses `inventory_path` defined in the schema.cfg file.
 
 #### Example
 
 Environment
 ***********
 
-**ansible.cfg**
+**ansible inventory**
 
-```ini
-[defaults]
-inventory = inventory/
+```shell
+ls inventory/
+hosts.ini    group_vars/    host_vars/
 ```
 
 **empty hostvars**

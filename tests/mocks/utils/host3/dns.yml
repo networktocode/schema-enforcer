@@ -1,0 +1,5 @@
+---
+dns_servers:
+  - address: "10.7.7.7"
+    vrf: "mgmt"
+  - address: "10.8.8.8"

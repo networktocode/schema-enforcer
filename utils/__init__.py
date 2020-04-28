@@ -13,6 +13,8 @@ from jsonschema import (
     ValidationError,
 )
 
+from .ansible_inventory import AnsibleInventory
+
 
 YAML_HANDLER = YAML()
 YAML_HANDLER.indent(sequence=4, offset=2)
@@ -437,6 +439,8 @@ def dump_schema_vars(output_dir, schema_properties, variables):
         >>>
     """
     os.makedirs(output_dir, exist_ok=True)
+    # Somewhat of a hack to remove non basic object types from data structure
+    variables = json.loads(json.dumps(variables))
     for schema, properties in schema_properties.items():
         schema_data = {}
         for prop in properties:
@@ -450,7 +454,7 @@ def dump_schema_vars(output_dir, schema_properties, variables):
             dump_data_to_yaml(schema_data, yaml_file)
 
 
-def generate_hostvars(ansible_hostvars, schema_path, output_path):
+def generate_hostvars(inventory_path, schema_path, output_path):
     """
     Generates variable files per host per schema file.
 
@@ -463,7 +467,7 @@ def generate_hostvars(ansible_hostvars, schema_path, output_path):
     then a var file will not be written for that host.
 
     Args:
-        ansible_hostvars (dict): The ``hostvars`` data as defined by Ansible.
+        inventory_path (str): The path to Ansible inventory.
         schema_path (str): The path to the schema definition directory.
         output_path (str): The path to write var files to.
 
@@ -471,13 +475,11 @@ def generate_hostvars(ansible_hostvars, schema_path, output_path):
         None: Var files are written per schema per host.
 
     Example:
-        >>> with open(inventory_artifact) as fh:
-        ...     ansible_hostvars = json.load(fh)
-        ...
+        >>> inventory_path = "inventory"
         >>> schema_path = "schema/json/schemas"
         >>> os.listdir(schema_path)
         ['bgp.json', 'ntp.json']
-        >>> ouput_dir = "inventory/hostvars"
+        >>> ouput_dir = "hostvars"
         >>> os.listdir(output_dir)
         []
         >>> generate_hostvars(ansible_inventory, schema_path, output_path)
@@ -490,7 +492,10 @@ def generate_hostvars(ansible_hostvars, schema_path, output_path):
     """
     schema_files = glob.glob(f"{schema_path}/*.json")
     schema_properties = get_schema_properties(schema_files)
-    for host, variables in ansible_hostvars.items():
+    inventory = AnsibleInventory(inventory_path)
+    hosts = inventory.get_hosts_containing()
+    for host in hosts:
         print(f"Generating var files for {host}")
         output_dir = f"{output_path}/{host}"
-        dump_schema_vars(output_dir, schema_properties, variables)
+        host_vars = inventory.get_host_vars(host)
+        dump_schema_vars(output_dir, schema_properties, host_vars)

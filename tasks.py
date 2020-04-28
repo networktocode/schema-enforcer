@@ -10,8 +10,6 @@ CFG = defaultdict(str)
 SCHEMA_TEST_DIR = "tests"
 # The build and install phase do not require all packages
 if os.sys.argv[1] not in {"build", "install", "--list"}:
-    import json
-
     try:
         import utils
     except ModuleNotFoundError:
@@ -218,7 +216,7 @@ def generate_hostvars(
     context,
     output_path=CFG["device_variables"],
     schema_path=CFG["json_schema_definitions"],
-    inventory_path=None,
+    inventory_path=CFG["inventory_path"],
 ):
     """
     Generates ansible variables and creates a file per schema for each host.
@@ -227,7 +225,6 @@ def generate_hostvars(
         output_path (str): The path to store the variable files.
         schema_path (str): The path to JSONSchema schema definitions.
         inventory_path (str): The path to ansible inventory.
-                              Default will use values defined by ansible.cfg.
 
     Example:
         $ ls example/hostvars
@@ -248,16 +245,7 @@ def generate_hostvars(
         $
     """
     os.makedirs(output_path, exist_ok=True)
-    vars_tmp = f"{output_path}/.hostvars"
-    inventory_command = f"ansible-inventory --list --output {vars_tmp}"
-    if inventory_path is not None:
-        inventory_command += f"-i {inventory_path}"
-    context.run(inventory_command, echo=True)
-    with open(vars_tmp, encoding="utf-8") as fh:
-        ansible_hostvars = json.load(fh)
-        hostvars = ansible_hostvars["_meta"]["hostvars"]
-    utils.generate_hostvars(hostvars, schema_path, output_path)
-    context.run(f"rm {vars_tmp}")
+    utils.generate_hostvars(inventory_path, schema_path, output_path)
 
 
 @task
