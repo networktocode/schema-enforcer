@@ -637,18 +637,19 @@ Generating var files for host1
 -> snmp
 Generating var files for host2
 -> ntp
-$ ls hostvars/
+(.venv) $ ls hostvars/
 host    host2
-$ ls hostvars/host1/
+(.venv) $ ls hostvars/host1/
 ntp.yml    snmp.yml
-$ ls hostvars/host2/
+(.venv) $ ls hostvars/host2/
 ntp.yml
-$ less hostvars/host1/ntp.yml
+(.venv) $ less hostvars/host1/ntp.yml
 ---
 ntp_servers:
   - address: "10.1.1.1"
     vrf: "mgmt"
 ntp_authentication: true
+(.venv) $
 ```
 
 In the above example, both hosts had directories created:
