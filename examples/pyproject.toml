@@ -1,0 +1,14 @@
+[tool.jsonschema_testing]
+schema_file_extension = ".json"
+schema_exclude_filenames = []
+instance_file_extension = ".yml"
+schema_search_directory = "./schema/json/full_schemas/"
+instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
+schema_file_type = "json"
+instance_search_directory = "./hostvars/"
+instance_file_type = "yaml"
+
+[tool.jsonschema_testing.schema_mapping]
+# Map instance filename to schema filename
+'dns.yml' = ['./schema/json/full_schemas/dns.json']
+'syslog.yml' = ['./schema/json/full_schemas/syslog.json']
