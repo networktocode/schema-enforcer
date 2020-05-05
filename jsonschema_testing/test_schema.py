@@ -155,8 +155,16 @@ def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_succ
 )
 def main(show_success, show_checks):
     # Load Config
-    config_string = Path("pyproject.toml").read_text()
-    config = toml.loads(config_string)
+    try:
+        config_string = Path("pyproject.toml").read_text()
+        config = toml.loads(config_string)
+    except (FileNotFoundError, UnboundLocalError):
+        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
+        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
+        sys.exit(1)
+
+    
+
 
     # Get Dict of Instance File Path and Data
     instances = get_instance_data(
