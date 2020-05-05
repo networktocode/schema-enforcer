@@ -6,10 +6,12 @@ from pathlib import Path
 
 # Third Party Imports
 import click
-import yaml
+import toml
 from termcolor import colored
 from jsonschema import Draft7Validator
-import toml
+from ruamel.yaml import YAML
+
+YAML_HANDLER = YAML()
 
 def get_instance_data(file_extension, search_directory, excluded_filenames):
     """
@@ -24,7 +26,7 @@ def get_instance_data(file_extension, search_directory, excluded_filenames):
                 if lcl_file not in excluded_filenames:
                     filename = os.path.join(root, lcl_file)
                     with open(filename, "r") as f:
-                        file_data = yaml.safe_load(f)
+                        file_data = YAML_HANDLER.load(f)
 
                     data.update({filename: file_data})
 
@@ -44,7 +46,7 @@ def get_schemas(file_extension, search_directory, excluded_filenames, file_type)
                     filename = os.path.join(root, lcl_file)
                     with open(filename, "r") as f:
                         if file_type == "yaml":
-                            file_data = yaml.safe_load(f)
+                            file_data = YAML_HANDLER.load(f)
                         if file_type == "json":
                             file_data = json.load(f)
 
@@ -71,7 +73,7 @@ def get_instance_schema_mapping(file_extension, search_directory, excluded_filen
                             schemas = []
                             for schema_filename in schema_filenames:
                                 with open(schema_filename, "r") as f:
-                                    schema = yaml.safe_load(f)
+                                    schema = YAML_HANDLER.load(f)
                                     schemas.append(schema["$id"])
                                 
                             instance_schema_mapping.update({filename: schemas})
