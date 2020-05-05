@@ -1,3 +1,4 @@
 ---
+# jsonschema_testing: schemas/syslog_servers
 syslog_servers:
   - address: "10.11.11.11"

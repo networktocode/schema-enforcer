@@ -1,5 +1,26 @@
+[tool.poetry]
+name = "jsonschema_testing"
+version = "0.1.0"
+description = ""
+authors = ["Phillip Simonds <phillip.simonds@networktocode.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+click = "^7.1.2"
+pyyaml = "^5.3.1"
+termcolor = "^1.1.0"
+jsonschema = "^3.2.0"
+toml = "^0.10.0"
+ipdb = "^0.13.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^4.6"
+
+[tool.poetry.scripts]
+test-schema = "jsonschema_testing.test_schema:main"
+
 [tool.black]
-line-length = 90
+line-length = 120
 target-version = ['py36']
 include = '\.pyi?$'
 exclude = '''
@@ -21,3 +42,14 @@ exclude = '''
   | settings.py
 )
 '''
+
+[tool.jsonschema_testing]
+schema_file_extension = ".json"
+schema_exclude_filenames = []
+instance_file_extension = ".yml"
+schema_search_directory = "./examples/schema/json/full_schemas/"
+instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
+schema_file_type = "json"
+instance_search_directory = "./examples/hostvars/"
+instance_file_type = "yaml"
+
