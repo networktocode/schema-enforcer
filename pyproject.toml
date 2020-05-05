@@ -53,3 +53,7 @@ schema_file_type = "json"
 instance_search_directory = "./examples/hostvars/"
 instance_file_type = "yaml"
 
+[tool.jsonschema_testing.schema_mapping]
+# Map instance filename to schema filename
+'dns.yml' = ['./examples/schema/json/full_schemas/dns.json']
+'syslog.yml' = ['./examples/schema/json/full_schemas/syslog.json']

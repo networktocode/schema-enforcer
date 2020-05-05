@@ -53,11 +53,11 @@ def get_schemas(file_extension, search_directory, excluded_filenames, file_type)
 
     return data
 
-def get_instance_schema_mapping(file_extension, search_directory, excluded_filenames):
+def get_instance_schema_mapping(file_extension, search_directory, excluded_filenames, schema_mapping):
     """
     Get dictionary of file and file data for schema and instance
     """
-    # Define list of files to be loaded to have the schema tested against
+    # Define dict of files to be loaded to have the schema tested against
     instance_schema_mapping = {}
     # Find all of the YAML files in the parent directory of the project
     for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
@@ -65,19 +65,16 @@ def get_instance_schema_mapping(file_extension, search_directory, excluded_filen
             if lcl_file.endswith(file_extension):
                 if lcl_file not in excluded_filenames:
                     filename = os.path.join(root, lcl_file)
-                    with open(filename, "r") as f:
-                        file_data = f.read()
-                    if "# jsonschema_testing:" in file_data or "#jsonschema_testing:" in file_data:
-                        for line in file_data.strip().split("\n"):
-                            if "# jsonschema_testing:" in line or "#jsonschema_testing:" in line:
-                                schemas = line.split(":")[-1].strip()
-                                unstripped_schemas = schemas.split(",")
-                                schemas = []
-                                [schemas.append(schema.strip()) for schema in unstripped_schemas]
-                                instance_schema_mapping.update({filename: schemas})
-                    else:
-                        instance_schema_mapping.update({filename: []})
-
+                    for instance_filename, schema_filenames in schema_mapping.items():
+                        
+                        if lcl_file == instance_filename:
+                            schemas = []
+                            for schema_filename in schema_filenames:
+                                with open(schema_filename, "r") as f:
+                                    schema = yaml.safe_load(f)
+                                    schemas.append(schema["$id"])
+                                
+                            instance_schema_mapping.update({filename: schemas})
 
     return instance_schema_mapping
 
@@ -186,13 +183,14 @@ def main(show_success, show_checks):
         file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
         search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
         excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", []),
+        schema_mapping=config["tool"]["jsonschema_testing"].get("schema_mapping")
         )
 
     if show_checks:
         print("Instance File                                     Schema")
         print("-" * 80)
-        for instance_file, schemas in instance_file_to_schemas_mapping.items():
-            print(f"{instance_file:50} {schemas}")
+        for instance_file, schema in instance_file_to_schemas_mapping.items():
+            print(f"{instance_file:50} {schema}")
         sys.exit(0)
 
     check_schemas_exist(schemas, instance_file_to_schemas_mapping)
