@@ -8,10 +8,55 @@ from pathlib import Path
 import click
 import toml
 from termcolor import colored
-from jsonschema import Draft7Validator
+from jsonschema import Draft7Validator, validators
 from ruamel.yaml import YAML
 
 YAML_HANDLER = YAML()
+
+CONFIG_SCHEMA = dict(
+    type="object",
+    properties=dict(
+        instance_file_extension=dict(type="string", default=".yml"),
+        instance_search_directory=dict(type="string", default="./"),
+        instance_exclude_filenames=dict(type="array", items=dict(type="string"), default=[]),
+        schema_file_extension=dict(type="string", default=".json"),
+        schema_search_directory=dict(type="string", default="./"),
+        schema_exclude_filenames=dict(type="array", items=dict(type="string"), default=[]),
+        schema_file_type=dict(type="string", default="json", enum=["yaml", "json"]),  # add enum here
+        schema_mapping=dict(type="object", default={}),
+    ),
+)
+
+
+def extend_with_default(validator_class):
+    """
+    Args:
+      validator_class:
+
+    Returns:
+    """
+    validate_properties = validator_class.VALIDATORS["properties"]
+
+    def set_defaults(validator, properties, instance, schema):
+        """
+        Args:
+          validator:
+          properties:
+          instance:
+          schema:
+
+        Returns:
+
+        """
+        for property_name, subschema in properties.items():
+            if "default" in subschema:
+                instance.setdefault(property_name, subschema["default"])
+
+        for error in validate_properties(validator, properties, instance, schema):
+            yield error
+
+    return validators.extend(validator_class, {"properties": set_defaults})
+
 
 def get_instance_data(file_extension, search_directory, excluded_filenames):
     """
@@ -31,6 +76,7 @@ def get_instance_data(file_extension, search_directory, excluded_filenames):
                     data.update({filename: file_data})
 
     return data
+
 
 def get_schemas(file_extension, search_directory, excluded_filenames, file_type):
     """
@@ -55,6 +101,7 @@ def get_schemas(file_extension, search_directory, excluded_filenames, file_type)
 
     return data
 
+
 def get_instance_schema_mapping(file_extension, search_directory, excluded_filenames, schema_mapping):
     """
     Get dictionary of file and file data for schema and instance
@@ -68,17 +115,18 @@ def get_instance_schema_mapping(file_extension, search_directory, excluded_filen
                 if lcl_file not in excluded_filenames:
                     filename = os.path.join(root, lcl_file)
                     for instance_filename, schema_filenames in schema_mapping.items():
-                        
+
                         if lcl_file == instance_filename:
                             schemas = []
                             for schema_filename in schema_filenames:
                                 with open(schema_filename, "r") as f:
                                     schema = YAML_HANDLER.load(f)
                                     schemas.append(schema["$id"])
-                                
+
                             instance_schema_mapping.update({filename: schemas})
 
     return instance_schema_mapping
+
 
 def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
     """
@@ -98,8 +146,12 @@ def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
     for file_name, schema_names in instance_file_to_schemas_mapping.items():
         for schema_name in schema_names:
             if schema_name not in schemas_loaded_from_files:
-                print(colored(f"WARN", "yellow") + f" | schema '{schema_name}' Will not be checked. It is declared in {file_name} but is not loaded.")
+                print(
+                    colored(f"WARN", "yellow")
+                    + f" | schema '{schema_name}' Will not be checked. It is declared in {file_name} but is not loaded."
+                )
                 errors = True
+
 
 def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_success=False):
 
@@ -119,14 +171,18 @@ def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_succ
 
             for error in config_validator.iter_errors(instance_data):
                 if len(error.absolute_path) > 0:
-                    print(colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
-                    f" [FILE] {instance_file}"
-                    f" [PROPERTY] {':'.join(str(item) for item in error.absolute_path)}"
-                    f" [SCHEMA] {schema_file.split('/')[-1]}")
+                    print(
+                        colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
+                        f" [FILE] {instance_file}"
+                        f" [PROPERTY] {':'.join(str(item) for item in error.absolute_path)}"
+                        f" [SCHEMA] {schema_file.split('/')[-1]}"
+                    )
                 if len(error.absolute_path) == 0:
-                    print(colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
-                    f" [FILE] {instance_file}"
-                    f" [SCHEMA] {schema_file.split('/')[-1]}")
+                    print(
+                        colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
+                        f" [FILE] {instance_file}"
+                        f" [SCHEMA] {schema_file.split('/')[-1]}"
+                    )
 
                 error_exists = True
                 error_exists_inner_loop = True
@@ -140,53 +196,67 @@ def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_succ
     print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
 
 
-
 @click.command()
 @click.option(
     "--show-success", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
 )
 @click.option(
-    "--show-checks", 
-    default=False, 
-    help="Shows the schemas to be checked for each instance file", 
-    is_flag=True, 
-    show_default=True
+    "--show-checks",
+    default=False,
+    help="Shows the schemas to be checked for each instance file",
+    is_flag=True,
+    show_default=True,
 )
 def main(show_success, show_checks):
     # Load Config
-    try:
-        config_string = Path("pyproject.toml").read_text()
-        config = toml.loads(config_string)
-    except (FileNotFoundError, UnboundLocalError):
-        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
-        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
+    config_file = "pyproject.toml"
+    config = {}
+
+    if os.path.exists(config_file):
+        try:
+            config_string = Path(config_file).read_text()
+            config = toml.loads(config_string)
+        except:
+            print(
+                colored(
+                    f"ERROR | Unable to read the configuration file {config_file}, please make sure it's a valid TOML file",
+                    "red",
+                )
+            )
+            sys.exit(1)
+
+    config_validator = extend_with_default(Draft7Validator)
+    v = config_validator(CONFIG_SCHEMA)
+    config_errors = sorted(v.iter_errors(config), key=str)
+
+    if len(config_errors) != 0:
+        print(colored(f"ERROR | Found {len(config_errors)} error(s) in the configuration file ({config_file})", "red"))
+        for error in config_errors:
+            print(colored(f"  {error.message} in {'/'.join(error.absolute_path)}", "red"))
         sys.exit(1)
-
-    
-
 
     # Get Dict of Instance File Path and Data
     instances = get_instance_data(
-        file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
-        search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
-        excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", [])
-        )
+        file_extension=config["instance_file_extension"],
+        search_directory=config["instance_search_directory"],
+        excluded_filenames=config["instance_exclude_filenames"],
+    )
 
     # Get Dict of Schema File Path and Data
     schemas = get_schemas(
-        file_extension=config["tool"]["jsonschema_testing"].get("schema_file_extension", ".json"),
-        search_directory=config["tool"]["jsonschema_testing"].get("schema_search_directory", "./"),
-        excluded_filenames=config["tool"]["jsonschema_testing"].get("schema_exclude_filenames", []),
-        file_type=config["tool"]["jsonschema_testing"].get("schema_file_type", "json")
-        )
+        file_extension=config["schema_file_extension"],
+        search_directory=config["schema_search_directory"],
+        excluded_filenames=config["schema_exclude_filenames"],
+        file_type=config["schema_file_type"],
+    )
 
     # Get Mapping of Instance to Schema
     instance_file_to_schemas_mapping = get_instance_schema_mapping(
-        file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
-        search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
-        excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", []),
-        schema_mapping=config["tool"]["jsonschema_testing"].get("schema_mapping")
-        )
+        file_extension=config["instance_file_extension"],
+        search_directory=config["instance_search_directory"],
+        excluded_filenames=config["instance_exclude_filenames"],
+        schema_mapping=config["schema_mapping"],
+    )
 
     if show_checks:
         print("Instance File                                     Schema")
@@ -201,8 +271,9 @@ def main(show_success, show_checks):
         schemas=schemas,
         instances=instances,
         instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
-        show_success=show_success
+        show_success=show_success,
     )
+
 
 if __name__ == "__main__":
     main()
