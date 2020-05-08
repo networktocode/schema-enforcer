@@ -262,43 +262,44 @@ def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_succ
 #         cmd += f" --hosts={hosts}"
 #     context.run(f"{cmd} -vv", echo=True)
 
-# def view_validation_error(context, schema, mock_file):
-#     """
-#     Generates ValidationError from invalid mock data and prints available Attrs.
+def view_validation_error(schema, mock_file):
+    """
+    Generates ValidationError from invalid mock data and prints available Attrs.
 
-#     This is meant to be used as an aid to generate test cases for invalid mock
-#     schema data.
+    This is meant to be used as an aid to generate test cases for invalid mock
+    schema data.
 
-#     Args:
-#         schema (str): The name of the schema to validate against.
-#         mock_file (str): The name of the mock file to view the error attributes.
+    Args:
+        schema (str): The name of the schema to validate against.
+        mock_file (str): The name of the mock file to view the error attributes.
 
-#     Example:
-#         $ python -m invoke view-validation-error -s ntp -m invalid_ip
+    Example:
+        $ python -m invoke view-validation-error -s ntp -m invalid_ip
 
-#         absolute_path        = deque(['ntp_servers', 0, 'address'])
-#         absolute_schema_path = deque(['properties', 'ntp_servers', 'items', ...])
-#         cause                = None
-#         context              = []
-#         message              = '10.1.1.1000' is not a 'ipv4'
-#         parent               = None
-#         path                 = deque(['ntp_servers', 0, 'address'])
-#         schema               = {'type': 'string', 'format': 'ipv4'}
-#         schema_path          = deque(['properties', 'ntp_servers', 'items', ...])
-#         validator            = format
-#         validator_value      = ipv4
+        absolute_path        = deque(['ntp_servers', 0, 'address'])
+        absolute_schema_path = deque(['properties', 'ntp_servers', 'items', ...])
+        cause                = None
+        context              = []
+        message              = '10.1.1.1000' is not a 'ipv4'
+        parent               = None
+        path                 = deque(['ntp_servers', 0, 'address'])
+        schema               = {'type': 'string', 'format': 'ipv4'}
+        schema_path          = deque(['properties', 'ntp_servers', 'items', ...])
+        validator            = format
+        validator_value      = ipv4
 
-#         $
-#     """
-#     schema_root_dir = os.path.realpath(CFG["json_schema_path"])
-#     schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-#     mock_file = f"tests/mocks/{schema}/invalid/{mock_file}.json"
+        $
+    """
+    schema_root_dir = os.path.realpath(CFG["json_schema_path"])
+    schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
+    mock_file = f"tests/mocks/{schema}/invalid/{mock_file}.json"
 
-#     validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-#     error_attributes = utils.generate_validation_error_attributes(mock_file, validator)
-#     print()
-#     for attr, value in error_attributes.items():
-#         print(f"{attr:20} = {value}")
+    validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
+    error_attributes = utils.generate_validation_error_attributes(mock_file, validator)
+    print()
+    for attr, value in error_attributes.items():
+        print(f"{attr:20} = {value}")
+
 
 def generate_hostvars(
     output_path,
@@ -402,8 +403,10 @@ def create_invalid_expected(schema):
     "--generate-invalid-expected", "gen_invalid",
     help="Generates expected ValidationError data from mock_file and writes to mock dir.", 
 )
-
-
+@click.option(
+    "--view-validation-error", "view_valid_error",
+    help="", 
+)
 @click.option(
     "--show-success", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
 )
@@ -423,10 +426,14 @@ def create_invalid_expected(schema):
     help="Schema path", 
 )
 @click.option(
+    "--mock-file", "-m",
+    help="Mock path", 
+)
+@click.option(
     "--ansible-inventory", "-i",
     help="Path to an ansible inventory", 
 )
-def main(show_success, show_checks, gen_hostvars, gen_invalid, validate_a, validate_z, output_path, schema_path, ansible_inventory):
+def main(show_success, show_checks, gen_hostvars, gen_invalid, view_valid_error, validate_a, validate_z, output_path, schema_path, mock_file, ansible_inventory):
     # Load Config
     try:
         config_string = Path("pyproject.toml").read_text()
@@ -446,6 +453,12 @@ def main(show_success, show_checks, gen_hostvars, gen_invalid, validate_a, valid
     if gen_invalid:
         create_invalid_expected(
             schema=gen_invalid
+        )
+
+    if view_valid_error:
+        view_validation_error(
+            schema=view_valid_error,
+            mock_file=mock_file
         )
 
     if (show_success or show_checks or validate_z):
