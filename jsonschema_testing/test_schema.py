@@ -208,29 +208,28 @@ def convert_json_to_yaml(
     utils.convert_json_to_yaml(json_path, yaml_path)
 
 
-# def resolve_json_refs(
-#     context,
-#     json_schema_path=CFG["json_schema_definitions"],
-#     output_path=CFG["json_full_schema_definitions"],
-# ):
-#     """
-#     Loads JSONSchema schema files, resolves ``refs``, and writes to a file.
+def resolve_json_refs(
+    json_schema_path=CFG["json_schema_definitions"],
+    output_path=CFG["json_full_schema_definitions"],
+):
+    """
+    Loads JSONSchema schema files, resolves ``refs``, and writes to a file.
 
-#     Args:
-#         json_schema_path: The path to JSONSchema schema definitions.
-#         output_path: The path to write updated JSONSchema schema files.
+    Args:
+        json_schema_path: The path to JSONSchema schema definitions.
+        output_path: The path to write updated JSONSchema schema files.
 
-#     Example:
-#     $ ls schema/json/
-#     definitions    schemas
-#     $ python -m invoke resolve-json-refs -j schema/json/schemas -o schema/json/full
-#     Converting schema/json/schemas/ntp.json -> schema/json/full/ntp.json
-#     Converting schema/json/schemas/snmp.json -> schema/json/full/snmp.json
-#     $ ls schema/json
-#     definitions    full    schemas
-#     $
-#     """
-#     utils.resolve_json_refs(json_schema_path, output_path)
+    Example:
+    $ ls schema/json/
+    definitions    schemas
+    $ test-schema --resolve-json-refs
+    Converting schema/json/schemas/ntp.json -> schema/json/full/ntp.json
+    Converting schema/json/schemas/snmp.json -> schema/json/full/snmp.json
+    $ ls schema/json
+    definitions    full    schemas
+    $
+    """
+    utils.resolve_json_refs(json_schema_path, output_path)
 
 # def validate(context, schema, vars_dir=None, hosts=None):
 #     """
@@ -422,6 +421,13 @@ def create_invalid_expected(schema):
     show_default=True
 )
 @click.option(
+    "--resolve-json-refs", "res_json_refs",
+    default=False, 
+    help="", 
+    is_flag=True, 
+    show_default=True
+)
+@click.option(
     "--show-success", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
 )
 @click.option(
@@ -447,7 +453,7 @@ def create_invalid_expected(schema):
     "--ansible-inventory", "-i",
     help="Path to an ansible inventory", 
 )
-def main(show_success, show_checks, gen_hostvars, gen_invalid, view_valid_error, validate_a, validate_z, yaml_to_json, json_to_yaml, output_path, schema_path, mock_file, ansible_inventory):
+def main(show_success, show_checks, gen_hostvars, gen_invalid, res_json_refs, view_valid_error, validate_a, validate_z, yaml_to_json, json_to_yaml, output_path, schema_path, mock_file, ansible_inventory):
     # Load Config
     try:
         config_string = Path("pyproject.toml").read_text()
@@ -480,6 +486,9 @@ def main(show_success, show_checks, gen_hostvars, gen_invalid, view_valid_error,
 
     if yaml_to_json:
         convert_json_to_yaml()
+    
+    if res_json_refs:
+        resolve_json_refs()
 
     if (show_success or show_checks or validate_z):
         # Get Dict of Instance File Path and Data
