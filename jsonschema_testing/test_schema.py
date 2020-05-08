@@ -208,14 +208,25 @@ def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_succ
     show_default=True,
 )
 def main(show_success, show_checks):
+
+    # -----------------------------------------------------------
     # Load Config
+    # -----------------------------------------------------------
     config_file = "pyproject.toml"
     config = {}
 
     if os.path.exists(config_file):
         try:
             config_string = Path(config_file).read_text()
-            config = toml.loads(config_string)
+            config_full = toml.loads(config_string)
+            if (
+                "tool" in config_full
+                and isinstance(config_full["tool"], dict)
+                and "jsonschema_testing" in config_full["tool"]
+            ):
+                if isinstance(config_full["tool"]["jsonschema_testing"], dict):
+                    config = config_full["tool"]["jsonschema_testing"]
+
         except:
             print(
                 colored(
