@@ -2,3 +2,4 @@
 __pycache__
 .venv/
 .tox/
+jsonschema_testing.egg-info
