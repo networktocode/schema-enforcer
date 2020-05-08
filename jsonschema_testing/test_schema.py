@@ -151,61 +151,61 @@ def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_succ
     print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
 
 
-# def convert_yaml_to_json(
-#     context, yaml_path=CFG["yaml_schema_path"], json_path=CFG["json_schema_path"],
-# ):
-#     """
-#     Reads YAML files and writes them to JSON files.
+def convert_yaml_to_json(
+    yaml_path=CFG["yaml_schema_path"], json_path=CFG["json_schema_path"],
+):
+    """
+    Reads YAML files and writes them to JSON files.
 
-#     Args:
-#         yaml_path (str): The root directory containing YAML files to convert to JSON.
-#         json_path (str): The root directory to build JSON files from YAML files in ``yaml_path``.
+    Args:
+        yaml_path (str): The root directory containing YAML files to convert to JSON.
+        json_path (str): The root directory to build JSON files from YAML files in ``yaml_path``.
 
-#     Example:
-#         $ ls schema/
-#         yaml
-#         $ python -m invoke convert-yaml-to-json -y schema/yaml -j schema/json
-#         Converting schema/yaml/definitions/arrays/ip.yml ->
-#         schema/yaml/definitions/arrays/ip.json
-#         Converting schema/yaml/definitions/objects/ip.yml ->
-#         schema/yaml/definitions/objects/ip.json
-#         Converting schema/yaml/definitions/properties/ip.yml ->
-#         schema/yaml/definitions/properties/ip.json
-#         Converting schema/yaml/schemas/ntp.yml ->
-#         schema/yaml/schemas/ntp.json
-#         $ ls schema/
-#         json    yaml
-#         $
-#     """
-#     utils.convert_yaml_to_json(yaml_path, json_path)
+    Example:
+        $ ls schema/
+        yaml
+        $ test-schema --convert-yaml-to-json
+        Converting schema/yaml/definitions/arrays/ip.yml ->
+        schema/yaml/definitions/arrays/ip.json
+        Converting schema/yaml/definitions/objects/ip.yml ->
+        schema/yaml/definitions/objects/ip.json
+        Converting schema/yaml/definitions/properties/ip.yml ->
+        schema/yaml/definitions/properties/ip.json
+        Converting schema/yaml/schemas/ntp.yml ->
+        schema/yaml/schemas/ntp.json
+        $ ls schema/
+        json    yaml
+        $
+    """
+    utils.convert_yaml_to_json(yaml_path, json_path)
 
-# def convert_json_to_yaml(
-#     context, json_path=CFG["json_schema_path"], yaml_path=CFG["yaml_schema_path"],
-# ):
-#     """
-#     Reads JSON files and writes them to YAML files.
+def convert_json_to_yaml(
+    json_path=CFG["json_schema_path"], yaml_path=CFG["yaml_schema_path"],
+):
+    """
+    Reads JSON files and writes them to YAML files.
 
-#     Args:
-#         json_path (str): The root directory containing JSON files to convert to YAML.
-#         yaml_path (str): The root directory to build YAML files from JSON files in ``json_path``.
+    Args:
+        json_path (str): The root directory containing JSON files to convert to YAML.
+        yaml_path (str): The root directory to build YAML files from JSON files in ``json_path``.
 
-#     Example:
-#         $ ls schema/
-#         json
-#         $ python -m invoke convert-json-to-yaml -y schema/yaml -j schema/json
-#         Converting schema/yaml/definitions/arrays/ip.json ->
-#         schema/yaml/definitions/arrays/ip.yml
-#         Converting schema/yaml/definitions/objects/ip.json ->
-#         schema/yaml/definitions/objects/ip.yml
-#         Converting schema/yaml/definitions/properties/ip.json ->
-#         schema/yaml/definitions/properties/ip.yml
-#         Converting schema/yaml/schemas/ntp.json ->
-#         schema/yaml/schemas/ntp.yml
-#         $ ls schema/
-#         json    yaml
-#         $
-#     """
-#     utils.convert_json_to_yaml(json_path, yaml_path)
+    Example:
+        $ ls schema/
+        json
+        $ test-schema --convert-json-to-yaml
+        Converting schema/yaml/definitions/arrays/ip.json ->
+        schema/yaml/definitions/arrays/ip.yml
+        Converting schema/yaml/definitions/objects/ip.json ->
+        schema/yaml/definitions/objects/ip.yml
+        Converting schema/yaml/definitions/properties/ip.json ->
+        schema/yaml/definitions/properties/ip.yml
+        Converting schema/yaml/schemas/ntp.json ->
+        schema/yaml/schemas/ntp.yml
+        $ ls schema/
+        json    yaml
+        $
+    """
+    utils.convert_json_to_yaml(json_path, yaml_path)
 
 
 # def resolve_json_refs(
@@ -408,6 +408,20 @@ def create_invalid_expected(schema):
     help="", 
 )
 @click.option(
+    "--convert-yaml-to-json", "yaml_to_json",
+    default=False, 
+    help="", 
+    is_flag=True, 
+    show_default=True
+)
+@click.option(
+    "--convert-json-to-yaml", "json_to_yaml",
+    default=False, 
+    help="", 
+    is_flag=True, 
+    show_default=True
+)
+@click.option(
     "--show-success", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
 )
 @click.option(
@@ -433,7 +447,7 @@ def create_invalid_expected(schema):
     "--ansible-inventory", "-i",
     help="Path to an ansible inventory", 
 )
-def main(show_success, show_checks, gen_hostvars, gen_invalid, view_valid_error, validate_a, validate_z, output_path, schema_path, mock_file, ansible_inventory):
+def main(show_success, show_checks, gen_hostvars, gen_invalid, view_valid_error, validate_a, validate_z, yaml_to_json, json_to_yaml, output_path, schema_path, mock_file, ansible_inventory):
     # Load Config
     try:
         config_string = Path("pyproject.toml").read_text()
@@ -460,6 +474,12 @@ def main(show_success, show_checks, gen_hostvars, gen_invalid, view_valid_error,
             schema=view_valid_error,
             mock_file=mock_file
         )
+
+    if json_to_yaml:
+        convert_yaml_to_json()
+
+    if yaml_to_json:
+        convert_json_to_yaml()
 
     if (show_success or show_checks or validate_z):
         # Get Dict of Instance File Path and Data
