@@ -4,6 +4,9 @@ import os
 import sys
 from pathlib import Path
 
+from glob import glob
+from collections import defaultdict
+
 # Third Party Imports
 import click
 import toml
@@ -14,6 +17,12 @@ from ruamel.yaml import YAML
 from jsonschema_testing import utils
 
 YAML_HANDLER = YAML()
+
+CFG = defaultdict(str)
+SCHEMA_TEST_DIR = "tests"
+
+CFG = utils.load_config()
+
 
 def get_instance_data(file_extension, search_directory, excluded_filenames):
     """
@@ -307,7 +316,7 @@ def generate_hostvars(
     Example:
         $ ls example/hostvars
         $
-        $ python -m invoke generate-hostvars -o example/hostvars -s schema/json/schemas -i inventory
+        $ test-schema --generate-hostvars -s schema/json -o outfiles/hostvars -i production/hosts.ini
         Generating var files for bra-saupau-rt1
         -> dns
         -> syslog
@@ -326,43 +335,44 @@ def generate_hostvars(
     utils.generate_hostvars(inventory_path, schema_path, output_path)
 
 
-# def create_invalid_expected(context, schema):
-#     """
-#     Generates expected ValidationError data from mock_file and writes to mock dir.
+def create_invalid_expected(schema):
+    """
+    Generates expected ValidationError data from mock_file and writes to mock dir.
 
-#     This is meant to be used as an aid to generate test cases for invalid mock
-#     schema data.
+    This is meant to be used as an aid to generate test cases for invalid mock
+    schema data.
 
-#     Args:
-#         schema (str): The name of the schema to validate against.
+    Args:
+        schema (str): The name of the schema to validate against.
 
-#     Example:
-#         $ ls tests/mocks/ntp/invalid/
-#         invalid_format.json    invalid_ip.json
-#         $ python -m invoke create-invalid-expected -s ntp
-#         Writing file to tests/mocks/ntp/invalid/invalid_format.yml
-#         Writing file to tests/mocks/ntp/invalid/invalid_ip.yml
-#         $ ls tests/mocks/ntp/invalid/
-#         invalid_format.json    invalid_format.yml    invalid_ip.json
-#         invalid_ip.yml
-#         $
-#     """
-#     schema_root_dir = os.path.realpath(CFG["json_schema_path"])
-#     schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-#     validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-#     mock_path = f"tests/mocks/{schema}/invalid"
-#     for invalid_mock in glob(f"{mock_path}/*.json"):
-#         error_attributes = utils.generate_validation_error_attributes(
-#             invalid_mock, validator
-#         )
-#         mock_attributes = {attr: str(error_attributes[attr]) for attr in error_attributes}
-#         mock_attributes_formatted = utils.ensure_strings_have_quotes_mapping(
-#             mock_attributes
-#         )
-#         mock_response = f"{invalid_mock[:-4]}yml"
-#         print(f"Writing file to {mock_response}")
-#         with open(mock_response, "w", encoding="utf-8") as fh:
-#             utils.YAML_HANDLER.dump(mock_attributes_formatted, fh)
+    Example:
+        $ ls tests/mocks/ntp/invalid/
+        invalid_format.json    invalid_ip.json
+        $ test-schema --generate-invalid-expected ntp
+        Writing file to tests/mocks/ntp/invalid/invalid_format.yml
+        Writing file to tests/mocks/ntp/invalid/invalid_ip.yml
+        $ ls tests/mocks/ntp/invalid/
+        invalid_format.json    invalid_format.yml    invalid_ip.json
+        invalid_ip.yml
+        $
+    """
+    schema_root_dir = os.path.realpath(CFG["json_schema_path"])
+    print(f"schema_root_dir {schema_root_dir}")
+    schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
+    validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
+    mock_path = f"tests/mocks/{schema}/invalid"
+    for invalid_mock in glob(f"{mock_path}/*.json"):
+        error_attributes = utils.generate_validation_error_attributes(
+            invalid_mock, validator
+        )
+        mock_attributes = {attr: str(error_attributes[attr]) for attr in error_attributes}
+        mock_attributes_formatted = utils.ensure_strings_have_quotes_mapping(
+            mock_attributes
+        )
+        mock_response = f"{invalid_mock[:-4]}yml"
+        print(f"Writing file to {mock_response}")
+        with open(mock_response, "w", encoding="utf-8") as fh:
+            utils.YAML_HANDLER.dump(mock_attributes_formatted, fh)
 
 
 
@@ -389,6 +399,12 @@ def generate_hostvars(
     show_default=True
 )
 @click.option(
+    "--generate-invalid-expected", "gen_invalid",
+    help="Generates expected ValidationError data from mock_file and writes to mock dir.", 
+)
+
+
+@click.option(
     "--show-success", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
 )
 @click.option(
@@ -410,7 +426,7 @@ def generate_hostvars(
     "--ansible-inventory", "-i",
     help="Path to an ansible inventory", 
 )
-def main(show_success, show_checks, gen_hostvars, validate_a, validate_z, output_path, schema_path, ansible_inventory):
+def main(show_success, show_checks, gen_hostvars, gen_invalid, validate_a, validate_z, output_path, schema_path, ansible_inventory):
     # Load Config
     try:
         config_string = Path("pyproject.toml").read_text()
@@ -425,6 +441,11 @@ def main(show_success, show_checks, gen_hostvars, validate_a, validate_z, output
             output_path=output_path,
             schema_path=schema_path,
             inventory_path=ansible_inventory
+        )
+    
+    if gen_invalid:
+        create_invalid_expected(
+            schema=gen_invalid
         )
 
     if (show_success or show_checks or validate_z):
