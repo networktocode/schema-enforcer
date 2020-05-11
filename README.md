@@ -2,87 +2,10 @@
 
 This repository provides a framework for building and testing [JSONSchema](https://json-schema.org/understanding-json-schema/index.html) definitions.
 [JSONRef](http://jsonref.readthedocs.org/) is used to resolve JSON references within Schema definitions.
-This project also uses [Invoke](http://docs.pyinvoke.org/) to provide a user interface for project builds.
-Invoke is similar to GNU Make, but is written in Python.
-Finally, [Pytest](https://docs.pytest.org/) is used to validate data against the defined schemas, and to validate schemas behave as expected.
 
-## Project Build
-
-The invoke file can be used to create and build a python virtual environment for the project. The build task first creates the environment in a directory named `.venv` using `virtualenv`. Once the `.venv` environment is created, that environment's pip executable is used to install the packages listed in `requirements.txt`. The build task does require `virtualenv` and `invoke` to be available already.
-
-### Example
-
-```shell
-$ python3 -m invoke build
-Using base prefix '/usr'
-New python executable in /home/user/test/netschema/.venv/bin/python3
-Also creating executable in /home/user/test/netschema/.venv/bin/python
-Installing setuptools, pip, wheel...
-done.
-Collecting jsonref ...
-Collecting invoke ...
-Collecting pytest ...
-Collecting jsonschema ...
-Collecting ruamel.yaml ...
-Collecting wcwidth ...
-Collecting py>=1.5.0 ...
-Collecting attrs>=17.4.0 ...
-Collecting packaging ... 
-Collecting more-itertools>=4.0.0 ...
-Collecting importlib-metadata>=0.12; python_version < "3.8" ...
-Collecting pluggy<1.0,>=0.12 ...
-Collecting six>=1.11.0 ...
-Processing /home/user/.cache/pip/wheels/83/89/d3/1712b9c33c9b9c0911b188a86aeff2a9a05e113f986cf79d92/pyrsistent-0.15.6-cp37-cp37m-linux_x86_64.whl
-Collecting ruamel.yaml.clib>=0.1.2; platform_python_implementation == "CPython" and python_version < "3.8" ...
-Collecting pyparsing>=2.0.2 ...
-Collecting zipp>=0.5 ...
-Installing collected packages: jsonref, invoke, wcwidth, py, attrs, pyparsing, six, packaging, more-itertools, zipp, importlib-metadata, pluggy, pytest, pyrsistent, jsonschema, ruamel.yaml.clib, ruamel.yaml
-Successfully installed attrs-19.3.0 importlib-metadata-1.3.0 invoke-1.3.0 jsonref-0.2 jsonschema-3.2.0 more-itertools-8.0.2 packaging-19.2 pluggy-0.13.1 py-1.8.0 pyparsing-2.4.5 pyrsistent-0.15.6 pytest-5.3.2 ruamel.yaml-0.16.5 ruamel.yaml.clib-0.2.0 six-1.13.0 wcwidth-0.1.7 zipp-0.6.0
-$
-```
-
-Once the environment is built, it must be activated to ensure the project behaves as expected.
-
-Linux:
-```shell
-$ source .venv/bin/activate
-(.venv) $ 
-```
-
-Windows:
-```shell
-> .venv\Scripts\Activate.bat
-(.venv) >
-```
-
-### Building the Environment in the Parent Project
-
-Currently, Invoke has some challenges being used within a subproject.
-The solution provided below creates a new `tasks.py` file, and creates a `Collection` from the `tasks.py` file in this project.
-The install task is overwritten to install the requirements file defined here, and a requirements file defined in the local project.
-This can be changed based on the parent project's design.
-
-```python
-"""Tasks used by Invoke."""
-from invoke import Collection
-from jsonschema_testing import tasks as schema_tasks
+## Install
 
 
-schema_tasks.SCHEMA_TEST_DIR = "jsonschema_testing/tests"
-
-
-@schema_tasks.task
-def install(context):
-    """Installs ``requirements.txt`` into Python Environment."""
-    context.run(f"{schema_tasks.PIP_EXE} install -r requirements.txt")
-    context.run(
-        f"{schema_tasks.PIP_EXE} install -r jsonschema_testing/requirements.txt"
-    )
-
-
-ns = Collection.from_module(schema_tasks)
-ns.tasks["build"].post = [install]
-```
 
 ## Customizing Project Config
 
