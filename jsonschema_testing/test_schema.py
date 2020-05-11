@@ -349,11 +349,13 @@ def resolve_json_refs(
 @main.command()
 @click.option(
     "--schema", "-s",
-    help=" The name of the schema to validate against.", 
+    help=" The name of the schema to validate against.",
+    required=True
 )
 @click.option(
     "--mock", "-m", "mock_file",
-    help="The name of the mock file to view the error attributes.", 
+    help="The name of the mock file to view the error attributes.",
+    required=True
 )
 def view_validation_error(schema, mock):
     """
@@ -446,7 +448,8 @@ def generate_hostvars(
 @main.command()
 @click.option(
     "--schema",
-    help="The name of the schema to validate against."
+    help="The name of the schema to validate against.",
+    required=True
 )
 def generate_invalid_expected(schema):
     """
