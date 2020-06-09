@@ -66,14 +66,15 @@ def get_schemas(file_extension, search_directory, excluded_filenames, file_type)
 
     return data
 
-def get_instance_schema_mapping(file_extension, search_directory, excluded_filenames, schema_mapping):
+def get_instance_schema_mapping(file_extension, instance_search_directory, schema_search_directory, excluded_filenames, schema_mapping):
     """
     Get dictionary of file and file data for schema and instance
     """
     # Define dict of files to be loaded to have the schema tested against
     instance_schema_mapping = {}
     # Find all of the YAML files in the parent directory of the project
-    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
+    # TODO -- Refactor os walk into it's own function
+    for root, dirs, files in os.walk(instance_search_directory):  # pylint: disable=W0612
         for lcl_file in files:
             if lcl_file.endswith(file_extension):
                 if lcl_file not in excluded_filenames:
@@ -83,12 +84,14 @@ def get_instance_schema_mapping(file_extension, search_directory, excluded_filen
                         if lcl_file == instance_filename:
                             schemas = []
                             for schema_filename in schema_filenames:
-                                with open(schema_filename, "r") as f:
+                                # TODO -- Ensure scheam_search_directory is formatted correctly so that whether it has a trailing `/` or not
+                                #         it can be used
+                                # TODO -- Ensure both JSON and YAML can be used here using `file_extension` variable
+                                with open(schema_search_directory + schema_filename, "r") as f:
                                     schema = YAML_HANDLER.load(f)
                                     schemas.append(schema["$id"])
                                 
                             instance_schema_mapping.update({filename: schemas})
-
     return instance_schema_mapping
 
 def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
@@ -111,7 +114,7 @@ def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
             if schema_name not in schemas_loaded_from_files:
                 print(colored(f"WARN", "yellow") + f" | schema '{schema_name}' Will not be checked. It is declared in {file_name} but is not loaded.")
                 errors = True
-
+# TODO -- Make "show_success" into "show_pass" -- pass matches the error printed, so it's more intuitive for the user
 def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_success=False):
 
     error_exists = False
@@ -152,65 +155,8 @@ def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_succ
 
 
 @click.group()
-@click.option(
-    "--show-success", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
-)
-@click.option(
-    "--show-checks", 
-    default=False, 
-    help="Shows the schemas to be checked for each instance file", 
-    is_flag=True, 
-    show_default=True
-)
-def main(show_success, show_checks):
-    # Load Config
-    try:
-        config_string = Path("pyproject.toml").read_text()
-        config = toml.loads(config_string)
-    except (FileNotFoundError, UnboundLocalError):
-        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
-        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
-        sys.exit(1)
-
-    if (show_success or show_checks):
-        # Get Dict of Instance File Path and Data
-        instances = get_instance_data(
-            file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
-            search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
-            excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", [])
-            )
-
-        # Get Dict of Schema File Path and Data
-        schemas = get_schemas(
-            file_extension=config["tool"]["jsonschema_testing"].get("schema_file_extension", ".json"),
-            search_directory=config["tool"]["jsonschema_testing"].get("schema_search_directory", "./"),
-            excluded_filenames=config["tool"]["jsonschema_testing"].get("schema_exclude_filenames", []),
-            file_type=config["tool"]["jsonschema_testing"].get("schema_file_type", "json")
-            )
-
-        # Get Mapping of Instance to Schema
-        instance_file_to_schemas_mapping = get_instance_schema_mapping(
-            file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
-            search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
-            excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", []),
-            schema_mapping=config["tool"]["jsonschema_testing"].get("schema_mapping")
-            )
-
-        if show_checks:
-            print("Instance File                                     Schema")
-            print("-" * 80)
-            for instance_file, schema in instance_file_to_schemas_mapping.items():
-                print(f"{instance_file:50} {schema}")
-            sys.exit(0)
-
-        check_schemas_exist(schemas, instance_file_to_schemas_mapping)
-
-        check_schema(
-            schemas=schemas,
-            instances=instances,
-            instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
-            show_success=show_success
-        )
+def main():
+    pass
 
 @main.command()
 @click.option(
@@ -315,6 +261,80 @@ def resolve_json_refs(
     $
     """
     utils.resolve_json_refs(json_schema_path or CFG["json_schema_definitions"], output_path or CFG["json_full_schema_definitions"])
+
+# TODO -- Right now, if no option is passed into function, the function doesn't execute. e.g. from command line
+#         test-schema validate-schema `--show-pass` will execute, but without `--show-pass` this function will not
+#         execute. Troubleshoot why
+@click.option(
+    "--show-success", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
+)
+@click.option(
+    "--show-checks", 
+    default=False, 
+    help="Shows the schemas to be checked for each instance file", 
+    is_flag=True, 
+    show_default=True
+)
+@main.command()
+def validate_schema(show_success, show_checks):
+    """
+    Validates instance files against defined schema
+
+    Args:
+        show_success (bool): show successful schema validations
+        show_checks (bool): show schemas which will be validated against each instance file
+    """
+    # Load Config
+    # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
+    try:
+        config_string = Path("pyproject.toml").read_text()
+        config = toml.loads(config_string)
+    except (FileNotFoundError, UnboundLocalError):
+        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
+        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
+        sys.exit(1)
+
+    if (show_success or show_checks):
+        # Get Dict of Instance File Path and Data
+        instances = get_instance_data(
+            file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
+            search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
+            excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", [])
+            )
+
+        # Get Dict of Schema File Path and Data
+        schemas = get_schemas(
+            file_extension=config["tool"]["jsonschema_testing"].get("schema_file_extension", ".json"),
+            search_directory=config["tool"]["jsonschema_testing"].get("schema_search_directory", "./"),
+            excluded_filenames=config["tool"]["jsonschema_testing"].get("schema_exclude_filenames", []),
+            file_type=config["tool"]["jsonschema_testing"].get("schema_file_type", "json")
+            )
+
+        # Get Mapping of Instance to Schema
+        instance_file_to_schemas_mapping = get_instance_schema_mapping(
+            file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
+            instance_search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
+            schema_search_directory=config["tool"]["jsonschema_testing"].get("schema_search_directory", "./"),
+            excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", []),
+            schema_mapping=config["tool"]["jsonschema_testing"].get("schema_mapping")
+            )
+
+
+        if show_checks:
+            print("Instance File                                     Schema")
+            print("-" * 80)
+            for instance_file, schema in instance_file_to_schemas_mapping.items():
+                print(f"{instance_file:50} {schema}")
+            sys.exit(0)
+
+        check_schemas_exist(schemas, instance_file_to_schemas_mapping)
+
+        check_schema(
+            schemas=schemas,
+            instances=instances,
+            instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
+            show_success=show_success
+        )
 
 # def validate(context, schema, vars_dir=None, hosts=None):
 #     """
