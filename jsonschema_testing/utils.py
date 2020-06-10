@@ -499,3 +499,36 @@ def generate_hostvars(inventory_path, schema_path, output_path):
         output_dir = f"{output_path}/{host}"
         host_vars = inventory.get_host_vars(host)
         dump_schema_vars(output_dir, schema_properties, host_vars)
+
+def load_data(file_extension, search_directory, excluded_filenames, file_type=None, data_key=None):
+    """
+    Walk a directory and load all files matching file_extension except the excluded_filenames
+
+    If file_type is not specified, yaml is assumed unless file_extension matches json
+
+    Dictionary returned is based on the filename, unless a data_key is specifiied
+    """
+    data = {}
+
+    # Find all of the matching files and attempt to load the data
+    if not file_type:
+        if 'json' in file_extension:
+            file_type = 'json'
+        else:
+            file_type = 'yaml'
+
+    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
+        for file in files:
+            if file.endswith(file_extension):
+                if file not in excluded_filenames:
+                    filename = os.path.join(root, file)
+                    with open(filename, "r") as f:
+                        if file_type == "yaml":
+                            file_data = YAML_HANDLER.load(f)
+                        if file_type == "json":
+                            file_data = json.load(f)
+
+                    key = file_data.get(data_key, filename)
+                    data.update({key: file_data})
+
+    return data

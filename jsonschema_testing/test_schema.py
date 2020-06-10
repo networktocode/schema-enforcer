@@ -26,43 +26,25 @@ CFG = utils.load_config()
 
 def get_instance_data(file_extension, search_directory, excluded_filenames):
     """
-    Get dictionary of file and file data for schema and instance
+    Returns a dictionary of filenames and data for each instance to validate
     """
-    # Define list of files to be loaded to have the schema tested against
-    data = {}
-    # Find all of the YAML files in the parent directory of the project
-    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
-        for lcl_file in files:
-            if lcl_file.endswith(file_extension):
-                if lcl_file not in excluded_filenames:
-                    filename = os.path.join(root, lcl_file)
-                    with open(filename, "r") as f:
-                        file_data = YAML_HANDLER.load(f)
 
-                    data.update({filename: file_data})
+    data = utils.load_data(file_extension=file_extension,
+                            search_directory=search_directory,
+                            excluded_filenames=excluded_filenames)
 
     return data
 
 def get_schemas(file_extension, search_directory, excluded_filenames, file_type):
     """
-    Get dictionary of file and file data for schema and instance
+    Returns a dictionary of schema IDs and schema data
     """
-    # Define list of files to be loaded to have the schema tested against
-    data = {}
-    # Find all of the YAML files in the parent directory of the project
-    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
-        for lcl_file in files:
-            if lcl_file.endswith(file_extension):
-                if lcl_file not in excluded_filenames:
-                    filename = os.path.join(root, lcl_file)
-                    with open(filename, "r") as f:
-                        if file_type == "yaml":
-                            file_data = YAML_HANDLER.load(f)
-                        if file_type == "json":
-                            file_data = json.load(f)
 
-                    schema_id = file_data["$id"]
-                    data.update({schema_id: file_data})
+    data = utils.load_data(file_extension=file_extension,
+                            search_directory=search_directory,
+                            excluded_filenames=excluded_filenames,
+                            file_type=file_type,
+                            data_key='$id')
 
     return data
 
@@ -309,7 +291,7 @@ def validate_schema(show_pass, show_checks):
 
     # Get Mapping of Instance to Schema
     instance_file_to_schemas_mapping = get_instance_schema_mapping(
-        file_extension=testcfg. get("instance_file_extension", ".yml"),
+        file_extension=testcfg.get("instance_file_extension", ".yml"),
         instance_search_directory=testcfg.get("instance_search_directory", "./"),
         schema_search_directory=testcfg.get("schema_search_directory", "./"),
         excluded_filenames=testcfg.get("instance_exclude_filenames", []),
