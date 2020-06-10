@@ -10,5 +10,6 @@ instance_file_type = "yaml"
 
 [tool.jsonschema_testing.schema_mapping]
 # Map instance filename to schema filename
-'dns.yml' = ['./schema/json/full_schemas/dns.json']
-'syslog.yml' = ['./schema/json/full_schemas/syslog.json']
+'dns.yml' = ['schemas/dns_servers']
+'ntp.yml' = ["schemas/ntp"]
+'syslog.yml' = ["schemas/syslog_servers"]

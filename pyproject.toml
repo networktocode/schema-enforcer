@@ -59,7 +59,7 @@ instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
 schema_file_type = "json"
 instance_search_directory = "./examples/hostvars/"
 instance_file_type = "yaml"
-
-schema_mapping."dns.yml" = ['dns.json']
-schema_mapping.'ntp.yml' = ["dns.json"]
-schema_mapping.'syslog.yml' = ["syslog.json"]
+[tool.jsonschema_testing.schema_mapping]
+"dns.yml" = ['schemas/dns_servers']
+'ntp.yml' = ["schemas/ntp"]
+'syslog.yml' = ["schemas/syslog_servers"]

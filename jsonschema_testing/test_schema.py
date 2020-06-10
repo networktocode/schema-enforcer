@@ -48,32 +48,24 @@ def get_schemas(file_extension, search_directory, excluded_filenames, file_type)
 
     return data
 
-def get_instance_schema_mapping(file_extension, instance_search_directory, schema_search_directory, excluded_filenames, schema_mapping):
+def get_instance_schema_mapping(schemas, instances, schema_mapping):
     """
-    Get dictionary of file and file data for schema and instance
+    Returns a dictionary of instances and the schema IDs they map to
+
+    This is currently based on filenames, but could use wildcard patterns or other key detection heuristics in the future
     """
-    # Define dict of files to be loaded to have the schema tested against
-    instance_schema_mapping = {}
-    # Find all of the YAML files in the parent directory of the project
-    # TODO -- Refactor os walk into it's own function
-    for root, dirs, files in os.walk(instance_search_directory):  # pylint: disable=W0612
-        for lcl_file in files:
-            if lcl_file.endswith(file_extension):
-                if lcl_file not in excluded_filenames:
-                    filename = os.path.join(root, lcl_file)
-                    for instance_filename, schema_filenames in schema_mapping.items():
-                        
-                        if lcl_file == instance_filename:
-                            schemas = []
-                            for schema_filename in schema_filenames:
-                                # TODO -- Ensure scheam_search_directory is formatted correctly so that whether it has a trailing `/` or not
-                                #         it can be used
-                                # TODO -- Ensure both JSON and YAML can be used here using `file_extension` variable
-                                with open(schema_search_directory + schema_filename, "r") as f:
-                                    schema = YAML_HANDLER.load(f)
-                                    schemas.append(schema["$id"])
-                                
-                            instance_schema_mapping.update({filename: schemas})
+    # Dict to return matching schemas
+    instance_schema_mapping = defaultdict(list)
+
+    # Map each instance to a set of schemas to validate the instance data against.
+    for instance_filename in instances:
+        for filepattern, schema_ids in schema_mapping.items():
+            if instance_filename.endswith(filepattern):
+                # Append the list of schema IDs to the matching filename, 
+                # Note that is does not confirm that the schema is actually known/loaded
+                # we could do that check here, but currently it is done in check_schemas_exist
+                instance_schema_mapping[instance_filename].extend(schema_ids)
+
     return instance_schema_mapping
 
 def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
@@ -86,10 +78,7 @@ def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
         schemas ([type]): [description]
         instance_file_to_schemas_mapping ([type]): [description]
     """
-    schemas_loaded_from_files = []
-    for schema_name in schemas.keys():
-        if schema_name not in schemas_loaded_from_files:
-            schemas_loaded_from_files.append(schema_name)
+    schemas_loaded_from_files = schemas.keys()
 
     for file_name, schema_names in instance_file_to_schemas_mapping.items():
         for schema_name in schema_names:
@@ -291,10 +280,8 @@ def validate_schema(show_pass, show_checks):
 
     # Get Mapping of Instance to Schema
     instance_file_to_schemas_mapping = get_instance_schema_mapping(
-        file_extension=testcfg.get("instance_file_extension", ".yml"),
-        instance_search_directory=testcfg.get("instance_search_directory", "./"),
-        schema_search_directory=testcfg.get("schema_search_directory", "./"),
-        excluded_filenames=testcfg.get("instance_exclude_filenames", []),
+        schemas=schemas,
+        instances=instances,
         schema_mapping=testcfg.get("schema_mapping")
         )
 
