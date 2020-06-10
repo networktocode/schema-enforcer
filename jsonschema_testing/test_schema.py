@@ -261,6 +261,11 @@ def validate_schema(show_pass, show_checks):
         f"ERROR | Script is being executed from {os.getcwd()}", "red"))
         sys.exit(1)
 
+    if 'jsonschema_testing' not in config.get('tool'):
+        print(colored(f"ERROR | [tool.jsonschema_testing] section is not defined in pyproject.toml,\n"
+        f"ERROR | Please see example/ folder for sample of this section", "red"))
+        sys.exit(1)
+
     testcfg = config["tool"]["jsonschema_testing"]
 
     # Get Dict of Instance File Path and Data

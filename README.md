@@ -351,6 +351,69 @@ The above environment has the following References:
 * `definitions/arrays/ip.json#ipv4_hosts` references `../objects/ip.json#ipv4_host` for the arrays items
 * `definitions/objects/ip.json#ipv4_host` references both `ipv4_address` and `ipv4_mask` in `../properties/ip.json`
 
+Using test-schema
+*****************
+
+The documentation below on invoke is deprecated.  The new cli tool name is `test-schema`
+
+To use the test-schema script, the pyproject.toml file must have a tool.jsonschema_testing section that defines some of the required setup variables.  An example of this is in the example/ folder, and this is from where you can also directly run the `test-schema` cli for testing and development purposes.
+
+e.g.
+```
+$ cd example/
+$ test-schema validate-schema --show-pass
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/eng-london-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/usa-lax-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/chi-beijing-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/mex-mxc-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/ger-berlin-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/usa-nyc-rt1/dns.yml
+PASS | [SCHEMA] syslog_servers | [FILE] hostvars/usa-lax-rt1/syslog.yml
+PASS | [SCHEMA] syslog_servers | [FILE] hostvars/chi-beijing-rt1/syslog.yml
+PASS | [SCHEMA] syslog_servers | [FILE] hostvars/mex-mxc-rt1/syslog.yml
+PASS | [SCHEMA] syslog_servers | [FILE] hostvars/usa-nyc-rt1/syslog.yml
+ALL SCHEMA VALIDATION CHECKS PASSED
+```
+
+CLick is used for the CLI tool, and full help is available for the commands and sub-options as follows:
+
+```
+$ test-schema --help
+Usage: test-schema [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  convert-json-to-yaml       Reads JSON files and writes them to YAML files.
+  convert-yaml-to-json       Reads YAML files and writes them to JSON files.
+  generate-hostvars          Generates ansible variables and creates a file...
+  generate-invalid-expected  Generates expected ValidationError data from...
+  resolve-json-refs          Loads JSONSchema schema files, resolves...
+  validate-schema            Validates instance files against defined
+                             schema...
+
+  view-validation-error      Generates ValidationError from invalid mock...
+
+$ test-schema validate-schema --help
+Usage: test-schema validate-schema [OPTIONS]
+
+  Validates instance files against defined schema
+
+  Args:     show_pass (bool): show successful schema validations
+  show_checks (bool): show schemas which will be validated against each
+  instance file
+
+Options:
+  --show-checks  Shows the schemas to be checked for each instance file
+                 [default: False]
+
+  --show-pass    Shows validation checks that passed  [default: False]
+  --help         Show this message and exit.
+  ```
+
+
+
 Using Invoke
 ************
 
