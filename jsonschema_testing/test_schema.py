@@ -114,8 +114,8 @@ def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
             if schema_name not in schemas_loaded_from_files:
                 print(colored(f"WARN", "yellow") + f" | schema '{schema_name}' Will not be checked. It is declared in {file_name} but is not loaded.")
                 errors = True
-# TODO -- Make "show_success" into "show_pass" -- pass matches the error printed, so it's more intuitive for the user
-def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_success=False):
+
+def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_pass=False):
 
     error_exists = False
 
@@ -145,13 +145,11 @@ def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_succ
                 error_exists = True
                 error_exists_inner_loop = True
 
-            if not error_exists_inner_loop and show_success:
+            if not error_exists_inner_loop and show_pass:
                 print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
 
-    if error_exists:
-        sys.exit(1)
-
-    print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
+    if not error_exists:
+        print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
 
 
 @click.group()
@@ -262,11 +260,8 @@ def resolve_json_refs(
     """
     utils.resolve_json_refs(json_schema_path or CFG["json_schema_definitions"], output_path or CFG["json_full_schema_definitions"])
 
-# TODO -- Right now, if no option is passed into function, the function doesn't execute. e.g. from command line
-#         test-schema validate-schema `--show-pass` will execute, but without `--show-pass` this function will not
-#         execute. Troubleshoot why
 @click.option(
-    "--show-success", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
+    "--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
 )
 @click.option(
     "--show-checks", 
@@ -276,14 +271,15 @@ def resolve_json_refs(
     show_default=True
 )
 @main.command()
-def validate_schema(show_success, show_checks):
+def validate_schema(show_pass, show_checks):
     """
     Validates instance files against defined schema
 
     Args:
-        show_success (bool): show successful schema validations
+        show_pass (bool): show successful schema validations
         show_checks (bool): show schemas which will be validated against each instance file
     """
+
     # Load Config
     # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
     try:
@@ -294,47 +290,48 @@ def validate_schema(show_success, show_checks):
         f"ERROR | Script is being executed from {os.getcwd()}", "red"))
         sys.exit(1)
 
-    if (show_success or show_checks):
-        # Get Dict of Instance File Path and Data
-        instances = get_instance_data(
-            file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
-            search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
-            excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", [])
-            )
+    testcfg = config["tool"]["jsonschema_testing"]
 
-        # Get Dict of Schema File Path and Data
-        schemas = get_schemas(
-            file_extension=config["tool"]["jsonschema_testing"].get("schema_file_extension", ".json"),
-            search_directory=config["tool"]["jsonschema_testing"].get("schema_search_directory", "./"),
-            excluded_filenames=config["tool"]["jsonschema_testing"].get("schema_exclude_filenames", []),
-            file_type=config["tool"]["jsonschema_testing"].get("schema_file_type", "json")
-            )
-
-        # Get Mapping of Instance to Schema
-        instance_file_to_schemas_mapping = get_instance_schema_mapping(
-            file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
-            instance_search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
-            schema_search_directory=config["tool"]["jsonschema_testing"].get("schema_search_directory", "./"),
-            excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", []),
-            schema_mapping=config["tool"]["jsonschema_testing"].get("schema_mapping")
-            )
-
-
-        if show_checks:
-            print("Instance File                                     Schema")
-            print("-" * 80)
-            for instance_file, schema in instance_file_to_schemas_mapping.items():
-                print(f"{instance_file:50} {schema}")
-            sys.exit(0)
-
-        check_schemas_exist(schemas, instance_file_to_schemas_mapping)
-
-        check_schema(
-            schemas=schemas,
-            instances=instances,
-            instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
-            show_success=show_success
+    # Get Dict of Instance File Path and Data
+    instances = get_instance_data(
+        file_extension=testcfg.get("instance_file_extension", ".yml"),
+        search_directory=testcfg.get("instance_search_directory", "./"),
+        excluded_filenames=testcfg.get("instance_exclude_filenames", [])
         )
+
+    # Get Dict of Schema File Path and Data
+    schemas = get_schemas(
+        file_extension=testcfg.get("schema_file_extension", ".json"),
+        search_directory=testcfg.get("schema_search_directory", "./"),
+        excluded_filenames=testcfg.get("schema_exclude_filenames", []),
+        file_type=testcfg.get("schema_file_type", "json")
+        )
+
+    # Get Mapping of Instance to Schema
+    instance_file_to_schemas_mapping = get_instance_schema_mapping(
+        file_extension=testcfg. get("instance_file_extension", ".yml"),
+        instance_search_directory=testcfg.get("instance_search_directory", "./"),
+        schema_search_directory=testcfg.get("schema_search_directory", "./"),
+        excluded_filenames=testcfg.get("instance_exclude_filenames", []),
+        schema_mapping=testcfg.get("schema_mapping")
+        )
+
+
+    if show_checks:
+        print("Instance File                                     Schema")
+        print("-" * 80)
+        for instance_file, schema in instance_file_to_schemas_mapping.items():
+            print(f"{instance_file:50} {schema}")
+        sys.exit(0)
+
+    check_schemas_exist(schemas, instance_file_to_schemas_mapping)
+
+    check_schema(
+        schemas=schemas,
+        instances=instances,
+        instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
+        show_pass=show_pass
+    )
 
 # def validate(context, schema, vars_dir=None, hosts=None):
 #     """
