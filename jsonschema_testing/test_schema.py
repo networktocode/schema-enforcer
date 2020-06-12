@@ -15,6 +15,7 @@ from jsonschema import Draft7Validator
 from ruamel.yaml import YAML
 
 from jsonschema_testing import utils
+import pkgutil
 
 YAML_HANDLER = YAML()
 
@@ -306,6 +307,77 @@ def validate_schema(show_pass, show_checks):
         instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
         show_pass=show_pass
     )
+
+
+@click.option(
+    "--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
+)
+@click.option(
+    "--show-checks",
+    default=False,
+    help="Shows the schemas to be checked for each instance file",
+    is_flag=True,
+    show_default=True
+)
+@main.command()
+def check_schemas(show_pass, show_checks):
+    """
+    Self validates that the defined schema files are compliant with draft7
+
+    Args:
+        show_pass (bool): show successful schema validations
+        show_checks (bool): show schemas which will be validated against each instance file
+    """
+
+    # Load Config
+    # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
+    try:
+        config_string = Path("pyproject.toml").read_text()
+        config = toml.loads(config_string)
+    except (FileNotFoundError, UnboundLocalError):
+        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
+        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
+        sys.exit(1)
+
+    if 'jsonschema_testing' not in config.get('tool'):
+        print(colored(f"ERROR | [tool.jsonschema_testing] section is not defined in pyproject.toml,\n"
+        f"ERROR | Please see example/ folder for sample of this section", "red"))
+        sys.exit(1)
+
+    testcfg = config["tool"]["jsonschema_testing"]
+
+    # Get Dict of Schema File Path and Data
+    instances = get_schemas(
+        file_extension=testcfg.get("schema_file_extension", ".json"),
+        search_directory=testcfg.get("schema_search_directory", "./"),
+        excluded_filenames=testcfg.get("schema_exclude_filenames", []),
+        file_type=testcfg.get("schema_file_type", "json")
+        )
+
+    v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
+    v7schema = json.loads(v7data.decode("utf-8"))
+    schemas = {v7schema['$id']: v7schema}
+
+    # Get Mapping of Instance to Schema
+    instance_file_to_schemas_mapping = {x: ["http://json-schema.org/draft-07/schema#"] for x in instances.keys()}
+
+    check_schemas_exist(schemas, instance_file_to_schemas_mapping)
+
+    if show_checks:
+        print("Instance File                                     Schema")
+        print("-" * 80)
+        for instance_file, schema in instance_file_to_schemas_mapping.items():
+            print(f"{instance_file:50} {schema}")
+        sys.exit(0)
+
+    check_schema(
+        schemas=schemas,
+        instances=instances,
+        instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
+        show_pass=show_pass
+    )
+
+
 
 # def validate(context, schema, vars_dir=None, hosts=None):
 #     """
