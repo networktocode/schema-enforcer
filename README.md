@@ -351,8 +351,7 @@ The above environment has the following References:
 * `definitions/arrays/ip.json#ipv4_hosts` references `../objects/ip.json#ipv4_host` for the arrays items
 * `definitions/objects/ip.json#ipv4_host` references both `ipv4_address` and `ipv4_mask` in `../properties/ip.json`
 
-Using test-schema
-*****************
+### Using test-schema command-line tool
 
 The documentation below on invoke is deprecated.  The new cli tool name is `test-schema`
 
@@ -414,8 +413,7 @@ Options:
 
 
 
-Using Invoke
-************
+### Using Invoke [deprecated]
 
 Invoking the `resolve-json-refs` task will resolve all References recursively and write the output to a file in schema/json/full_schemas; the name of the file will correspond to the name of the schema file.
 
