@@ -24,12 +24,12 @@ SCHEMA_TEST_DIR = "tests"
 CFG = utils.load_config()
 
 
-def get_instance_data(file_extension, search_directory, excluded_filenames):
+def get_instance_filenames(file_extension, search_directory, excluded_filenames):
     """
-    Returns a dictionary of filenames and data for each instance to validate
+    Returns a list of filenames for the instances that we are going to validate
     """
 
-    data = utils.load_data(file_extension=file_extension,
+    data = utils.find_files(file_extension=file_extension,
                             search_directory=search_directory,
                             excluded_filenames=excluded_filenames)
 
@@ -86,14 +86,16 @@ def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
                 print(colored(f"WARN", "yellow") + f" | schema '{schema_name}' Will not be checked. It is declared in {file_name} but is not loaded.")
                 errors = True
 
-def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_pass=False):
+def validate_instances(schemas, instances, instance_file_to_schemas_mapping, show_pass=False):
 
     error_exists = False
 
     for schema_file, schema in schemas.items():
         config_validator = Draft7Validator(schema)
 
-        for instance_file, instance_data in instances.items():
+        for instance_file in instances:
+            # We load the data on demand now, so we are not storing all instances in memory
+            instance_data = utils.load_file(instance_file)
 
             # Get schemas which should be checked for this instance file. If the instance should not
             # be checked for adherence to this schema, don't skip checking it.
@@ -250,7 +252,7 @@ def validate_schema(show_pass, show_checks):
     """
 
     # Get Dict of Instance File Path and Data
-    instances = get_instance_data(
+    instances = get_instance_filenames(
         file_extension=CFG.get("instance_file_extension", ".yml"),
         search_directory=CFG.get("instance_search_directory", "./"),
         excluded_filenames=CFG.get("instance_exclude_filenames", [])
@@ -281,7 +283,7 @@ def validate_schema(show_pass, show_checks):
 
     check_schemas_exist(schemas, instance_file_to_schemas_mapping)
 
-    check_schema(
+    validate_instances(
         schemas=schemas,
         instances=instances,
         instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
@@ -333,7 +335,7 @@ def check_schemas(show_pass, show_checks):
             print(f"{instance_file:50} {schema}")
         sys.exit(0)
 
-    check_schema(
+    validate_instances(
         schemas=schemas,
         instances=instances,
         instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,

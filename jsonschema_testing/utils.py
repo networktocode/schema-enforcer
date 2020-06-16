@@ -511,6 +511,33 @@ def generate_hostvars(inventory_path, schema_path, output_path):
         host_vars = inventory.get_host_vars(host)
         dump_schema_vars(output_dir, schema_properties, host_vars)
 
+
+def find_files(file_extension, search_directory, excluded_filenames):
+    """
+    Walk a directory and return the full filename for all files matching file_extension except the excluded_filenames
+    """
+
+    filenames = []
+    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
+        for file in files:
+            if file.endswith(file_extension):
+                if file not in excluded_filenames:
+                    filenames.append(os.path.join(root, file))
+
+    return filenames
+
+
+def load_file(filename, file_type=None):
+    if not file_type:
+        file_type = "json" if filename.endswith(".json") else "yaml"
+
+    handler = YAML_HANDLER if file_type == 'yaml' else json
+    with open(filename, "r") as f:
+        file_data = handler.load(f)
+
+    return file_data
+
+
 def load_data(file_extension, search_directory, excluded_filenames, file_type=None, data_key=None):
     """
     Walk a directory and load all files matching file_extension except the excluded_filenames
@@ -523,24 +550,14 @@ def load_data(file_extension, search_directory, excluded_filenames, file_type=No
 
     # Find all of the matching files and attempt to load the data
     if not file_type:
-        if 'json' in file_extension:
-            file_type = 'json'
-        else:
-            file_type = 'yaml'
+        file_type = "json" if "json" in file_extension else "yaml"
 
     if file_type not in ('json', 'yaml'):
         raise UserWarning("Invalid file_type specified, must be json or yaml")
 
-    handler = YAML_HANDLER if file_type == 'yaml' else json
-    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
-        for file in files:
-            if file.endswith(file_extension):
-                if file not in excluded_filenames:
-                    filename = os.path.join(root, file)
-                    with open(filename, "r") as f:
-                        file_data = handler.load(f)
-
-                    key = file_data.get(data_key, filename)
-                    data.update({key: file_data})
+    for filename in find_files(file_extension=file_extension, search_directory=search_directory, excluded_filenames=excluded_filenames):
+        file_data = load_file(filename, file_type)
+        key = file_data.get(data_key, filename)
+        data.update({key: file_data})
 
     return data
