@@ -19,7 +19,6 @@ import pkgutil
 
 YAML_HANDLER = YAML()
 
-CFG = defaultdict(str)
 SCHEMA_TEST_DIR = "tests"
 
 CFG = utils.load_config()
@@ -137,9 +136,7 @@ def main():
     "--json-path",
     help="The root directory to build JSON files from YAML files in ``yaml_path``."
 )
-def convert_yaml_to_json(
-    yaml_path, json_path,
-):
+def convert_yaml_to_json(yaml_path, json_path):
     """
     Reads YAML files and writes them to JSON files.
 
@@ -252,43 +249,26 @@ def validate_schema(show_pass, show_checks):
         show_checks (bool): show schemas which will be validated against each instance file
     """
 
-    # Load Config
-    # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
-    try:
-        config_string = Path("pyproject.toml").read_text()
-        config = toml.loads(config_string)
-    except (FileNotFoundError, UnboundLocalError):
-        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
-        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
-        sys.exit(1)
-
-    if 'jsonschema_testing' not in config.get('tool'):
-        print(colored(f"ERROR | [tool.jsonschema_testing] section is not defined in pyproject.toml,\n"
-        f"ERROR | Please see example/ folder for sample of this section", "red"))
-        sys.exit(1)
-
-    testcfg = config["tool"]["jsonschema_testing"]
-
     # Get Dict of Instance File Path and Data
     instances = get_instance_data(
-        file_extension=testcfg.get("instance_file_extension", ".yml"),
-        search_directory=testcfg.get("instance_search_directory", "./"),
-        excluded_filenames=testcfg.get("instance_exclude_filenames", [])
+        file_extension=CFG.get("instance_file_extension", ".yml"),
+        search_directory=CFG.get("instance_search_directory", "./"),
+        excluded_filenames=CFG.get("instance_exclude_filenames", [])
         )
 
     # Get Dict of Schema File Path and Data
     schemas = get_schemas(
-        file_extension=testcfg.get("schema_file_extension", ".json"),
-        search_directory=testcfg.get("schema_search_directory", "./"),
-        excluded_filenames=testcfg.get("schema_exclude_filenames", []),
-        file_type=testcfg.get("schema_file_type", "json")
+        file_extension=CFG.get("schema_file_extension", ".json"),
+        search_directory=CFG.get("schema_search_directory", "./"),
+        excluded_filenames=CFG.get("schema_exclude_filenames", []),
+        file_type=CFG.get("schema_file_type", "json")
         )
 
     # Get Mapping of Instance to Schema
     instance_file_to_schemas_mapping = get_instance_schema_mapping(
         schemas=schemas,
         instances=instances,
-        schema_mapping=testcfg.get("schema_mapping")
+        schema_mapping=CFG.get("schema_mapping")
         )
 
 
@@ -329,29 +309,12 @@ def check_schemas(show_pass, show_checks):
         show_checks (bool): show schemas which will be validated against each instance file
     """
 
-    # Load Config
-    # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
-    try:
-        config_string = Path("pyproject.toml").read_text()
-        config = toml.loads(config_string)
-    except (FileNotFoundError, UnboundLocalError):
-        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
-        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
-        sys.exit(1)
-
-    if 'jsonschema_testing' not in config.get('tool'):
-        print(colored(f"ERROR | [tool.jsonschema_testing] section is not defined in pyproject.toml,\n"
-        f"ERROR | Please see example/ folder for sample of this section", "red"))
-        sys.exit(1)
-
-    testcfg = config["tool"]["jsonschema_testing"]
-
     # Get Dict of Schema File Path and Data
     instances = get_schemas(
-        file_extension=testcfg.get("schema_file_extension", ".json"),
-        search_directory=testcfg.get("schema_search_directory", "./"),
-        excluded_filenames=testcfg.get("schema_exclude_filenames", []),
-        file_type=testcfg.get("schema_file_type", "json")
+        file_extension=CFG.get("schema_file_extension", ".json"),
+        search_directory=CFG.get("schema_search_directory", "./"),
+        excluded_filenames=CFG.get("schema_exclude_filenames", []),
+        file_type=CFG.get("schema_file_type", "json")
         )
 
     v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
@@ -536,7 +499,7 @@ def generate_invalid_expected(schema):
         $
     """
     schema_root_dir = os.path.realpath(CFG["json_schema_path"])
-    print(f"schema_root_dir {schema_root_dir}")
+
     schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
     validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
     mock_path = f"tests/mocks/{schema}/invalid"

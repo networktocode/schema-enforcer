@@ -14,6 +14,10 @@ from jsonschema import (
 )
 
 from .ansible_inventory import AnsibleInventory
+import toml
+from pathlib import Path
+from termcolor import colored
+import sys
 
 
 YAML_HANDLER = YAML()
@@ -22,25 +26,32 @@ YAML_HANDLER.explicit_start = True
 VALIDATION_ERROR_ATTRS = ["message", "schema_path", "validator", "validator_value"]
 
 
-def load_config():
+def load_config(tool_name="jsonschema_testing"):
     """
     Loads configuration files and merges values based on precedence.
 
-    The lowest preferred cfg file is ``examples/schema.cfg``.
-    The highest preferred cfg file is ``schema.cfg``.
+    Loads configuration from pyprojects.toml under the specified tool.{toolname} section.
 
     Retuns:
         dict: The values from the cfg files.
     """
-    config = {}
-    for file in ("examples/schema.cfg", "schema.cfg"):
-        try:
-            with open(file, encoding="utf-8") as fh:
-                config.update(YAML_HANDLER.load(fh))
-        except FileNotFoundError:
-            pass
+    # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
+    # TODO should we search parent folders for pyproject.toml ?
+    try:
+        config_string = Path("pyproject.toml").read_text()
+        config = toml.loads(config_string)
+    except (FileNotFoundError, UnboundLocalError):
+        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
+        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
+        sys.exit(1)
 
-    return config
+    if 'jsonschema_testing' not in config.get('tool'):
+        print(colored(f"ERROR | [tool.jsonschema_testing] section is not defined in pyproject.toml,\n"
+        f"ERROR | Please see example/ folder for sample of this section", "red"))
+        sys.exit(1)
+
+    return config["tool"]["jsonschema_testing"]
+
 
 
 def get_path_and_filename(filepath):
@@ -517,16 +528,17 @@ def load_data(file_extension, search_directory, excluded_filenames, file_type=No
         else:
             file_type = 'yaml'
 
+    if file_type not in ('json', 'yaml'):
+        raise UserWarning("Invalid file_type specified, must be json or yaml")
+
+    handler = YAML_HANDLER if file_type == 'yaml' else json
     for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
         for file in files:
             if file.endswith(file_extension):
                 if file not in excluded_filenames:
                     filename = os.path.join(root, file)
                     with open(filename, "r") as f:
-                        if file_type == "yaml":
-                            file_data = YAML_HANDLER.load(f)
-                        if file_type == "json":
-                            file_data = json.load(f)
+                        file_data = handler.load(f)
 
                     key = file_data.get(data_key, filename)
                     data.update({key: file_data})
