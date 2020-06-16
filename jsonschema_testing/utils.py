@@ -512,17 +512,21 @@ def generate_hostvars(inventory_path, schema_path, output_path):
         dump_schema_vars(output_dir, schema_properties, host_vars)
 
 
-def find_files(file_extension, search_directory, excluded_filenames):
+def find_files(file_extension, search_directories, excluded_filenames):
     """
-    Walk a directory and return the full filename for all files matching file_extension except the excluded_filenames
+    Walk provided search directories and return the full filename for all files matching file_extension except the excluded_filenames
     """
 
+    if not isinstance(search_directories, list):
+        search_directories = list(search_directories)
+
     filenames = []
-    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
-        for file in files:
-            if file.endswith(file_extension):
-                if file not in excluded_filenames:
-                    filenames.append(os.path.join(root, file))
+    for search_directory in search_directories:
+        for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
+            for file in files:
+                if file.endswith(file_extension):
+                    if file not in excluded_filenames:
+                        filenames.append(os.path.join(root, file))
 
     return filenames
 
@@ -538,7 +542,7 @@ def load_file(filename, file_type=None):
     return file_data
 
 
-def load_data(file_extension, search_directory, excluded_filenames, file_type=None, data_key=None):
+def load_data(file_extension, search_directories, excluded_filenames, file_type=None, data_key=None):
     """
     Walk a directory and load all files matching file_extension except the excluded_filenames
 
@@ -555,7 +559,7 @@ def load_data(file_extension, search_directory, excluded_filenames, file_type=No
     if file_type not in ('json', 'yaml'):
         raise UserWarning("Invalid file_type specified, must be json or yaml")
 
-    for filename in find_files(file_extension=file_extension, search_directory=search_directory, excluded_filenames=excluded_filenames):
+    for filename in find_files(file_extension=file_extension, search_directories=search_directories, excluded_filenames=excluded_filenames):
         file_data = load_file(filename, file_type)
         key = file_data.get(data_key, filename)
         data.update({key: file_data})

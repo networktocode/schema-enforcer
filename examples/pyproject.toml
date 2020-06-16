@@ -2,10 +2,10 @@
 schema_file_extension = ".json"
 schema_exclude_filenames = []
 instance_file_extension = ".yml"
-schema_search_directory = "schema/json/full_schemas/"
+schema_search_directories = ["schema/json/full_schemas/", "schema/lib"]
 instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
 schema_file_type = "json"
-instance_search_directory = "hostvars/"
+instance_search_directories = ["hostvars/"]
 instance_file_type = "yaml"
 
 yaml_schema_path = "schema/yaml/full_schemas/"
