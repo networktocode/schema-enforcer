@@ -93,7 +93,7 @@ def get_instance_schema_mapping(schemas, instances, schema_mapping):
 
 def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
     """
-    Verifies that the schemas declared in instance files are loaded and can be used to 
+    Verifies that the schemas declared in instance files are loaded and can be used to
     validate instance data against. If this is not the case, a warning message is logged
     informing the script user that validation for the schema declared will not be checked
 
@@ -102,15 +102,18 @@ def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
         instance_file_to_schemas_mapping ([type]): [description]
     """
     schemas_loaded_from_files = schemas.keys()
+    errors = False
 
     for file_name, schema_names in instance_file_to_schemas_mapping.items():
         for schema_name in schema_names:
             if schema_name not in schemas_loaded_from_files:
                 print(
-                    colored(f"WARN", "yellow")
-                    + f" | schema '{schema_name}' Will not be checked. It is declared in {file_name} but is not loaded."
+                    colored(f"WARN", "yellow"),
+                    f"| schema '{schema_name}' Will not be checked. It is declared in {file_name} but is not loaded.",
                 )
                 errors = True
+
+    return not errors
 
 
 def validate_instances(schemas, instances, instance_file_to_schemas_mapping, show_pass=False):
@@ -429,7 +432,7 @@ def view_validation_error(schema, mock):
     """
     schema_root_dir = os.path.realpath(CFG["json_schema_path"])
     schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-    mock_file = f"tests/mocks/{schema}/invalid/{mock_file}.json"
+    mock_file = f"tests/mocks/{schema}/invalid/{mock}.json"
 
     validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
     error_attributes = utils.generate_validation_error_attributes(mock_file, validator)
