@@ -1,7 +1,6 @@
 import os
 import json
 import glob
-import pkgutil
 from collections.abc import Mapping, Sequence
 
 from ruamel.yaml import YAML
@@ -19,6 +18,7 @@ import toml
 from pathlib import Path
 from termcolor import colored
 import sys
+import importlib
 
 
 YAML_HANDLER = YAML()
@@ -526,6 +526,23 @@ def find_files(file_extension, search_directories, excluded_filenames):
 
     filenames = []
     for search_directory in search_directories:
+        # if the search_directory is a simple name without a / we try to find it as a python package looking in the {pkg}/schemas/ dir
+        if not "/" in search_directory:
+            try:
+                dir = os.path.join(
+                    os.path.dirname(importlib.machinery.PathFinder().find_module(search_directory).get_filename()),
+                    "schemas",
+                )
+            except AttributeError:
+                print(
+                    colored(f"ERROR | Failed to find python package", "red"),
+                    colored(search_directory, "yellow"),
+                    colored(f"for loading {search_directory}/schemas/", "red"),
+                )
+                continue
+
+            search_directory = dir
+
         for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
             for file in files:
                 if file.endswith(file_extension):

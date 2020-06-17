@@ -2,7 +2,7 @@
 schema_file_extension = ".json"
 schema_exclude_filenames = []
 instance_file_extension = ".yml"
-schema_search_directories = ["schema/json/full_schemas/", "schema/lib"]
+schema_search_directories = ["schema/json/full_schemas/", "schema/lib", "ntc_schemas_core"]  # ntc_schemas_.. (without /) will be found as a python package
 instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
 schema_file_type = "json"
 instance_search_directories = ["hostvars/"]

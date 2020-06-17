@@ -59,13 +59,11 @@ def map_file_by_tag(filename):
     SCHEMA_TAG = "jsonschema"
 
     if SCHEMA_TAG in contents:
-        print(f"{filename} Found tag")
         line_regexp = r"^#.*{0}:\s*(.*)$".format(SCHEMA_TAG)
         m = re.match(line_regexp, contents, re.MULTILINE)
         if m:
             matches = [x.strip() for x in m.group(1).split(",")]
-            print(f"{filename} Found schema tag: {matches}")
-        # return matches.split(",")
+            # print(f"{filename} Found schema tag: {matches}")
 
     return matches
 
@@ -139,13 +137,15 @@ def validate_instances(schemas, instances, instance_file_to_schemas_mapping, sho
                         colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
                         f" [FILE] {instance_file}"
                         f" [PROPERTY] {':'.join(str(item) for item in error.absolute_path)}"
-                        f" [SCHEMA] {schema_file.split('/')[-1]}"
+                        # f" [SCHEMA] {schema_file.split('/')[-1]}"
+                        f" [SCHEMA] {schema_file}"
                     )
                 if len(error.absolute_path) == 0:
                     print(
                         colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
                         f" [FILE] {instance_file}"
-                        f" [SCHEMA] {schema_file.split('/')[-1]}"
+                        # f" [SCHEMA] {schema_file.split('/')[-1]}"
+                        f" [SCHEMA] {schema_file}"
                     )
 
                 error_exists = True
