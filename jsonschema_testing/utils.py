@@ -1,6 +1,7 @@
 import os
 import json
 import glob
+import pkgutil
 from collections.abc import Mapping, Sequence
 
 from ruamel.yaml import YAML
@@ -41,17 +42,26 @@ def load_config(tool_name="jsonschema_testing"):
         config_string = Path("pyproject.toml").read_text()
         config = toml.loads(config_string)
     except (FileNotFoundError, UnboundLocalError):
-        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
-        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
+        print(
+            colored(
+                f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
+                f"ERROR | Script is being executed from {os.getcwd()}",
+                "red",
+            )
+        )
         sys.exit(1)
 
-    if 'jsonschema_testing' not in config.get('tool'):
-        print(colored(f"ERROR | [tool.jsonschema_testing] section is not defined in pyproject.toml,\n"
-        f"ERROR | Please see example/ folder for sample of this section", "red"))
+    if "jsonschema_testing" not in config.get("tool"):
+        print(
+            colored(
+                f"ERROR | [tool.jsonschema_testing] section is not defined in pyproject.toml,\n"
+                f"ERROR | Please see example/ folder for sample of this section",
+                "red",
+            )
+        )
         sys.exit(1)
 
     return config["tool"]["jsonschema_testing"]
-
 
 
 def get_path_and_filename(filepath):
@@ -122,9 +132,7 @@ def ensure_strings_have_quotes_mapping(mapping_object):
     return mapping_object
 
 
-def get_conversion_filepaths(
-    original_path, original_extension, conversion_path, conversion_extension
-):
+def get_conversion_filepaths(original_path, original_extension, conversion_path, conversion_extension):
     """
     Finds files matching a glob pattern and derives path to conversion file.
 
@@ -155,14 +163,10 @@ def get_conversion_filepaths(
     glob_path = os.path.normpath(f"{original_path}/**/*.{original_extension}")
     glob_files = glob.glob(glob_path, recursive=True)
     if not glob_files:
-        raise FileNotFoundError(
-            f"No {original_extension} files were found in {original_path}/**/"
-        )
+        raise FileNotFoundError(f"No {original_extension} files were found in {original_path}/**/")
     original_paths_and_filenames = (get_path_and_filename(file) for file in glob_files)
     original_paths, filenames = zip(*original_paths_and_filenames)
-    conversion_paths = [
-        path.replace(original_path, conversion_path, 1) for path in original_paths
-    ]
+    conversion_paths = [path.replace(original_path, conversion_path, 1) for path in original_paths]
     conversion_files = [f"{filename}.{conversion_extension}" for filename in filenames]
     for directory in set(conversion_paths):
         os.makedirs(directory, exist_ok=True)
@@ -535,7 +539,7 @@ def load_file(filename, file_type=None):
     if not file_type:
         file_type = "json" if filename.endswith(".json") else "yaml"
 
-    handler = YAML_HANDLER if file_type == 'yaml' else json
+    handler = YAML_HANDLER if file_type == "yaml" else json
     with open(filename, "r") as f:
         file_data = handler.load(f)
 
@@ -556,10 +560,12 @@ def load_data(file_extension, search_directories, excluded_filenames, file_type=
     if not file_type:
         file_type = "json" if "json" in file_extension else "yaml"
 
-    if file_type not in ('json', 'yaml'):
+    if file_type not in ("json", "yaml"):
         raise UserWarning("Invalid file_type specified, must be json or yaml")
 
-    for filename in find_files(file_extension=file_extension, search_directories=search_directories, excluded_filenames=excluded_filenames):
+    for filename in find_files(
+        file_extension=file_extension, search_directories=search_directories, excluded_filenames=excluded_filenames
+    ):
         file_data = load_file(filename, file_type)
         key = file_data.get(data_key, filename)
         data.update({key: file_data})
