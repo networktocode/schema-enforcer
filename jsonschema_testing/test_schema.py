@@ -16,6 +16,7 @@ from ruamel.yaml import YAML
 
 from jsonschema_testing import utils
 import pkgutil
+import re
 
 YAML_HANDLER = YAML()
 
@@ -48,6 +49,23 @@ def get_schemas(file_extension, search_directories, excluded_filenames, file_typ
 
     return data
 
+
+def map_file_by_tag(filename):
+    contents = Path(filename).read_text()
+    matches = []
+    SCHEMA_TAG = 'jsonschema'
+
+    if SCHEMA_TAG in contents:
+        print(f"{filename} Found tag")
+        line_regexp = r'^#.*{0}:\s*(.*)$'.format(SCHEMA_TAG)
+        m = re.match(line_regexp, contents, re.MULTILINE)
+        if m:
+            matches = [x.strip() for x in m.group(1).split(',')]
+            print(f"{filename} Found schema tag: {matches}")
+        # return matches.split(",")
+
+    return matches
+
 def get_instance_schema_mapping(schemas, instances, schema_mapping):
     """
     Returns a dictionary of instances and the schema IDs they map to
@@ -65,6 +83,8 @@ def get_instance_schema_mapping(schemas, instances, schema_mapping):
                 # Note that is does not confirm that the schema is actually known/loaded
                 # we could do that check here, but currently it is done in check_schemas_exist
                 instance_schema_mapping[instance_filename].extend(schema_ids)
+
+        instance_schema_mapping[instance_filename].extend(map_file_by_tag(instance_filename))
 
     return instance_schema_mapping
 
@@ -119,7 +139,10 @@ def validate_instances(schemas, instances, instance_file_to_schemas_mapping, sho
                 error_exists_inner_loop = True
 
             if not error_exists_inner_loop and show_pass:
-                print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
+                # print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
+                # For now show the fully qualified schema id, in the future if we have our own BASE_URL
+                # we could for example strip that off to have a ntc/core/ntp shortened names displayed
+                print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file} | [FILE] {instance_file}")
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
@@ -320,6 +343,7 @@ def check_schemas(show_pass, show_checks):
 
     v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
     v7schema = json.loads(v7data.decode("utf-8"))
+
     schemas = {v7schema['$id']: v7schema}
 
     # Get Mapping of Instance to Schema

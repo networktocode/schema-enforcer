@@ -1,3 +1,4 @@
+# jsonschema: schemas/ntp, http://networktocode.com/schemas/core/ntp
 ---
 ntp_servers:
   - address: "10.6.6.6"

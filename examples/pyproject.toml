@@ -24,5 +24,5 @@ inventory_path = "examples/inventory"
 [tool.jsonschema_testing.schema_mapping]
 # Map instance filename to schema filename
 'dns.yml' = ['schemas/dns_servers']
-'ntp.yml' = ["schemas/ntp"]
+# testing tag.. 'ntp.yml' = ["schemas/ntp"]
 'syslog.yml' = ["schemas/syslog_servers"]

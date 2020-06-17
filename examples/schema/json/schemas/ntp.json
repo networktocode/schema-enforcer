@@ -17,4 +17,5 @@
     "required": [
         "ntp_servers"
     ]
+    "something": "extra"
 }
