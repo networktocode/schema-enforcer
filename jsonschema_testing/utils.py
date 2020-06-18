@@ -553,6 +553,13 @@ def find_files(file_extension, search_directories, excluded_filenames):
 
 
 def load_file(filename, file_type=None):
+    """
+    Loads the specified file, using json or yaml loaders based on file_type or extension.
+
+    Files with json extension are loaded with json, otherwise yaml is assumed.
+
+    Returns parsed object of respective loader.
+    """
     if not file_type:
         file_type = "json" if filename.endswith(".json") else "yaml"
 
