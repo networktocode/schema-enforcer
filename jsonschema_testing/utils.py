@@ -51,17 +51,17 @@ def load_config(tool_name="jsonschema_testing"):
         )
         sys.exit(1)
 
-    if "jsonschema_testing" not in config.get("tool"):
+    if tool_name not in config.get("tool"):
         print(
             colored(
-                f"ERROR | [tool.jsonschema_testing] section is not defined in pyproject.toml,\n"
+                f"ERROR | [tool.{tool_name} section is not defined in pyproject.toml,\n"
                 f"ERROR | Please see example/ folder for sample of this section",
                 "red",
             )
         )
         sys.exit(1)
 
-    return config["tool"]["jsonschema_testing"]
+    return config["tool"][tool_name]
 
 
 def get_path_and_filename(filepath):
