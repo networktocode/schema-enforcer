@@ -14,6 +14,11 @@ from jsonschema import (
 )
 
 from .ansible_inventory import AnsibleInventory
+import toml
+from pathlib import Path
+from termcolor import colored
+import sys
+import importlib
 
 
 YAML_HANDLER = YAML()
@@ -22,25 +27,41 @@ YAML_HANDLER.explicit_start = True
 VALIDATION_ERROR_ATTRS = ["message", "schema_path", "validator", "validator_value"]
 
 
-def load_config():
+def load_config(tool_name="jsonschema_testing"):
     """
     Loads configuration files and merges values based on precedence.
 
-    The lowest preferred cfg file is ``examples/schema.cfg``.
-    The highest preferred cfg file is ``schema.cfg``.
+    Loads configuration from pyprojects.toml under the specified tool.{toolname} section.
 
     Retuns:
         dict: The values from the cfg files.
     """
-    config = {}
-    for file in ("examples/schema.cfg", "schema.cfg"):
-        try:
-            with open(file, encoding="utf-8") as fh:
-                config.update(YAML_HANDLER.load(fh))
-        except FileNotFoundError:
-            pass
+    # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
+    # TODO should we search parent folders for pyproject.toml ?
+    try:
+        config_string = Path("pyproject.toml").read_text()
+        config = toml.loads(config_string)
+    except (FileNotFoundError, UnboundLocalError):
+        print(
+            colored(
+                f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
+                f"ERROR | Script is being executed from {os.getcwd()}",
+                "red",
+            )
+        )
+        sys.exit(1)
 
-    return config
+    if tool_name not in config.get("tool"):
+        print(
+            colored(
+                f"ERROR | [tool.{tool_name} section is not defined in pyproject.toml,\n"
+                f"ERROR | Please see example/ folder for sample of this section",
+                "red",
+            )
+        )
+        sys.exit(1)
+
+    return config["tool"][tool_name]
 
 
 def get_path_and_filename(filepath):
@@ -111,9 +132,7 @@ def ensure_strings_have_quotes_mapping(mapping_object):
     return mapping_object
 
 
-def get_conversion_filepaths(
-    original_path, original_extension, conversion_path, conversion_extension
-):
+def get_conversion_filepaths(original_path, original_extension, conversion_path, conversion_extension):
     """
     Finds files matching a glob pattern and derives path to conversion file.
 
@@ -144,14 +163,10 @@ def get_conversion_filepaths(
     glob_path = os.path.normpath(f"{original_path}/**/*.{original_extension}")
     glob_files = glob.glob(glob_path, recursive=True)
     if not glob_files:
-        raise FileNotFoundError(
-            f"No {original_extension} files were found in {original_path}/**/"
-        )
+        raise FileNotFoundError(f"No {original_extension} files were found in {original_path}/**/")
     original_paths_and_filenames = (get_path_and_filename(file) for file in glob_files)
     original_paths, filenames = zip(*original_paths_and_filenames)
-    conversion_paths = [
-        path.replace(original_path, conversion_path, 1) for path in original_paths
-    ]
+    conversion_paths = [path.replace(original_path, conversion_path, 1) for path in original_paths]
     conversion_files = [f"{filename}.{conversion_extension}" for filename in filenames]
     for directory in set(conversion_paths):
         os.makedirs(directory, exist_ok=True)
@@ -499,3 +514,84 @@ def generate_hostvars(inventory_path, schema_path, output_path):
         output_dir = f"{output_path}/{host}"
         host_vars = inventory.get_host_vars(host)
         dump_schema_vars(output_dir, schema_properties, host_vars)
+
+
+def find_files(file_extension, search_directories, excluded_filenames):
+    """
+    Walk provided search directories and return the full filename for all files matching file_extension except the excluded_filenames
+    """
+
+    if not isinstance(search_directories, list):
+        search_directories = list(search_directories)
+
+    filenames = []
+    for search_directory in search_directories:
+        # if the search_directory is a simple name without a / we try to find it as a python package looking in the {pkg}/schemas/ dir
+        if not "/" in search_directory:
+            try:
+                dir = os.path.join(
+                    os.path.dirname(importlib.machinery.PathFinder().find_module(search_directory).get_filename()),
+                    "schemas",
+                )
+            except AttributeError:
+                print(
+                    colored(f"ERROR | Failed to find python package", "red"),
+                    colored(search_directory, "yellow"),
+                    colored(f"for loading {search_directory}/schemas/", "red"),
+                )
+                continue
+
+            search_directory = dir
+
+        for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
+            for file in files:
+                if file.endswith(file_extension):
+                    if file not in excluded_filenames:
+                        filenames.append(os.path.join(root, file))
+
+    return filenames
+
+
+def load_file(filename, file_type=None):
+    """
+    Loads the specified file, using json or yaml loaders based on file_type or extension.
+
+    Files with json extension are loaded with json, otherwise yaml is assumed.
+
+    Returns parsed object of respective loader.
+    """
+    if not file_type:
+        file_type = "json" if filename.endswith(".json") else "yaml"
+
+    handler = YAML_HANDLER if file_type == "yaml" else json
+    with open(filename, "r") as f:
+        file_data = handler.load(f)
+
+    return file_data
+
+
+def load_data(file_extension, search_directories, excluded_filenames, file_type=None, data_key=None):
+    """
+    Walk a directory and load all files matching file_extension except the excluded_filenames
+
+    If file_type is not specified, yaml is assumed unless file_extension matches json
+
+    Dictionary returned is based on the filename, unless a data_key is specifiied
+    """
+    data = {}
+
+    # Find all of the matching files and attempt to load the data
+    if not file_type:
+        file_type = "json" if "json" in file_extension else "yaml"
+
+    if file_type not in ("json", "yaml"):
+        raise UserWarning("Invalid file_type specified, must be json or yaml")
+
+    for filename in find_files(
+        file_extension=file_extension, search_directories=search_directories, excluded_filenames=excluded_filenames
+    ):
+        file_data = load_file(filename, file_type)
+        key = file_data.get(data_key, filename)
+        data.update({key: file_data})
+
+    return data

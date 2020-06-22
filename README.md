@@ -9,25 +9,39 @@ This repository provides a framework for building and testing [JSONSchema](https
 
 ## Customizing Project Config
 
-This project uses a YAML file named `schema.cfg` to customize the project's settings. There is an example settings file defined in `examples/schema.cfg`, which works with the provided examples. This file should be copied to the Schema's project root directory, and updated per the Project's settings.
+The CLI tool uses a configuration section in the pyproject.toml file to configure settings.  There is an example in `examples/pyproject.toml`, which works with the provided examples.  The paths are relative in this file, so the example works by changing your working directory to `examples/`.
 
 ### Variables
 
-The below examples assume the following `schema.cfg` file.
+The below examples assume the following `pyproject.toml` file.
 
 ```yaml
----
-json_schema_path: "schema/json"
-yaml_schema_path: "schema/yaml"
+[tool.jsonschema_testing]
+schema_file_extension = ".json"
+schema_exclude_filenames = []
+instance_file_extension = ".yml"
+schema_search_directories = ["schema/json/full_schemas/", "schema/lib", "ntc_schemas_core"]  # ntc_schemas_.. (without /) will be found as a python package
+instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
+schema_file_type = "json"
+instance_search_directories = ["hostvars/"]
+instance_file_type = "yaml"
 
-json_schema_definitions: "schema/json/schemas"
-yaml_schema_definitions: "schema/yaml/schemas"
+yaml_schema_path = "schema/yaml/full_schemas/"
+json_schema_path = "schema/json/full_schemas/"
 
-json_full_schema_definitions: "schema/json/full_schemas"
+# Define location to place schema definitions after resolving ``$ref``
+json_full_schema_definitions = "examples/schema/json/full_schemas"
 
-device_variables: "hostvars"
-inventory_path: "inventory"
-```
+# Define network device variables location
+device_variables = "examples/hostvars"
+
+# Define path to inventory
+inventory_path = "examples/inventory"
+
+[tool.jsonschema_testing.schema_mapping]
+# Map instance filename to schema filename
+'dns.yml' = ['schemas/dns_servers', 'http://networktocode.com/schemas/core/base']
+'syslog.yml' = ["schemas/syslog_servers"]```
 
 #### json_schema_path
 
@@ -63,45 +77,21 @@ definitions    schemas
 
 Description
 ***********
-Defines the location of all JSON formatted schema specifications. This directory should only contain schema specifications, and should not contain schema defintion files.
-
-Example
-*******
-
-```shell
-(.venv) $ ls schema/json/schemas/
-ntp.json    snmp.json
-```
+Defines the location of all JSON formatted schema definitions.
 
 #### yaml_schema_definitions
 
 Description
 ***********
 
-Defines the location of all YAML formatted schema specifications. This directory should only contain schema specifications, and should not contain schema defintion files. All files should use the `.yml` extension.
-
-Example
-*******
-
-```shell
-(.venv) $ ls schema/yaml/schemas/
-ntp.yml    snmp.yml
-```
+Defines the location of all YAML formatted schema definitions.
 
 #### json_full_schema_definitions
 
 Description
 ***********
 
-Defines the location to place schema definitions in after resolving all `$ref` objects. The schemas defined in **json_schema_definitions** are the authoritative source, but these can be expanded for visualization purposes.
-
-Example
-*******
-
-```shell
-(.venv) $ ls schema/json/full_schemas/`
-ntp.json    snmp.json
-```
+Defines the location to place schema definitions in after resolving all `$ref` objects. The schemas defined in **json_schema_definitions** are the authoritative source, but these can be expanded for visualization purposes (See `test-schema resolve-json-refs` below).
 
 #### device_variables
 
@@ -142,18 +132,18 @@ all.yml    ios.yml    eos.yml    nyc.yml
 
 ### Defining Schemas
 
-The Schemas can be defined in YAML or JSON, and Invoke can be used to replicate between formats. The conversion scripts will overwrite any existing files, but they do not currently remove files that have been deleted. YAML files must use the `yml` extension.
+The Schemas can be defined in YAML or JSON, and test-schema CLI tool can be used to replicate between formats. The conversion will overwrite any existing destination format files, but they do not currently remove files that have been deleted.  
 
 Args
 ****
 
-#### json_path (str)
+#### json_schema_path (str)
 
-The path to JSON schema directories. The default is `json_schema_path` defined in the schema.cfg file.
+The path to JSON schema directories. The default is `json_schema_path` defined in the `pyproject.toml` file.
 
-#### yaml_path (str)
+#### yaml_schema_path (str)
 
-The path ot YAML schema directories. The defautl is `yaml_schema_path` defined in the schema.cfg file.
+The path ot YAML schema directories. The default is `yaml_schema_path` defined in the `pyproject.toml` file.
 
 #### Example
 
@@ -205,46 +195,10 @@ The above environment has the following differences:
 * The `schema/yaml/schemas` directory has schema defined for `snmp` that is not defined in `schema/json/schemas`
 * The YAML version of the `ntp` schema has 2 additional properties defined compared ot the JSON version
 
-Using Invoke
+Converting Schema between formats
 ************
 
-Invoking the `convert-yaml-to-json` script, the expected outcome is:
-
-* The JSON `vty` schema will remain unchanged
-* The YAML `snmp` schema will be added to the JSON directory
-* The JSON `ntp` schema will be updated with the additional properties
-
-```shell
-(.venv) $ invoke convert-yaml-to-json
-Converting schema/yaml/schemas/ntp.yml -> schema/json/schemas/ntp.json
-Converting schema/yaml/schemas/snmp.yml -> schema/json/schemas/snmp.json
-
-(.venv) $ ls schema/json/schemas
-ntp.json    snmp.json    vty.json
-
-(.venv) $ cat schema/json/schemas/ntp.json
-{
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "schemas/ntp",
-    "description": "NTP Configuration schema.",
-    "type": "object",
-    "properties": {
-        "ntp_servers": {
-            "$ref": "../definitions/arrays/ip.json#ipv4_hosts"
-        },
-        "authentication": {
-            "type": "boolean"
-        },
-        "logging": {
-            "type": "boolean"
-        }
-    },
-    "required": [
-        "ntp_servers"
-    ]
-}
-(.venv) $
-```
+The CLI command `test-schema convert-yaml-to-json` or `test-schema convert-json-to-yaml` can be used to perform the conversion from your desired source format to the destination format.
 
 ### Resolving JSON Refs
 
@@ -258,22 +212,22 @@ The JSON Reference specification provides a mechanism for JSON Objects to incorp
 }
 ```
 
-Invoke can be used to resolve the JSON References used in the project's schema definitions. The resulting Schema Definition will be written to a file. This only works for schemas defined in JSON, so use the `convert-yaml-to-json` method first if defining schema in YAML.
+The CLI tool can be used to resolve these JSON References used in the project's schema definitions. The resulting expanded Schema Definition will be written to a file. This only works for schemas defined in JSON, so you must use the `test-schema convert-yaml-to-json` method first if your primary source is the schema written in YAML.
 
 Args
 ****
 
 #### json_schema_path (str)
 
-The path to JSONSchema definintions in JSON format. The defualt is `json_schema_definitions` defined in the schema.cfg file.
+The path to JSONSchema definintions in JSON format. The defualt is `json_schema_definitions` defined in the `pyproject.toml` file.
 
 #### output_path (str)
 
-The path to write the resulting schema definitions to. The default is `json_full_schema_definitions` defined in the schema.cfg file.
+The path to write the resulting schema definitions to. The default is `json_full_schema_definitions` defined in the `pyproject.toml` file.
 
 #### Example
 
-Environment
+Schema References
 ***********
 
 ```shell
@@ -351,131 +305,90 @@ The above environment has the following References:
 * `definitions/arrays/ip.json#ipv4_hosts` references `../objects/ip.json#ipv4_host` for the arrays items
 * `definitions/objects/ip.json#ipv4_host` references both `ipv4_address` and `ipv4_mask` in `../properties/ip.json`
 
-Using Invoke
-************
+### Using test-schema command-line tool
 
-Invoking the `resolve-json-refs` task will resolve all References recursively and write the output to a file in schema/json/full_schemas; the name of the file will correspond to the name of the schema file.
+To use the `test-schema` script, the pyproject.toml file must have a tool.jsonschema_testing section that defines some of the required setup variables.  An example of this is in the example/ folder, and this is from where you can also directly run the `test-schema` cli for testing and development purposes.
 
-```shell
-(.venv) $ invoke resolve-json-refs
 
-(.venv) $ cat schema/json/full_schemas/ntp.json
-{
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "schemas/ntp",
-    "description": "NTP Configuration schema.",
-    "type": "object",
-    "properties": {
-        "ntp_servers": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "address": {
-                        "type": "string",
-                        "format": "ipv4"
-                    },
-                    "vrf": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "address"
-                ]
-            },
-            "uniqueItems": true
-        },
-        "authentication": {
-            "type": "boolean"
-        },
-        "logging": {
-            "type": "boolean"
-        }
-    },
-    "required": [
-        "ntp_servers"
-    ]
-}
+CLick is used for the CLI tool, and full help is available for the commands and sub-options as follows:
+
+e.g.
+```
+$ cd example/
+$ test-schema --help
+Usage: test-schema [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  convert-json-to-yaml       Reads JSON files and writes them to YAML files.
+  convert-yaml-to-json       Reads YAML files and writes them to JSON files.
+  generate-hostvars          Generates ansible variables and creates a file...
+  generate-invalid-expected  Generates expected ValidationError data from...
+  resolve-json-refs          Loads JSONSchema schema files, resolves...
+  validate-schema            Validates instance files against defined
+                             schema...
+
+  view-validation-error      Generates ValidationError from invalid mock...
+
+$ test-schema validate-schema --help
+Usage: test-schema validate-schema [OPTIONS]
+
+  Validates instance files against defined schema
+
+  Args:     show_pass (bool): show successful schema validations
+  show_checks (bool): show schemas which will be validated against each
+  instance file
+
+Options:
+  --show-checks  Shows the schemas to be checked for each instance file
+                 [default: False]
+
+  --show-pass    Shows validation checks that passed  [default: False]
+  --help         Show this message and exit.
+  ```
+
+
+### Validating Instance Data Against Schema
+
+The CLI also provides a sub-command to validate instances against schema. The schema definitions used are pulled from **json_schema_definitions** defined in the `pyproject.toml` file. The network device data used is pulled from **device_variables** defined in the `pyproject.toml` file. 
+
+```
+$ test-schema validate-schema --help
+Usage: test-schema validate-schema [OPTIONS]
+
+  Validates instance files against defined schema
+
+  Args:     show_pass (bool): show successful schema validations
+  show_checks (bool): show schemas which will be validated against each
+  instance file
+
+Options:
+  --show-checks  Shows the schemas to be checked for each instance file
+                 [default: False]
+
+  --show-pass    Shows validation checks that passed  [default: False]
+  --help         Show this message and exit.
+
+
+$ test-schema validate-schema --show-pass
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/eng-london-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/usa-lax-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/chi-beijing-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/mex-mxc-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/ger-berlin-rt1/dns.yml
+PASS | [SCHEMA] dns_servers | [FILE] hostvars/usa-nyc-rt1/dns.yml
+PASS | [SCHEMA] syslog_servers | [FILE] hostvars/usa-lax-rt1/syslog.yml
+PASS | [SCHEMA] syslog_servers | [FILE] hostvars/chi-beijing-rt1/syslog.yml
+PASS | [SCHEMA] syslog_servers | [FILE] hostvars/mex-mxc-rt1/syslog.yml
+PASS | [SCHEMA] syslog_servers | [FILE] hostvars/usa-nyc-rt1/syslog.yml
+ALL SCHEMA VALIDATION CHECKS PASSED
 ```
 
-### Validating Data Against Schema
+-------------------
 
-Invoke also provides a task to validate data against schema. The schema definitions used are pulled from **json_schema_definitions** defined in the schema.cfg file. The network device data used is pulled from **device_variables** defined in the schema.cfg file. This directory can also be overwritten by passing the `--vars_dir` argument.
-
-Args
-****
-
-#### schema (list)
-
-The subset of schemas to execute tests against. The default is all schemas defined in the `json_schema_definitions` directory in the schema.cfg file.
-
-#### vars_dir (str)
-
-The directory where all hosts' variables are defined. The default is to use Pytest settings, which uses the `device_variables` setting defined in the schema.cfg file.
-
-#### hosts (str)
-
-The subset of hosts to execute tests against. The default is to use each host directory defined in the `device_variables` directory in the schema.cfg file.
-
-#### Example
-
-Environment
-***********
-
-```shell
-(.venv) $ ls schema/json/schemas/
-bgp.yml    ntp.yml    snmp.yml
-(.venv) $ ls examples/hostvars/
-csr1    eos1    junos1
-(.venv) $ ls examples/hostvars/csr1/
-ntp.yml    snmp.yml
-```
-
-Since **csr1** does not define data for BGP, the validation task will skip validation and report it as *passed*.
-
-Using Invoke
-************
-
-Invoking `validate` with the default settings will validate all three schemas for all three hosts.
-
-```shell
-(.venv) $ invoke validate
-python -m pytest tests/test_data_against_schema.py -vv
-============================= test session starts =============================
-
-tests/test_data_against_schema.py::test_config_definitions_against_schema[csr1-bgp-validator0] PASSED [ 11%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[csr1-ntp-validator1] PASSED [ 22%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[csr1-snmp-validator2] PASSED [ 33%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[eos1-bgp-validator0] PASSED [ 44%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[eos1-ntp-validator1] PASSED [ 56%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[eos1-snmp-validator2] PASSED [ 67%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[junos1-bgp-validator0] PASSED [ 78%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[junos1-ntp-validator1] PASSED [ 89%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[junos1-snmp-validator2] PASSED [100%]
-
-============================== 9 passed in 0.70s ==============================
-(vevn) $ 
-```
-
-In order to limit the hosts and schemas to test, use the `--hosts` and `--schema` respectively.
-
-```shell
-(.venv) $ invoke validate --hosts csr1,eos1 --schema ntp --schema snmp
-python -m pytest tests/test_data_against_schema.py -vv
-============================= test session starts =============================
-
-tests/test_data_against_schema.py::test_config_definitions_against_schema[csr1-ntp-validator0] PASSED [ 25%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[csr1-snmp-validator1] PASSED [ 50%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[eos1-ntp-validator0] PASSED [ 75%]
-tests/test_data_against_schema.py::test_config_definitions_against_schema[eos1-snmp-validator1] PASSED [100%]
-
-============================== 4 passed in 0.33s ==============================
-(vevn) $ 
-```
-
+## Historic usage notes below, some items need to be reviewed/reimplemented in new CLI.
 Passing the `--hosts` and `--schema` args resulted in only 4 tests running.
 
 ### Generating Host Vars
@@ -490,17 +403,17 @@ Args
 
 #### output_path (str)
 
-The path to store the variable files. The default root directory uses `device_variables` defined in the schema.cfg file. Each host will have their own subdirectory from this value.
+The path to store the variable files. The default root directory uses `device_variables` defined in the `pyproject.toml` file. Each host will have their own subdirectory from this value.
 
 #### schema_path (str)
 
 The path where the JSON formatted schema files are located.
-The default uses `json_schema_definitions` defined in the schema.cfg file.
+The default uses `json_schema_definitions` defined in the `pyproject.toml` file.
 
 #### inventory_path (str)
 
 The path to Ansible Inventory.
-The default uses `inventory_path` defined in the schema.cfg file.
+The default uses `inventory_path` defined in the `pyproject.toml` file.
 
 #### Example
 
@@ -593,7 +506,7 @@ These attributes are stored in a YAML file adjacent to the invalid data files.
 
 This task has one required argument, `schema`, which is used to identify the schema file and mock directory to load files from, and where to store the attribute files.
 
-This uses `json_schema_path` defined in the `schema.cfg` file to look for Schema definitions.
+This uses `json_schema_path` defined in the ``pyproject.toml`` file to look for Schema definitions.
 The invalid mock data is expected to be in `tests/mocks/<schema>/invalid/`.
 All JSON files in the invalid mock directory will be loaded and have corresponding attribute files created.
 
@@ -737,11 +650,11 @@ Any host that does not have data defined for the Schema will be silently ignored
 ##### Schema (list)
 
 The list of Schemas to validate against. Passing multiple schemas is done by passing multiple schema flags: `--schema=ntp --schema=dns`.
-The default will use all Schemas defined in `json_schema_definitions` in the `schema.cfg` file.
+The default will use all Schemas defined in `json_schema_definitions` in the ``pyproject.toml`` file.
 
 ##### hostvars (str)
 
-The directory where all hosts define their variable data. The default uses `device_variables` defined in the `schema.cfg` file.
+The directory where all hosts define their variable data. The default uses `device_variables` defined in the ``pyproject.toml`` file.
 
 ##### hosts (list)
 

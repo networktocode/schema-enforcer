@@ -2,13 +2,27 @@
 schema_file_extension = ".json"
 schema_exclude_filenames = []
 instance_file_extension = ".yml"
-schema_search_directory = "./schema/json/full_schemas/"
+schema_search_directories = ["schema/json/full_schemas/", "schema/lib", "ntc_schemas_core"]  # ntc_schemas_.. (without /) will be found as a python package
 instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
 schema_file_type = "json"
-instance_search_directory = "./hostvars/"
+instance_search_directories = ["hostvars/"]
 instance_file_type = "yaml"
+
+yaml_schema_path = "schema/yaml/full_schemas/"
+json_schema_path = "schema/json/full_schemas/"
+
+# Define location to place schema definitions after resolving ``$ref``
+json_full_schema_definitions = "examples/schema/json/full_schemas"
+
+# Define network device variables location
+device_variables = "examples/hostvars"
+
+# Define path to inventory
+inventory_path = "examples/inventory"
+
 
 [tool.jsonschema_testing.schema_mapping]
 # Map instance filename to schema filename
-'dns.yml' = ['./schema/json/full_schemas/dns.json']
-'syslog.yml' = ['./schema/json/full_schemas/syslog.json']
+'dns.yml' = ['schemas/dns_servers']
+# testing tag.. 'ntp.yml' = ["schemas/ntp"]
+'syslog.yml' = ["schemas/syslog_servers"]

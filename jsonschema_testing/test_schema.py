@@ -15,85 +15,85 @@ from jsonschema import Draft7Validator
 from ruamel.yaml import YAML
 
 from jsonschema_testing import utils
+import pkgutil
+import re
 
 YAML_HANDLER = YAML()
 
-CFG = defaultdict(str)
 SCHEMA_TEST_DIR = "tests"
 
 CFG = utils.load_config()
 
 
-def get_instance_data(file_extension, search_directory, excluded_filenames):
+def get_instance_filenames(file_extension, search_directories, excluded_filenames):
     """
-    Get dictionary of file and file data for schema and instance
+    Returns a list of filenames for the instances that we are going to validate
     """
-    # Define list of files to be loaded to have the schema tested against
-    data = {}
-    # Find all of the YAML files in the parent directory of the project
-    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
-        for lcl_file in files:
-            if lcl_file.endswith(file_extension):
-                if lcl_file not in excluded_filenames:
-                    filename = os.path.join(root, lcl_file)
-                    with open(filename, "r") as f:
-                        file_data = YAML_HANDLER.load(f)
 
-                    data.update({filename: file_data})
+    data = utils.find_files(
+        file_extension=file_extension, search_directories=search_directories, excluded_filenames=excluded_filenames
+    )
 
     return data
 
-def get_schemas(file_extension, search_directory, excluded_filenames, file_type):
-    """
-    Get dictionary of file and file data for schema and instance
-    """
-    # Define list of files to be loaded to have the schema tested against
-    data = {}
-    # Find all of the YAML files in the parent directory of the project
-    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
-        for lcl_file in files:
-            if lcl_file.endswith(file_extension):
-                if lcl_file not in excluded_filenames:
-                    filename = os.path.join(root, lcl_file)
-                    with open(filename, "r") as f:
-                        if file_type == "yaml":
-                            file_data = YAML_HANDLER.load(f)
-                        if file_type == "json":
-                            file_data = json.load(f)
 
-                    schema_id = file_data["$id"]
-                    data.update({schema_id: file_data})
+def get_schemas(file_extension, search_directories, excluded_filenames, file_type):
+    """
+    Returns a dictionary of schema IDs and schema data
+    """
+
+    data = utils.load_data(
+        file_extension=file_extension,
+        search_directories=search_directories,
+        excluded_filenames=excluded_filenames,
+        file_type=file_type,
+        data_key="$id",
+    )
 
     return data
 
-def get_instance_schema_mapping(file_extension, search_directory, excluded_filenames, schema_mapping):
+
+def map_file_by_tag(filename):
+    contents = Path(filename).read_text()
+    matches = []
+    SCHEMA_TAG = "jsonschema"
+
+    if SCHEMA_TAG in contents:
+        line_regexp = r"^#.*{0}:\s*(.*)$".format(SCHEMA_TAG)
+        m = re.match(line_regexp, contents, re.MULTILINE)
+        if m:
+            matches = [x.strip() for x in m.group(1).split(",")]
+            # print(f"{filename} Found schema tag: {matches}")
+
+    return matches
+
+
+def get_instance_schema_mapping(schemas, instances, schema_mapping):
     """
-    Get dictionary of file and file data for schema and instance
+    Returns a dictionary of instances and the schema IDs they map to
+
+    This is currently based on filenames, but could use wildcard patterns or other key detection heuristics in the future
     """
-    # Define dict of files to be loaded to have the schema tested against
-    instance_schema_mapping = {}
-    # Find all of the YAML files in the parent directory of the project
-    for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
-        for lcl_file in files:
-            if lcl_file.endswith(file_extension):
-                if lcl_file not in excluded_filenames:
-                    filename = os.path.join(root, lcl_file)
-                    for instance_filename, schema_filenames in schema_mapping.items():
-                        
-                        if lcl_file == instance_filename:
-                            schemas = []
-                            for schema_filename in schema_filenames:
-                                with open(schema_filename, "r") as f:
-                                    schema = YAML_HANDLER.load(f)
-                                    schemas.append(schema["$id"])
-                                
-                            instance_schema_mapping.update({filename: schemas})
+    # Dict to return matching schemas
+    instance_schema_mapping = defaultdict(list)
+
+    # Map each instance to a set of schemas to validate the instance data against.
+    for instance_filename in instances:
+        for filepattern, schema_ids in schema_mapping.items():
+            if instance_filename.endswith(filepattern):
+                # Append the list of schema IDs to the matching filename,
+                # Note that is does not confirm that the schema is actually known/loaded
+                # we could do that check here, but currently it is done in check_schemas_exist
+                instance_schema_mapping[instance_filename].extend(schema_ids)
+
+        instance_schema_mapping[instance_filename].extend(map_file_by_tag(instance_filename))
 
     return instance_schema_mapping
 
+
 def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
     """
-    Verifies that the schemas declared in instance files are loaded and can be used to 
+    Verifies that the schemas declared in instance files are loaded and can be used to
     validate instance data against. If this is not the case, a warning message is logged
     informing the script user that validation for the schema declared will not be checked
 
@@ -101,25 +101,31 @@ def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
         schemas ([type]): [description]
         instance_file_to_schemas_mapping ([type]): [description]
     """
-    schemas_loaded_from_files = []
-    for schema_name in schemas.keys():
-        if schema_name not in schemas_loaded_from_files:
-            schemas_loaded_from_files.append(schema_name)
+    schemas_loaded_from_files = schemas.keys()
+    errors = False
 
     for file_name, schema_names in instance_file_to_schemas_mapping.items():
         for schema_name in schema_names:
             if schema_name not in schemas_loaded_from_files:
-                print(colored(f"WARN", "yellow") + f" | schema '{schema_name}' Will not be checked. It is declared in {file_name} but is not loaded.")
+                print(
+                    colored(f"WARN", "yellow"),
+                    f"| schema '{schema_name}' Will not be checked. It is declared in {file_name} but is not loaded.",
+                )
                 errors = True
 
-def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_success=False):
+    return not errors
+
+
+def validate_instances(schemas, instances, instance_file_to_schemas_mapping, show_pass=False):
 
     error_exists = False
 
     for schema_file, schema in schemas.items():
         config_validator = Draft7Validator(schema)
 
-        for instance_file, instance_data in instances.items():
+        for instance_file in instances:
+            # We load the data on demand now, so we are not storing all instances in memory
+            instance_data = utils.load_file(instance_file)
 
             # Get schemas which should be checked for this instance file. If the instance should not
             # be checked for adherence to this schema, don't skip checking it.
@@ -130,100 +136,43 @@ def check_schema(schemas, instances, instance_file_to_schemas_mapping, show_succ
 
             for error in config_validator.iter_errors(instance_data):
                 if len(error.absolute_path) > 0:
-                    print(colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
-                    f" [FILE] {instance_file}"
-                    f" [PROPERTY] {':'.join(str(item) for item in error.absolute_path)}"
-                    f" [SCHEMA] {schema_file.split('/')[-1]}")
+                    print(
+                        colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
+                        f" [FILE] {instance_file}"
+                        f" [PROPERTY] {':'.join(str(item) for item in error.absolute_path)}"
+                        # f" [SCHEMA] {schema_file.split('/')[-1]}"
+                        f" [SCHEMA] {schema_file}"
+                    )
                 if len(error.absolute_path) == 0:
-                    print(colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
-                    f" [FILE] {instance_file}"
-                    f" [SCHEMA] {schema_file.split('/')[-1]}")
+                    print(
+                        colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
+                        f" [FILE] {instance_file}"
+                        # f" [SCHEMA] {schema_file.split('/')[-1]}"
+                        f" [SCHEMA] {schema_file}"
+                    )
 
                 error_exists = True
                 error_exists_inner_loop = True
 
-            if not error_exists_inner_loop and show_success:
-                print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
+            if not error_exists_inner_loop and show_pass:
+                # print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
+                # For now show the fully qualified schema id, in the future if we have our own BASE_URL
+                # we could for example strip that off to have a ntc/core/ntp shortened names displayed
+                print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file} | [FILE] {instance_file}")
 
-    if error_exists:
-        sys.exit(1)
-
-    print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
+    if not error_exists:
+        print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
 
 
 @click.group()
-@click.option(
-    "--show-success", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True
-)
-@click.option(
-    "--show-checks", 
-    default=False, 
-    help="Shows the schemas to be checked for each instance file", 
-    is_flag=True, 
-    show_default=True
-)
-def main(show_success, show_checks):
-    # Load Config
-    try:
-        config_string = Path("pyproject.toml").read_text()
-        config = toml.loads(config_string)
-    except (FileNotFoundError, UnboundLocalError):
-        print(colored(f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
-        f"ERROR | Script is being executed from {os.getcwd()}", "red"))
-        sys.exit(1)
+def main():
+    pass
 
-    if (show_success or show_checks):
-        # Get Dict of Instance File Path and Data
-        instances = get_instance_data(
-            file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
-            search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
-            excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", [])
-            )
-
-        # Get Dict of Schema File Path and Data
-        schemas = get_schemas(
-            file_extension=config["tool"]["jsonschema_testing"].get("schema_file_extension", ".json"),
-            search_directory=config["tool"]["jsonschema_testing"].get("schema_search_directory", "./"),
-            excluded_filenames=config["tool"]["jsonschema_testing"].get("schema_exclude_filenames", []),
-            file_type=config["tool"]["jsonschema_testing"].get("schema_file_type", "json")
-            )
-
-        # Get Mapping of Instance to Schema
-        instance_file_to_schemas_mapping = get_instance_schema_mapping(
-            file_extension=config["tool"]["jsonschema_testing"]. get("instance_file_extension", ".yml"),
-            search_directory=config["tool"]["jsonschema_testing"].get("instance_search_directory", "./"),
-            excluded_filenames=config["tool"]["jsonschema_testing"].get("instance_exclude_filenames", []),
-            schema_mapping=config["tool"]["jsonschema_testing"].get("schema_mapping")
-            )
-
-        if show_checks:
-            print("Instance File                                     Schema")
-            print("-" * 80)
-            for instance_file, schema in instance_file_to_schemas_mapping.items():
-                print(f"{instance_file:50} {schema}")
-            sys.exit(0)
-
-        check_schemas_exist(schemas, instance_file_to_schemas_mapping)
-
-        check_schema(
-            schemas=schemas,
-            instances=instances,
-            instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
-            show_success=show_success
-        )
 
 @main.command()
-@click.option(
-    "--yaml-path",
-    help="The root directory containing YAML files to convert to JSON."
-)
-@click.option(
-    "--json-path",
-    help="The root directory to build JSON files from YAML files in ``yaml_path``."
-)
-def convert_yaml_to_json(
-    yaml_path, json_path,
-):
+@click.option("--yaml-path", help="The root directory containing YAML files to convert to JSON.")
+@click.option("--json-path", help="The root directory to build JSON files from YAML files in ``yaml_path``.")
+def convert_yaml_to_json(yaml_path, json_path):
     """
     Reads YAML files and writes them to JSON files.
 
@@ -249,15 +198,10 @@ def convert_yaml_to_json(
     """
     utils.convert_yaml_to_json(yaml_path or CFG["yaml_schema_path"], json_path or CFG["json_schema_path"])
 
+
 @main.command()
-@click.option(
-    "--json-path",
-    help="The root directory containing JSON files to convert to YAML."
-)
-@click.option(
-    "--yaml-path",
-    help="The root directory to build YAML files from JSON files in ``json_path``."
-)
+@click.option("--json-path", help="The root directory containing JSON files to convert to YAML.")
+@click.option("--yaml-path", help="The root directory to build YAML files from JSON files in ``json_path``.")
 def convert_json_to_yaml(json_path, yaml_path):
     """
     Reads JSON files and writes them to YAML files.
@@ -284,18 +228,16 @@ def convert_json_to_yaml(json_path, yaml_path):
     """
     utils.convert_json_to_yaml(json_path or CFG["json_schema_path"], yaml_path or CFG["yaml_schema_path"])
 
+
 @main.command()
 @click.option(
-    "--json-schema-path",
-    help="The path to JSONSchema schema definitions.", 
+    "--json-schema-path", help="The path to JSONSchema schema definitions.",
 )
 @click.option(
-    "--output-path", "-o",
-    help="The path to write updated JSONSchema schema files.", 
+    "--output-path", "-o", help="The path to write updated JSONSchema schema files.",
 )
 def resolve_json_refs(
-    json_schema_path,
-    output_path,
+    json_schema_path, output_path,
 ):
     """
     Loads JSONSchema schema files, resolves ``refs``, and writes to a file.
@@ -314,7 +256,115 @@ def resolve_json_refs(
     definitions    full    schemas
     $
     """
-    utils.resolve_json_refs(json_schema_path or CFG["json_schema_definitions"], output_path or CFG["json_full_schema_definitions"])
+    utils.resolve_json_refs(
+        json_schema_path or CFG["json_schema_definitions"], output_path or CFG["json_full_schema_definitions"]
+    )
+
+
+@click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
+@click.option(
+    "--show-checks",
+    default=False,
+    help="Shows the schemas to be checked for each instance file",
+    is_flag=True,
+    show_default=True,
+)
+@main.command()
+def validate_schema(show_pass, show_checks):
+    """
+    Validates instance files against defined schema
+
+    Args:
+        show_pass (bool): show successful schema validations
+        show_checks (bool): show schemas which will be validated against each instance file
+    """
+
+    # Get Dict of Instance File Path and Data
+    instances = get_instance_filenames(
+        file_extension=CFG.get("instance_file_extension", ".yml"),
+        search_directories=CFG.get("instance_search_directories", ["./"]),
+        excluded_filenames=CFG.get("instance_exclude_filenames", []),
+    )
+
+    # Get Dict of Schema File Path and Data
+    schemas = get_schemas(
+        file_extension=CFG.get("schema_file_extension", ".json"),
+        search_directories=CFG.get("schema_search_directories", ["./"]),
+        excluded_filenames=CFG.get("schema_exclude_filenames", []),
+        file_type=CFG.get("schema_file_type", "json"),
+    )
+
+    # Get Mapping of Instance to Schema
+    instance_file_to_schemas_mapping = get_instance_schema_mapping(
+        schemas=schemas, instances=instances, schema_mapping=CFG.get("schema_mapping")
+    )
+
+    if show_checks:
+        print("Instance File                                     Schema")
+        print("-" * 80)
+        for instance_file, schema in instance_file_to_schemas_mapping.items():
+            print(f"{instance_file:50} {schema}")
+        sys.exit(0)
+
+    check_schemas_exist(schemas, instance_file_to_schemas_mapping)
+
+    validate_instances(
+        schemas=schemas,
+        instances=instances,
+        instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
+        show_pass=show_pass,
+    )
+
+
+@click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
+@click.option(
+    "--show-checks",
+    default=False,
+    help="Shows the schemas to be checked for each instance file",
+    is_flag=True,
+    show_default=True,
+)
+@main.command()
+def check_schemas(show_pass, show_checks):
+    """
+    Self validates that the defined schema files are compliant with draft7
+
+    Args:
+        show_pass (bool): show successful schema validations
+        show_checks (bool): show schemas which will be validated against each instance file
+    """
+
+    # Get Dict of Schema File Path and Data
+    instances = get_instance_filenames(
+        file_extension=CFG.get("schema_file_extension", ".json"),
+        search_directories=CFG.get("schema_search_directories", ["./"]),
+        excluded_filenames=CFG.get("schema_exclude_filenames", []),
+    )
+
+    v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
+    v7schema = json.loads(v7data.decode("utf-8"))
+
+    schemas = {v7schema["$id"]: v7schema}
+
+    # Get Mapping of Instance to Schema
+    instance_file_to_schemas_mapping = {x: ["http://json-schema.org/draft-07/schema#"] for x in instances}
+
+    check_schemas_exist(schemas, instance_file_to_schemas_mapping)
+
+    if show_checks:
+        print("Instance File                                     Schema")
+        print("-" * 80)
+        for instance_file, schema in instance_file_to_schemas_mapping.items():
+            print(f"{instance_file:50} {schema}")
+        sys.exit(0)
+
+    validate_instances(
+        schemas=schemas,
+        instances=instances,
+        instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
+        show_pass=show_pass,
+    )
+
 
 # def validate(context, schema, vars_dir=None, hosts=None):
 #     """
@@ -346,16 +396,11 @@ def resolve_json_refs(
 #         cmd += f" --hosts={hosts}"
 #     context.run(f"{cmd} -vv", echo=True)
 
+
 @main.command()
+@click.option("--schema", "-s", help=" The name of the schema to validate against.", required=True)
 @click.option(
-    "--schema", "-s",
-    help=" The name of the schema to validate against.",
-    required=True
-)
-@click.option(
-    "--mock", "-m", "mock_file",
-    help="The name of the mock file to view the error attributes.",
-    required=True
+    "--mock", "-m", "mock_file", help="The name of the mock file to view the error attributes.", required=True
 )
 def view_validation_error(schema, mock):
     """
@@ -387,7 +432,7 @@ def view_validation_error(schema, mock):
     """
     schema_root_dir = os.path.realpath(CFG["json_schema_path"])
     schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-    mock_file = f"tests/mocks/{schema}/invalid/{mock_file}.json"
+    mock_file = f"tests/mocks/{schema}/invalid/{mock}.json"
 
     validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
     error_attributes = utils.generate_validation_error_attributes(mock_file, validator)
@@ -395,23 +440,19 @@ def view_validation_error(schema, mock):
     for attr, value in error_attributes.items():
         print(f"{attr:20} = {value}")
 
+
 @main.command()
 @click.option(
-    "--output-path", "-o",
-    help="The path to store the variable files.", 
+    "--output-path", "-o", help="The path to store the variable files.",
 )
 @click.option(
-    "--schema-path", "-s",
-    help="The path to JSONSchema schema definitions.", 
+    "--schema-path", "-s", help="The path to JSONSchema schema definitions.",
 )
 @click.option(
-    "--ansible-inventory", "-i", "inventory_path",
-    help="The path to ansible inventory.", 
+    "--ansible-inventory", "-i", "inventory_path", help="The path to ansible inventory.",
 )
 def generate_hostvars(
-    output_path,
-    schema_path,
-    inventory_path,
+    output_path, schema_path, inventory_path,
 ):
     """
     Generates ansible variables and creates a file per schema for each host.
@@ -441,16 +482,14 @@ def generate_hostvars(
     """
     os.makedirs(output_path, exist_ok=True)
     utils.generate_hostvars(
-        inventory_path or CFG["inventory_path"], 
-        schema_path or CFG["json_schema_definitions"], 
-        output_path or CFG["device_variables"])
+        inventory_path or CFG["inventory_path"],
+        schema_path or CFG["json_schema_definitions"],
+        output_path or CFG["device_variables"],
+    )
+
 
 @main.command()
-@click.option(
-    "--schema",
-    help="The name of the schema to validate against.",
-    required=True
-)
+@click.option("--schema", help="The name of the schema to validate against.", required=True)
 def generate_invalid_expected(schema):
     """
     Generates expected ValidationError data from mock_file and writes to mock dir.
@@ -473,18 +512,14 @@ def generate_invalid_expected(schema):
         $
     """
     schema_root_dir = os.path.realpath(CFG["json_schema_path"])
-    print(f"schema_root_dir {schema_root_dir}")
+
     schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
     validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
     mock_path = f"tests/mocks/{schema}/invalid"
     for invalid_mock in glob(f"{mock_path}/*.json"):
-        error_attributes = utils.generate_validation_error_attributes(
-            invalid_mock, validator
-        )
+        error_attributes = utils.generate_validation_error_attributes(invalid_mock, validator)
         mock_attributes = {attr: str(error_attributes[attr]) for attr in error_attributes}
-        mock_attributes_formatted = utils.ensure_strings_have_quotes_mapping(
-            mock_attributes
-        )
+        mock_attributes_formatted = utils.ensure_strings_have_quotes_mapping(mock_attributes)
         mock_response = f"{invalid_mock[:-4]}yml"
         print(f"Writing file to {mock_response}")
         with open(mock_response, "w", encoding="utf-8") as fh:
