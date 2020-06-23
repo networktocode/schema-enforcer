@@ -263,6 +263,13 @@ def resolve_json_refs(
 
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
 @click.option(
+    "--strict-properties",
+    default=False,
+    help="Forces a stricter schema check that warns about additional properties",
+    is_flag=True,
+    show_default=True,
+)
+@click.option(
     "--show-checks",
     default=False,
     help="Shows the schemas to be checked for each instance file",
@@ -270,7 +277,7 @@ def resolve_json_refs(
     show_default=True,
 )
 @main.command()
-def validate_schema(show_pass, show_checks):
+def validate_schema(show_pass, show_checks, strict_properties):
     """
     Validates instance files against defined schema
 
@@ -298,6 +305,26 @@ def validate_schema(show_pass, show_checks):
     instance_file_to_schemas_mapping = get_instance_schema_mapping(
         schemas=schemas, instances=instances, schema_mapping=CFG.get("schema_mapping")
     )
+
+    # Use strict compliance with schema, additionalProperties will be reported
+    if strict_properties:
+        for schema in schemas:
+            if schemas[schema].get("additionalProperties", False) != False:
+                print(
+                    f"{schemas[schema]['$id']}: Overriding existing additionalProperties: {schemas[schema]['additionalProperties']}"
+                )
+
+            schemas[schema]["additionalProperties"] = False
+
+            # XXX This should be recursive, e.g. all sub-objects, currently it only goes one level deep, look in jsonschema for utilitiies
+            for p, prop in schemas[schema]["properties"].items():
+                items = prop.get("items", {})
+                if items.get("type") == "object":
+                    if items.get("additionalProperties", False) != False:
+                        print(
+                            f"{schemas[schema]['$id']}: Overriding item {p}.additionalProperties: {items['additionalProperties']}"
+                        )
+                    items["additionalProperties"] = False
 
     if show_checks:
         print("Instance File                                     Schema")
