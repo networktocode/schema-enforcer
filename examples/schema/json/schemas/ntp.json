@@ -14,6 +14,7 @@
             "type": "boolean"
         }
     },
+    "additionalProperties": false,
     "required": [
         "ntp_servers"
     ]

@@ -185,7 +185,7 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
         schema_file_path (str): The path to a schema definition file.
 
     Returns:
-        jsonschema.Validator: A Validator instance with schema loaded with a RefResolver.
+        jsonschema.Validator: A Validator instance with schema loaded with a RefResolver and format_checker.
 
     Example:
         >>> schema_root_dir = "/home/users/admin/network-schema/schema/json"
@@ -196,9 +196,11 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
         >>>
     """
     base_uri = f"file:{schema_root_dir}/".replace("\\", "/")
-    with open(schema_filepath, encoding="utf-8") as fh:
+    with open(os.path.join(schema_root_dir, schema_filepath), encoding="utf-8") as fh:
         schema_definition = json.load(fh)
 
+    # Notes: The Draft7Validator will use the base_uri to resolve any relative references within the loaded schema_defnition
+    # these references must match the full filenames currently, unless we modify the RefResolver to handle other cases.
     validator = Draft7Validator(
         schema_definition,
         format_checker=draft7_format_checker,
@@ -299,7 +301,32 @@ def dump_data_to_json(data, json_path):
         fh.write("\n")
 
 
-def convert_yaml_to_json(yaml_path, json_path):
+def fix_references(data, old_file_ext, new_file_ext, _recursive=False, **kwargs):
+    """
+    Updates any relative $ref so that they point to the new_file_ext for local file resolution
+
+    """
+    try:
+        if not isinstance(data["$ref"], str):
+            raise TypeError
+    except (TypeError, LookupError):
+        pass
+    else:
+        if "://" not in data["$ref"]:
+            data["$ref"] = data["$ref"].replace(old_file_ext, new_file_ext)
+            # re.sub(f"%s{old_file_ext}", new_file_ext, data["$ref"])  # regex needs to handle #fragmenets
+        return data
+
+    # Recurse through the data and replace any relative $ref file extensions
+    if isinstance(data, Mapping):
+        data = type(data)((k, fix_references(v, old_file_ext, new_file_ext, _recursive=True)) for k, v in data.items())
+    elif isinstance(data, Sequence) and not isinstance(data, str):
+        data = type(data)(fix_references(v, old_file_ext, new_file_ext) for i, v in enumerate(data))
+
+    return data
+
+
+def convert_yaml_to_json(yaml_path, json_path, silent=False):
     """
     Reads YAML files and writes them to JSON files.
 
@@ -326,11 +353,13 @@ def convert_yaml_to_json(yaml_path, json_path):
         with open(yaml_file, encoding="utf-8") as fh:
             yaml_data = YAML_HANDLER.load(fh)
 
-        print(f"Converting {yaml_file} -> {json_file}")
+        yaml_data = fix_references(data=yaml_data, old_file_ext=".yml", new_file_ext=".json")
+        if not silent:
+            print(f"Converting {yaml_file} -> {json_file}")
         dump_data_to_json(yaml_data, json_file)
 
 
-def convert_json_to_yaml(json_path, yaml_path):
+def convert_json_to_yaml(json_path, yaml_path, silent=False):
     """
     Reads JSON files and writes them to YAML files.
 
@@ -357,7 +386,9 @@ def convert_json_to_yaml(json_path, yaml_path):
         with open(json_file, encoding="utf-8") as fh:
             json_data = json.load(fh)
 
-        print(f"Converting {json_file} -> {yaml_file}")
+        json_data = fix_references(data=json_data, old_file_ext=".json", new_file_ext=".yml")
+        if not silent:
+            print(f"Converting {json_file} -> {yaml_file}")
         dump_data_to_yaml(json_data, yaml_file)
 
 
@@ -516,7 +547,7 @@ def generate_hostvars(inventory_path, schema_path, output_path):
         dump_schema_vars(output_dir, schema_properties, host_vars)
 
 
-def find_files(file_extension, search_directories, excluded_filenames):
+def find_files(file_extension, search_directories, excluded_filenames, return_dir=False):
     """
     Walk provided search directories and return the full filename for all files matching file_extension except the excluded_filenames
     """
@@ -547,7 +578,10 @@ def find_files(file_extension, search_directories, excluded_filenames):
             for file in files:
                 if file.endswith(file_extension):
                     if file not in excluded_filenames:
-                        filenames.append(os.path.join(root, file))
+                        if return_dir:
+                            filenames.append((root, file))
+                        else:
+                            filenames.append(os.path.join(root, file))
 
     return filenames
 
@@ -562,6 +596,10 @@ def load_file(filename, file_type=None):
     """
     if not file_type:
         file_type = "json" if filename.endswith(".json") else "yaml"
+    # When called from JsonRef, filename will contain a URI not just a local file,
+    # but this function only handles local files. See jsonref.JsonLoader for a fuller implementation
+    if filename.startswith("file:///"):
+        filename = filename.replace("file://", "")
 
     handler = YAML_HANDLER if file_type == "yaml" else json
     with open(filename, "r") as f:
@@ -593,5 +631,50 @@ def load_data(file_extension, search_directories, excluded_filenames, file_type=
         file_data = load_file(filename, file_type)
         key = file_data.get(data_key, filename)
         data.update({key: file_data})
+
+    return data
+
+
+def load_schema_info(file_extension, search_directories, excluded_filenames, file_type=None, data_key="$id"):
+    """
+    Walk a directory and obtain a list of all files matching file_extension except the excluded_filenames
+
+    If file_type is not specified, yaml is assumed unless file_extension matches json
+
+    A dictionary keyed on data_key of objects is returned that includes:
+    {
+        schema_id: "The schema ID as defined in the $id of the schema",
+        schema_file: "The relative path of the filename that was loaded",
+        schema_root: "The root path of the schema_filename",
+        schema: "The schema as a JsonRef object so references can be resolved properly"
+    }
+
+    The key of the parent dictionary can be specified by the data_key, but defaults to '$id',
+    data_key=None would use the filename as the key.
+
+    """
+    data = {}
+
+    # Find all of the matching files and attempt to load the data
+    if not file_type:
+        file_type = "json" if "json" in file_extension else "yaml"
+
+    if file_type not in ("json", "yaml"):
+        raise UserWarning("Invalid file_type specified, must be json or yaml")
+
+    for root, filename in find_files(
+        file_extension=file_extension,
+        search_directories=search_directories,
+        excluded_filenames=excluded_filenames,
+        return_dir=True,
+    ):
+        root = os.path.realpath(root)
+        base_uri = f"file:{root}/"
+        file_data = load_file(os.path.join(root, filename), file_type)
+        key = file_data.get(data_key, filename)
+        schema = jsonref.JsonRef.replace_refs(file_data, base_uri=base_uri, jsonschema=True, loader=load_file)
+        data.update(
+            {key: {"schema_id": file_data.get("$id"), "schema_file": filename, "schema_root": root, "schema": schema}}
+        )
 
     return data

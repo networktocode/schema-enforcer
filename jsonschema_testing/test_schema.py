@@ -9,7 +9,6 @@ from collections import defaultdict
 
 # Third Party Imports
 import click
-import toml
 from termcolor import colored
 from jsonschema import Draft7Validator
 from ruamel.yaml import YAML
@@ -120,7 +119,11 @@ def validate_instances(schemas, instances, instance_file_to_schemas_mapping, sho
 
     error_exists = False
 
-    for schema_file, schema in schemas.items():
+    for id, schema_info in schemas.items():
+        schema_file = schema_info["schema_file"]
+        schema_root = schema_info["schema_root"]
+        schema_id = schema_info["schema_id"]
+        schema = schema_info["schema"]
         config_validator = Draft7Validator(schema)
 
         for instance_file in instances:
@@ -128,8 +131,8 @@ def validate_instances(schemas, instances, instance_file_to_schemas_mapping, sho
             instance_data = utils.load_file(instance_file)
 
             # Get schemas which should be checked for this instance file. If the instance should not
-            # be checked for adherence to this schema, don't skip checking it.
-            if not schema["$id"] in instance_file_to_schemas_mapping.get(instance_file):
+            # be checked for adherence to this schema, skip checking it.
+            if not schema_id in instance_file_to_schemas_mapping.get(instance_file):
                 continue
 
             error_exists_inner_loop = False
@@ -172,7 +175,9 @@ def main():
 @main.command()
 @click.option("--yaml-path", help="The root directory containing YAML files to convert to JSON.")
 @click.option("--json-path", help="The root directory to build JSON files from YAML files in ``yaml_path``.")
-def convert_yaml_to_json(yaml_path, json_path):
+@click.option("--yaml-def", help="The root directory containing defintions to convert to JSON")
+@click.option("--json-def", help="The root directory to build JSON files from YAML files in ``yaml_def``.")
+def convert_yaml_to_json(yaml_path, json_path, yaml_def, json_def):
     """
     Reads YAML files and writes them to JSON files.
 
@@ -197,12 +202,15 @@ def convert_yaml_to_json(yaml_path, json_path):
         $
     """
     utils.convert_yaml_to_json(yaml_path or CFG["yaml_schema_path"], json_path or CFG["json_schema_path"])
+    utils.convert_yaml_to_json(yaml_def or CFG["yaml_schema_definitions"], json_def or CFG["json_schema_definitions"])
 
 
 @main.command()
 @click.option("--json-path", help="The root directory containing JSON files to convert to YAML.")
 @click.option("--yaml-path", help="The root directory to build YAML files from JSON files in ``json_path``.")
-def convert_json_to_yaml(json_path, yaml_path):
+@click.option("--json-def", help="The root directory containing defintions to convert to YAML")
+@click.option("--yaml-def", help="The root directory to build YAML files from JSON files in ``json_def``.")
+def convert_json_to_yaml(json_path, yaml_path, json_def, yaml_def):
     """
     Reads JSON files and writes them to YAML files.
 
@@ -227,6 +235,7 @@ def convert_json_to_yaml(json_path, yaml_path):
         $
     """
     utils.convert_json_to_yaml(json_path or CFG["json_schema_path"], yaml_path or CFG["yaml_schema_path"])
+    utils.convert_json_to_yaml(json_def or CFG["json_schema_definitions"], yaml_def or CFG["yaml_schema_definitions"])
 
 
 @main.command()
@@ -293,8 +302,8 @@ def validate_schema(show_pass, show_checks, strict_properties):
         excluded_filenames=CFG.get("instance_exclude_filenames", []),
     )
 
-    # Get Dict of Schema File Path and Data
-    schemas = get_schemas(
+    # Load schema info
+    schemas = utils.load_schema_info(
         file_extension=CFG.get("schema_file_extension", ".json"),
         search_directories=CFG.get("schema_search_directories", ["./"]),
         excluded_filenames=CFG.get("schema_exclude_filenames", []),
@@ -317,7 +326,7 @@ def validate_schema(show_pass, show_checks, strict_properties):
             schemas[schema]["additionalProperties"] = False
 
             # XXX This should be recursive, e.g. all sub-objects, currently it only goes one level deep, look in jsonschema for utilitiies
-            for p, prop in schemas[schema]["properties"].items():
+            for p, prop in schemas[schema].get("properties", {}).items():
                 items = prop.get("items", {})
                 if items.get("type") == "object":
                     if items.get("additionalProperties", False) != False:
@@ -371,7 +380,14 @@ def check_schemas(show_pass, show_checks):
     v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
     v7schema = json.loads(v7data.decode("utf-8"))
 
-    schemas = {v7schema["$id"]: v7schema}
+    schemas = {
+        v7schema["$id"]: {
+            "schema_id": v7schema["$id"],
+            "schema_file": "draft7.json",
+            "schema_root": "jsonschema",
+            "schema": v7schema,
+        }
+    }
 
     # Get Mapping of Instance to Schema
     instance_file_to_schemas_mapping = {x: ["http://json-schema.org/draft-07/schema#"] for x in instances}
@@ -385,6 +401,7 @@ def check_schemas(show_pass, show_checks):
             print(f"{instance_file:50} {schema}")
         sys.exit(0)
 
+    # XXX Shoud we be using validator_for and check_schema() here instead?
     validate_instances(
         schemas=schemas,
         instances=instances,

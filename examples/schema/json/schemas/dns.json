@@ -8,6 +8,7 @@
             "$ref": "../definitions/arrays/ip.json#ipv4_hosts"
         }
     },
+    "additionalProperties": false,
     "required": [
         "dns_servers"
     ]
