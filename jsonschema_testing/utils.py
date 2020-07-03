@@ -558,7 +558,7 @@ def find_files(file_extension, search_directories, excluded_filenames, return_di
     filenames = []
     for search_directory in search_directories:
         # if the search_directory is a simple name without a / we try to find it as a python package looking in the {pkg}/schemas/ dir
-        if not "/" in search_directory:
+        if "/" not in search_directory:
             try:
                 dir = os.path.join(
                     os.path.dirname(importlib.machinery.PathFinder().find_module(search_directory).get_filename()),

@@ -132,7 +132,7 @@ def validate_instances(schemas, instances, instance_file_to_schemas_mapping, sho
 
             # Get schemas which should be checked for this instance file. If the instance should not
             # be checked for adherence to this schema, skip checking it.
-            if not schema_id in instance_file_to_schemas_mapping.get(instance_file):
+            if schema_id not in instance_file_to_schemas_mapping.get(instance_file):
                 continue
 
             error_exists_inner_loop = False
@@ -318,7 +318,7 @@ def validate_schema(show_pass, show_checks, strict_properties):
     # Use strict compliance with schema, additionalProperties will be reported
     if strict_properties:
         for schema in schemas:
-            if schemas[schema].get("additionalProperties", False) != False:
+            if schemas[schema].get("additionalProperties", False) is not False:
                 print(
                     f"{schemas[schema]['$id']}: Overriding existing additionalProperties: {schemas[schema]['additionalProperties']}"
                 )
@@ -329,7 +329,7 @@ def validate_schema(show_pass, show_checks, strict_properties):
             for p, prop in schemas[schema].get("properties", {}).items():
                 items = prop.get("items", {})
                 if items.get("type") == "object":
-                    if items.get("additionalProperties", False) != False:
+                    if items.get("additionalProperties", False) is not False:
                         print(
                             f"{schemas[schema]['$id']}: Overriding item {p}.additionalProperties: {items['additionalProperties']}"
                         )
