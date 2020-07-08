@@ -208,7 +208,11 @@ def convert_yaml_to_json(yaml_path, json_path, yaml_def, json_def):
         $
     """
     utils.convert_yaml_to_json(yaml_path or CFG["yaml_schema_path"], json_path or CFG["json_schema_path"])
-    utils.convert_yaml_to_json(yaml_def or CFG["yaml_schema_definitions"], json_def or CFG["json_schema_definitions"])
+
+    def_source = yaml_def or CFG["yaml_schema_definitions"]
+    def_dest = json_def or CFG["json_schema_definitions"]
+    if def_source and def_dest:
+        utils.convert_yaml_to_json(def_source, def_dest)
 
 
 @main.command()
@@ -241,7 +245,11 @@ def convert_json_to_yaml(json_path, yaml_path, json_def, yaml_def):
         $
     """
     utils.convert_json_to_yaml(json_path or CFG["json_schema_path"], yaml_path or CFG["yaml_schema_path"])
-    utils.convert_json_to_yaml(json_def or CFG["json_schema_definitions"], yaml_def or CFG["yaml_schema_definitions"])
+
+    def_dest = yaml_def or CFG["yaml_schema_definitions"]
+    def_source = json_def or CFG["json_schema_definitions"]
+    if def_source and def_dest:
+        utils.convert_json_to_yaml(def_source, def_dest)
 
 
 @main.command()
