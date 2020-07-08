@@ -76,6 +76,12 @@ def get_instance_schema_mapping(schemas, instances, schema_mapping):
     # Dict to return matching schemas
     instance_schema_mapping = defaultdict(list)
 
+    if not isinstance(schema_mapping, dict):
+        raise TypeError
+
+    if not isinstance(instances, list):
+        raise TypeError
+
     # Map each instance to a set of schemas to validate the instance data against.
     for instance_filename in instances:
         for filepattern, schema_ids in schema_mapping.items():

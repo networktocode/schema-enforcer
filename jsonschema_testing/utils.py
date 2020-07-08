@@ -19,15 +19,45 @@ from pathlib import Path
 from termcolor import colored
 import sys
 import importlib
+from collections import defaultdict
 
 
 YAML_HANDLER = YAML()
 YAML_HANDLER.indent(sequence=4, offset=2)
 YAML_HANDLER.explicit_start = True
 VALIDATION_ERROR_ATTRS = ["message", "schema_path", "validator", "validator_value"]
+CONFIG_DEFAULTS = {
+    "schema_exclude_filenames": [],
+    "schema_search_directories": ["schema/schemas/"],
+    "schema_file_type": "yaml",
+    "schema_file_extension": ".yml",
+    "instance_exclude_filenames": [".yamllint.yml", ".travis.yml"],
+    "instance_search_directories": ["hostvars/"],
+    "instance_file_type": "yaml",
+    "instance_file_extension": ".yml",
+    "yaml_schema_path": "schema/yaml/schemas/",
+    "json_schema_path": "schema/json/schemas/",
+    # Define location to place schema definitions after resolving ``$ref``
+    "json_schema_definitions": "schema/json/definitions",
+    "yaml_schema_definitions": "schema/yaml/definitions",
+    "json_full_schema_definitions": "schema/json/full_schemas",
+    # Define network device variables location
+    "device_variables": "hostvars/",
+    # Define path to inventory
+    "inventory_path": "inventory/",
+    "schema_mapping": {},
+}
 
 
-def load_config(tool_name="jsonschema_testing"):
+def warn(msg):
+    print(colored("WARNING |", "yellow"), msg)
+
+
+def error(msg):
+    print(colored("  ERROR |", "red"), msg)
+
+
+def load_config(tool_name="jsonschema_testing", defaults={}):
     """
     Loads configuration files and merges values based on precedence.
 
@@ -38,30 +68,31 @@ def load_config(tool_name="jsonschema_testing"):
     """
     # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
     # TODO should we search parent folders for pyproject.toml ?
+
+    config = defaultdict()
+    config.update(CONFIG_DEFAULTS)
+    config.update(defaults)
+
     try:
         config_string = Path("pyproject.toml").read_text()
-        config = toml.loads(config_string)
+        tomlcfg = toml.loads(config_string)
+        config.update(tomlcfg["tool"][tool_name])
+    except KeyError:
+        warn(f"[tool.{tool_name}] section is not defined in pyproject.toml,")
+        warn(f"Please see {tool_name}/example/ folder for sample of this section")
+        warn(f"Using built-in defaults for [tool.{tool_name}]")
+
     except (FileNotFoundError, UnboundLocalError):
-        print(
-            colored(
-                f"ERROR | Could not find pyproject.toml in the directory from which the script is being executed. \n"
-                f"ERROR | Script is being executed from {os.getcwd()}",
-                "red",
-            )
-        )
-        sys.exit(1)
+        warn(f"Could not find pyproject.toml in the current working directory.")
+        warn(f"Script is being executed from CWD: {os.getcwd()}")
+        warn(f"Using built-in defaults for [tool.{tool_name}]")
 
-    if tool_name not in config.get("tool"):
-        print(
-            colored(
-                f"ERROR | [tool.{tool_name} section is not defined in pyproject.toml,\n"
-                f"ERROR | Please see example/ folder for sample of this section",
-                "red",
-            )
+    if not len(config["schema_mapping"]):
+        warn(
+            f"[tool.{tool_name}.schema_mapping] is not defined, instances must be tagged to apply schemas to instances"
         )
-        sys.exit(1)
 
-    return config["tool"][tool_name]
+    return config
 
 
 def get_path_and_filename(filepath):
@@ -565,11 +596,7 @@ def find_files(file_extension, search_directories, excluded_filenames, return_di
                     "schemas",
                 )
             except AttributeError:
-                print(
-                    colored(f"ERROR | Failed to find python package", "red"),
-                    colored(search_directory, "yellow"),
-                    colored(f"for loading {search_directory}/schemas/", "red"),
-                )
+                error(f"Failed to find python package `{search_directory}' for loading {search_directory}/schemas/")
                 continue
 
             search_directory = dir
