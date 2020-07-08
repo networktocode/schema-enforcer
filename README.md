@@ -386,6 +386,29 @@ PASS | [SCHEMA] syslog_servers | [FILE] hostvars/usa-nyc-rt1/syslog.yml
 ALL SCHEMA VALIDATION CHECKS PASSED
 ```
 
+The --strict-properties flag allows you to quickly override the additionalProperties attribute of schemas and check for any properties that are not defined in the schema:
+
+```
+$ test-schema validate-schema --show-pass --strict-properties
+FAIL | [ERROR] Additional properties are not allowed ('something' was unexpected) [FILE] hostvars/eng-london-rt1/ntp.yml [SCHEMA] ntp.yml
+PASS | [SCHEMA] dns.yml | [FILE] hostvars/eng-london-rt1/dns.yml
+```
+
+In the above case, the ntp.yml contained "something: extra" as shown below:
+```
+---
+ntp_servers:
+  - address: "10.6.6.6"
+    name: "ntp1"
+  - address: "10.7.7.7"
+    name: "ntp1"
+    vrf: 123
+    extra_item: else
+ntp_authentication: False
+ntp_logging: True
+something: extra
+```
+
 -------------------
 
 ## Historic usage notes below, some items need to be reviewed/reimplemented in new CLI.
