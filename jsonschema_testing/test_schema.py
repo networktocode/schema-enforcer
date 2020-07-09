@@ -14,6 +14,7 @@ from jsonschema import Draft7Validator
 from ruamel.yaml import YAML
 
 from jsonschema_testing import utils
+from jsonschema_testing.utils import warn, error
 import pkgutil
 import re
 
@@ -288,9 +289,9 @@ def resolve_json_refs(
 
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
 @click.option(
-    "--strict-properties",
+    "--strict",
     default=False,
-    help="Forces a stricter schema check that warns about additional properties",
+    help="Forces a stricter schema check that warns about unexpected additional properties",
     is_flag=True,
     show_default=True,
 )
@@ -302,7 +303,7 @@ def resolve_json_refs(
     show_default=True,
 )
 @main.command()
-def validate_schema(show_pass, show_checks, strict_properties):
+def validate_schema(show_pass, show_checks, strict):
     """
     Validates instance files against defined schema
 
@@ -332,22 +333,22 @@ def validate_schema(show_pass, show_checks, strict_properties):
     )
 
     # Use strict compliance with schema, additionalProperties will be reported
-    if strict_properties:
-        for schema in schemas:
-            if schemas[schema].get("additionalProperties", False) is not False:
-                print(
-                    f"{schemas[schema]['$id']}: Overriding existing additionalProperties: {schemas[schema]['additionalProperties']}"
-                )
+    if strict:
+        for schemaid, schemainfo in schemas.items():
+            schema = schemainfo["schema"]
+            if schema.get("additionalProperties", False) is not False:
+                print(f"{schema['$id']}: Overriding existing additionalProperties: {schema['additionalProperties']}")
 
-            schemas[schema]["additionalProperties"] = False
+            schema["additionalProperties"] = False
 
             # XXX This should be recursive, e.g. all sub-objects, currently it only goes one level deep, look in jsonschema for utilitiies
-            for p, prop in schemas[schema].get("properties", {}).items():
+            for p, prop in schema.get("properties", {}).items():
                 items = prop.get("items", {})
                 if items.get("type") == "object":
+                    print(f"Looking at {p}:  {items}")
                     if items.get("additionalProperties", False) is not False:
                         print(
-                            f"{schemas[schema]['$id']}: Overriding item {p}.additionalProperties: {items['additionalProperties']}"
+                            f"{schema['$id']}: Overriding item {p}.additionalProperties: {items['additionalProperties']}"
                         )
                     items["additionalProperties"] = False
 

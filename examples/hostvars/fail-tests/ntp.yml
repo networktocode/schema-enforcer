@@ -1,0 +1,13 @@
+# jsonschema: schemas/ntp 
+# Future: , http://networktocode.com/schemas/core/ntp
+---
+ntp_servers:
+  - address: "10.6.6.6"
+    name: "ntp1"
+  - address: "10.7.7.7"
+    name: "ntp1"
+    vrf: 123
+    test_extra_item_property: "This should trigger when --strict is used"
+ntp_authentication: False
+ntp_logging: True
+test_extra_property: "This extra property will trigger when --strict is used"
