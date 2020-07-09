@@ -10,6 +10,7 @@ properties:
     type: "boolean"
   ntp_logging:
     type: "boolean"
+additionalProperties: false
 required:
   - "ntp_servers"
 something: "extra"
