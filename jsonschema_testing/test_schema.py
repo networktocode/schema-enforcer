@@ -345,7 +345,6 @@ def validate_schema(show_pass, show_checks, strict):
             for p, prop in schema.get("properties", {}).items():
                 items = prop.get("items", {})
                 if items.get("type") == "object":
-                    print(f"Looking at {p}:  {items}")
                     if items.get("additionalProperties", False) is not False:
                         print(
                             f"{schema['$id']}: Overriding item {p}.additionalProperties: {items['additionalProperties']}"
