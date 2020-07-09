@@ -77,9 +77,11 @@ def get_instance_schema_mapping(schemas, instances, schema_mapping):
     instance_schema_mapping = defaultdict(list)
 
     if not isinstance(schema_mapping, dict):
+        error("Expected schema_mapping to be a dictionary")
         raise TypeError
 
     if not isinstance(instances, list):
+        errror("Expected instances to be a list of instance filenames")
         raise TypeError
 
     # Map each instance to a set of schemas to validate the instance data against.
