@@ -25,25 +25,25 @@ SCHEMA_TEST_DIR = "tests"
 CFG = utils.load_config()
 
 
-def get_instance_filenames(file_extension, search_directories, excluded_filenames):
+def get_instance_filenames(file_extensions, search_directories, excluded_filenames):
     """
     Returns a list of filenames for the instances that we are going to validate
     """
 
     data = utils.find_files(
-        file_extension=file_extension, search_directories=search_directories, excluded_filenames=excluded_filenames
+        file_extensions=file_extensions, search_directories=search_directories, excluded_filenames=excluded_filenames
     )
 
     return data
 
 
-def get_schemas(file_extension, search_directories, excluded_filenames, file_type):
+def get_schemas(file_extensions, search_directories, excluded_filenames, file_type):
     """
     Returns a dictionary of schema IDs and schema data
     """
 
     data = utils.load_data(
-        file_extension=file_extension,
+        file_extensions=file_extensions,
         search_directories=search_directories,
         excluded_filenames=excluded_filenames,
         file_type=file_type,
@@ -314,18 +314,25 @@ def validate_schema(show_pass, show_checks, strict):
 
     # Get Dict of Instance File Path and Data
     instances = get_instance_filenames(
-        file_extension=CFG.get("instance_file_extension", ".yml"),
+        file_extensions=CFG.get("instance_file_extensions"),
         search_directories=CFG.get("instance_search_directories", ["./"]),
         excluded_filenames=CFG.get("instance_exclude_filenames", []),
     )
 
+    if not instances:
+        error("No instance files were found to validate")
+        sys.exit(1)
+
     # Load schema info
     schemas = utils.load_schema_info(
-        file_extension=CFG.get("schema_file_extension", ".json"),
+        file_extensions=CFG.get("schema_file_extensions"),
         search_directories=CFG.get("schema_search_directories", ["./"]),
         excluded_filenames=CFG.get("schema_exclude_filenames", []),
-        file_type=CFG.get("schema_file_type", "json"),
     )
+
+    if not schemas:
+        error("No schemas were loaded")
+        sys.exit(1)
 
     # Get Mapping of Instance to Schema
     instance_file_to_schemas_mapping = get_instance_schema_mapping(
@@ -388,7 +395,7 @@ def check_schemas(show_pass, show_checks):
 
     # Get Dict of Schema File Path and Data
     instances = get_instance_filenames(
-        file_extension=CFG.get("schema_file_extension", ".json"),
+        file_extensions=CFG.get("schema_file_extensions"),
         search_directories=CFG.get("schema_search_directories", ["./"]),
         excluded_filenames=CFG.get("schema_exclude_filenames", []),
     )

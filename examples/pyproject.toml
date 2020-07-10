@@ -1,14 +1,10 @@
 [tool.jsonschema_testing]
-schema_file_extension = ".json"
 schema_exclude_filenames = []
 schema_search_directories = ["schema/schemas/"]
 # schema_search_directories = ["/site/cfg/schemas/", "ntc_schemas_core"]  # ntc_schemas_.. (without /) will be found as a python package
 
 instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
-schema_file_type = "json"
 instance_search_directories = ["hostvars/"]
-instance_file_type = "yaml"
-instance_file_extension = ".yml"
 
 yaml_schema_path = "schema/yaml/schemas/"
 json_schema_path = "schema/json/schemas/"
@@ -27,6 +23,7 @@ inventory_path = "examples/inventory"
 
 [tool.jsonschema_testing.schema_mapping]
 # Map instance filename to schema filename
+#'dns.yml' = ['schemas/dns_servers', 'http://networktocode.com/schemas/core/dns']
 'dns.yml' = ['schemas/dns_servers']
-# testing tag.. 'ntp.yml' = ["schemas/ntp"]
+# testing tag.. 'ntp.yml' = ["schemas/ntp", "missing"]
 'syslog.yml' = ["schemas/syslog_servers"]

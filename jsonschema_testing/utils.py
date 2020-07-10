@@ -28,12 +28,10 @@ VALIDATION_ERROR_ATTRS = ["message", "schema_path", "validator", "validator_valu
 CONFIG_DEFAULTS = {
     "schema_exclude_filenames": [],
     "schema_search_directories": ["schema/schemas/"],
-    "schema_file_type": "yaml",
-    "schema_file_extension": ".yml",
+    "schema_file_extensions": [".json", ".yml"],
     "instance_exclude_filenames": [".yamllint.yml", ".travis.yml"],
     "instance_search_directories": ["hostvars/"],
-    "instance_file_type": "yaml",
-    "instance_file_extension": ".yml",
+    "instance_file_extensions": [".json", ".yml"],
     "yaml_schema_path": "schema/yaml/schemas/",
     "json_schema_path": "schema/json/schemas/",
     # Define location to place schema definitions after resolving ``$ref``
@@ -577,9 +575,9 @@ def generate_hostvars(inventory_path, schema_path, output_path):
         dump_schema_vars(output_dir, schema_properties, host_vars)
 
 
-def find_files(file_extension, search_directories, excluded_filenames, return_dir=False):
+def find_files(file_extensions, search_directories, excluded_filenames, return_dir=False):
     """
-    Walk provided search directories and return the full filename for all files matching file_extension except the excluded_filenames
+    Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames
     """
 
     if not isinstance(search_directories, list):
@@ -602,7 +600,8 @@ def find_files(file_extension, search_directories, excluded_filenames, return_di
 
         for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
             for file in files:
-                if file.endswith(file_extension):
+                _, ext = os.path.splitext(file)
+                if ext in file_extensions:
                     if file not in excluded_filenames:
                         if return_dir:
                             filenames.append((root, file))
@@ -622,6 +621,7 @@ def load_file(filename, file_type=None):
     """
     if not file_type:
         file_type = "json" if filename.endswith(".json") else "yaml"
+
     # When called from JsonRef, filename will contain a URI not just a local file,
     # but this function only handles local files. See jsonref.JsonLoader for a fuller implementation
     if filename.startswith("file:///"):
@@ -634,7 +634,7 @@ def load_file(filename, file_type=None):
     return file_data
 
 
-def load_data(file_extension, search_directories, excluded_filenames, file_type=None, data_key=None):
+def load_data(file_extensions, search_directories, excluded_filenames, file_type=None, data_key=None):
     """
     Walk a directory and load all files matching file_extension except the excluded_filenames
 
@@ -645,14 +645,8 @@ def load_data(file_extension, search_directories, excluded_filenames, file_type=
     data = {}
 
     # Find all of the matching files and attempt to load the data
-    if not file_type:
-        file_type = "json" if "json" in file_extension else "yaml"
-
-    if file_type not in ("json", "yaml"):
-        raise UserWarning("Invalid file_type specified, must be json or yaml")
-
     for filename in find_files(
-        file_extension=file_extension, search_directories=search_directories, excluded_filenames=excluded_filenames
+        file_extension=file_extensions, search_directories=search_directories, excluded_filenames=excluded_filenames
     ):
         file_data = load_file(filename, file_type)
         key = file_data.get(data_key, filename)
@@ -661,7 +655,7 @@ def load_data(file_extension, search_directories, excluded_filenames, file_type=
     return data
 
 
-def load_schema_info(file_extension, search_directories, excluded_filenames, file_type=None, data_key="$id"):
+def load_schema_info(file_extensions, search_directories, excluded_filenames, file_type=None, data_key="$id"):
     """
     Walk a directory and obtain a list of all files matching file_extension except the excluded_filenames
 
@@ -682,14 +676,8 @@ def load_schema_info(file_extension, search_directories, excluded_filenames, fil
     data = {}
 
     # Find all of the matching files and attempt to load the data
-    if not file_type:
-        file_type = "json" if "json" in file_extension else "yaml"
-
-    if file_type not in ("json", "yaml"):
-        raise UserWarning("Invalid file_type specified, must be json or yaml")
-
     for root, filename in find_files(
-        file_extension=file_extension,
+        file_extensions=file_extensions,
         search_directories=search_directories,
         excluded_filenames=excluded_filenames,
         return_dir=True,
