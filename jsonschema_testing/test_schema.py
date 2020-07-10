@@ -82,7 +82,7 @@ def get_instance_schema_mapping(schemas, instances, schema_mapping):
         raise TypeError
 
     if not isinstance(instances, list):
-        errror("Expected instances to be a list of instance filenames")
+        error("Expected instances to be a list of instance filenames")
         raise TypeError
 
     # Map each instance to a set of schemas to validate the instance data against.
@@ -146,18 +146,18 @@ def validate_instances(schemas, instances, instance_file_to_schemas_mapping, sho
 
             error_exists_inner_loop = False
 
-            for error in config_validator.iter_errors(instance_data):
-                if len(error.absolute_path) > 0:
+            for err in config_validator.iter_errors(instance_data):
+                if len(err.absolute_path) > 0:
                     print(
-                        colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
+                        colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
                         f" [FILE] {instance_file}"
-                        f" [PROPERTY] {':'.join(str(item) for item in error.absolute_path)}"
+                        f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
                         # f" [SCHEMA] {schema_file.split('/')[-1]}"
                         f" [SCHEMA] {schema_file}"
                     )
-                if len(error.absolute_path) == 0:
+                if len(err.absolute_path) == 0:
                     print(
-                        colored(f"FAIL", "red") + f" | [ERROR] {error.message}"
+                        colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
                         f" [FILE] {instance_file}"
                         # f" [SCHEMA] {schema_file.split('/')[-1]}"
                         f" [SCHEMA] {schema_file}"

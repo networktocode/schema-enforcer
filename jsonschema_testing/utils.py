@@ -17,7 +17,6 @@ from .ansible_inventory import AnsibleInventory
 import toml
 from pathlib import Path
 from termcolor import colored
-import sys
 import importlib
 from collections import defaultdict
 
