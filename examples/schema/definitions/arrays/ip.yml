@@ -2,10 +2,10 @@
 ipv4_networks:
   type: "array"
   items:
-    $ref: "../objects/ip.json#ipv4_network"
+    $ref: "../objects/ip.yml#ipv4_network"
   uniqueItems: true
 ipv4_hosts:
   type: "array"
   items:
-    $ref: "../objects/ip.json#ipv4_host"
+    $ref: "../objects/ip.yml#ipv4_host"
   uniqueItems: true

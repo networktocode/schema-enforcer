@@ -5,9 +5,9 @@ ipv4_network:
     name:
       type: "string"
     network:
-      $ref: "../properties/ip.json#ipv4_address"
+      $ref: "../properties/ip.yml#ipv4_address"
     mask:
-      $ref: "../properties/ip.json#ipv4_cidr"
+      $ref: "../properties/ip.yml#ipv4_cidr"
     vrf:
       type: "string"
   required:
@@ -19,7 +19,7 @@ ipv4_host:
     name:
       type: "string"
     address:
-      $ref: "../properties/ip.json#ipv4_address"
+      $ref: "../properties/ip.yml#ipv4_address"
     vrf:
       type: "string"
   required:

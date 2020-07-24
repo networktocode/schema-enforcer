@@ -5,10 +5,12 @@ description: "NTP Configuration schema."
 type: "object"
 properties:
   ntp_servers:
-    $ref: "../definitions/arrays/ip.json#ipv4_hosts"
+    $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
   ntp_authentication:
     type: "boolean"
   ntp_logging:
     type: "boolean"
+additionalProperties: false
 required:
   - "ntp_servers"
+something: "extra"

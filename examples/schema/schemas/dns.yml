@@ -5,6 +5,6 @@ description: "DNS Server Configuration schema."
 type: "object"
 properties:
   dns_servers:
-    $ref: "../definitions/arrays/ip.json#ipv4_hosts"
+    $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
 required:
   - "dns_servers"
