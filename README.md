@@ -18,13 +18,17 @@ The below examples assume the following `pyproject.toml` file.
 ```yaml
 [tool.jsonschema_testing]
 schema_file_extension = ".json"
-schema_exclude_filenames = []
+schema_file_type = "json"
+
 instance_file_extension = ".yml"
+instance_file_type = "yaml"
+
+schema_exclude_filenames = []
+
 schema_search_directories = ["schema/json/full_schemas/", "schema/lib", "ntc_schemas_core"]  # ntc_schemas_.. (without /) will be found as a python package
 instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
-schema_file_type = "json"
+
 instance_search_directories = ["hostvars/"]
-instance_file_type = "yaml"
 
 yaml_schema_path = "schema/yaml/full_schemas/"
 json_schema_path = "schema/json/full_schemas/"
@@ -41,7 +45,8 @@ inventory_path = "examples/inventory"
 [tool.jsonschema_testing.schema_mapping]
 # Map instance filename to schema filename
 'dns.yml' = ['schemas/dns_servers', 'http://networktocode.com/schemas/core/base']
-'syslog.yml' = ["schemas/syslog_servers"]```
+'syslog.yml' = ["schemas/syslog_servers"]
+```
 
 #### json_schema_path
 

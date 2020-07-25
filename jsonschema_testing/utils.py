@@ -578,6 +578,18 @@ def generate_hostvars(inventory_path, schema_path, output_path):
 def find_files(file_extensions, search_directories, excluded_filenames, return_dir=False):
     """
     Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames
+
+    Args:
+        file_extensions (list, str): The extensions to look for when finding schema files.
+        search_directories (list, str): The list of directories or python package names to search for schema files.
+        excluded_filenames (list, str): Specify any files that should be excluded from importing as schemas (exact matches).
+        file_type (str): the type of file to load (default=None, type is surmized by file extensions)
+        data_key (str): the key into the loaded schema that should be used as the key of the returned dict for each file.  (default '$id')
+
+    Returns:
+        list of string
+        or list of 
+
     """
 
     if not isinstance(search_directories, list):
@@ -697,5 +709,6 @@ def load_schema_info(file_extensions, search_directories, excluded_filenames, fi
         data.update(
             {key: {"schema_id": file_data.get("$id"), "schema_file": filename, "schema_root": root, "schema": schema}}
         )
+        # import pdb; pdb.set_trace()
 
     return data
