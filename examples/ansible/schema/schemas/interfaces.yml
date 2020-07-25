@@ -1,0 +1,12 @@
+
+type: object
+properties:
+  interfaces:
+    type: object
+    patternProperties:
+      ^swp.*$:
+        properties:
+          type:
+            type: string
+          description:
+            type: string

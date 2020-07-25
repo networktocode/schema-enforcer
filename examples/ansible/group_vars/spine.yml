@@ -1,0 +1,10 @@
+
+
+
+
+
+interfaces:
+  swp1:
+    role: uplink
+  swp2:
+    role: uplink
