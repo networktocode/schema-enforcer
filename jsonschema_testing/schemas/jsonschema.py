@@ -1,4 +1,3 @@
-
 import copy
 from jsonschema import (
     Draft7Validator,
@@ -6,19 +5,19 @@ from jsonschema import (
     ValidationError,
 )
 
+
 class JsonSchema:
 
     schematype = "jsonchema"
 
     def __init__(self, schema, filename, root):
-        
+
         self.filename = filename
         self.root = root
         self.data = schema
         self.id = self.data.get("$id")
         self.validator = None
         self.strict_validator = None
-
 
     def get_id(self):
         return self.id
@@ -32,12 +31,11 @@ class JsonSchema:
 
         return validator.iter_errors(data)
 
-
     def __get_validator(self):
 
         if self.validator:
             return self.validator
-        
+
         self.validator = Draft7Validator(self.data)
 
         return self.validator
@@ -46,7 +44,7 @@ class JsonSchema:
 
         if self.strict_validator:
             return self.strict_validator
-        
+
         schema = copy.deepcopy(self.data)
 
         if schema.get("additionalProperties", False) is not False:
@@ -59,9 +57,7 @@ class JsonSchema:
             items = prop.get("items", {})
             if items.get("type") == "object":
                 if items.get("additionalProperties", False) is not False:
-                    print(
-                        f"{schema['$id']}: Overriding item {p}.additionalProperties: {items['additionalProperties']}"
-                    )
+                    print(f"{schema['$id']}: Overriding item {p}.additionalProperties: {items['additionalProperties']}")
                 items["additionalProperties"] = False
 
         self.strict_validator = Draft7Validator(schema)
@@ -78,7 +74,7 @@ class JsonSchema:
     #             # f" [SCHEMA] {schema_file.split('/')[-1]}"
     #             f" [SCHEMA] {schema_id}"
     #         )
-        
+
     #     elif len(err.absolute_path) == 0:
     #         print(
     #             colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
@@ -86,5 +82,3 @@ class JsonSchema:
     #             # f" [SCHEMA] {schema_file.split('/')[-1]}"
     #             f" [SCHEMA] {schema_id}"
     #         )
-
-

@@ -6,8 +6,8 @@ from jsonschema_testing.utils import find_files, load_file
 
 SCHEMA_TAG = "jsonschema"
 
-class InstanceFileManager:
 
+class InstanceFileManager:
     def __init__(self, search_directories, excluded_filenames, schema_mapping):
 
         self.instances = []
@@ -32,7 +32,7 @@ class InstanceFileManager:
 
         print("Instance File                                     Schema")
         print("-" * 80)
-        
+
         for instance in self.instances:
             filepath = f"{instance.path}/{instance.filename}"
             print(f"{filepath:50} {instance.matches}")
@@ -41,9 +41,7 @@ class InstanceFileManager:
         # sys.exit(0)
 
 
-
 class InstanceFile:
-
     def __init__(self, root, filename, matches=None):
 
         self.data = None
@@ -62,7 +60,7 @@ class InstanceFile:
 
         contents = Path(os.path.join(self.full_path, self.filename)).read_text()
         matches = []
-        
+
         if SCHEMA_TAG in contents:
             line_regexp = r"^#.*{0}:\s*(.*)$".format(SCHEMA_TAG)
             m = re.match(line_regexp, contents, re.MULTILINE)
@@ -87,8 +85,7 @@ class InstanceFile:
 
             if schema_id not in self.matches:
                 continue
-            
-            errs = itertools.chain(errs, schema.validate(self.get_content(), strict))
-        
-        return errs
 
+            errs = itertools.chain(errs, schema.validate(self.get_content(), strict))
+
+        return errs

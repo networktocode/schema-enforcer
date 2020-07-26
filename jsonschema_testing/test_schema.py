@@ -146,15 +146,15 @@ def validate_instances(schema_manager, instance_manager, show_pass=False, strict
         error_exists_inner_loop = False
 
         for err in instance.validate(schema_manager, strict):
-            
+
             if len(err.absolute_path) > 0:
-                    print(
-                        colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-                        f" [FILE] {instance.path}/{instance.filename}"
-                        f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
-                        # f" [SCHEMA] {schema_file.split('/')[-1]}"
-                        f" [SCHEMA] {','.join(instance.matches)}"
-                    )
+                print(
+                    colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
+                    f" [FILE] {instance.path}/{instance.filename}"
+                    f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
+                    # f" [SCHEMA] {schema_file.split('/')[-1]}"
+                    f" [SCHEMA] {','.join(instance.matches)}"
+                )
             if len(err.absolute_path) == 0:
                 print(
                     colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
@@ -162,7 +162,7 @@ def validate_instances(schema_manager, instance_manager, show_pass=False, strict
                     # f" [SCHEMA] {schema_file.split('/')[-1]}"
                     f" [SCHEMA] {','.join(instance.matches)}"
                 )
-                
+
             error_exists = True
             error_exists_inner_loop = True
 
@@ -170,11 +170,13 @@ def validate_instances(schema_manager, instance_manager, show_pass=False, strict
             # print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
             # For now show the fully qualified schema id, in the future if we have our own BASE_URL
             # we could for example strip that off to have a ntc/core/ntp shortened names displayed
-            print(colored(f"PASS", "green") + f" | [SCHEMA] {','.join(instance.matches)} | [FILE] {instance.path}/{instance.filename}")
+            print(
+                colored(f"PASS", "green")
+                + f" | [SCHEMA] {','.join(instance.matches)} | [FILE] {instance.path}/{instance.filename}"
+            )
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
-
 
     # for schema_id, schema in schema_manager.iter_schemas():
     #     # schema_file = schema_info["schema_file"]
@@ -219,7 +221,6 @@ def validate_instances(schema_manager, instance_manager, show_pass=False, strict
     #             # For now show the fully qualified schema id, in the future if we have our own BASE_URL
     #             # we could for example strip that off to have a ntc/core/ntp shortened names displayed
     #             print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file} | [FILE] {instance_file}")
-
 
 
 @click.group()
@@ -388,12 +389,7 @@ def validate_schema(show_pass, show_checks, strict):
         ifm.print_instances_schema_mapping()
         sys.exit(0)
 
-    validate_instances(
-        schema_manager=sm,
-        instance_manager=ifm,
-        show_pass=show_pass,
-        strict=strict
-    )
+    validate_instances(schema_manager=sm, instance_manager=ifm, show_pass=show_pass, strict=strict)
 
 
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
@@ -452,6 +448,7 @@ def check_schemas(show_pass, show_checks):
         instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
         show_pass=show_pass,
     )
+
 
 @main.command()
 @click.option("--schema", "-s", help=" The name of the schema to validate against.", required=True)
@@ -595,7 +592,6 @@ def ansible(inventory, limit):
     Example:
  
     """
-    
 
     # Check if the file is present
     sm = SchemaManager(
@@ -603,7 +599,9 @@ def ansible(inventory, limit):
         excluded_filenames=CFG.get("schema_exclude_filenames", []),
     )
 
-    import pdb; pdb.set_trace()
+    import pdb
+
+    pdb.set_trace()
     # inv = AnsibleInventory(inventory="inventory.ini")
 
     # hosts = inv.get_hosts_containing()
@@ -614,9 +612,6 @@ def ansible(inventory, limit):
     #         continue
 
     #     hostvar = inv.get_host_vars(host)
-
-
-    
 
     # # Load schema info
     # schemas = utils.load_schema_info(
