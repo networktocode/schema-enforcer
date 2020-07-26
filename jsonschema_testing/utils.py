@@ -667,48 +667,50 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
     return data
 
 
-def load_schema_info(file_extensions, search_directories, excluded_filenames, file_type=None, data_key="$id"):
-    """
-    Walk a directory and obtain a list of all files matching file_extension except the excluded_filenames
+# def load_schema_info(file_extensions, search_directories, excluded_filenames, file_type=None, data_key="$id"):
+#     """
+#     Walk a directory and obtain a list of all files matching file_extension except the excluded_filenames
 
-   Args:
-    file_extensions (list, str): The extensions to look for when finding schema files.
-    search_directories (list, str): The list of directories or python package names to search for schema files.
-    excluded_filenames (list, str): Specify any files that should be excluded from importing as schemas (exact matches).
-    file_type (str): the type of file to load (default=None, type is surmized by file extensions)
-    data_key (str): the key into the loaded schema that should be used as the key of the returned dict for each file.  (default '$id')
+#    Args:
+#     file_extensions (list, str): The extensions to look for when finding schema files.
+#     search_directories (list, str): The list of directories or python package names to search for schema files.
+#     excluded_filenames (list, str): Specify any files that should be excluded from importing as schemas (exact matches).
+#     file_type (str): the type of file to load (default=None, type is surmized by file extensions)
+#     data_key (str): the key into the loaded schema that should be used as the key of the returned dict for each file.  (default '$id')
 
-    If file_type is not specified, yaml is assumed unless file_extension matches json
+#     If file_type is not specified, yaml is assumed unless file_extension matches json
 
-    A dictionary keyed on data_key of objects is returned that includes:
-    {
-        schema_id: "The schema ID as defined in the $id of the schema",
-        schema_file: "The relative path of the filename that was loaded",
-        schema_root: "The root path of the schema_filename",
-        schema: "The schema as a JsonRef object so references can be resolved properly"
-    }
+#     A dictionary keyed on data_key of objects is returned that includes:
+#     {
+#         schema_id: "The schema ID as defined in the $id of the schema",
+#         schema_file: "The relative path of the filename that was loaded",
+#         schema_root: "The root path of the schema_filename",
+#         schema: "The schema as a JsonRef object so references can be resolved properly"
+#     }
 
-    The key of the parent dictionary can be specified by the data_key, but defaults to '$id',
-    data_key=None would use the filename as the key.
+#     The key of the parent dictionary can be specified by the data_key, but defaults to '$id',
+#     data_key=None would use the filename as the key.
 
-    """
-    data = {}
+#     """
+#     data = {}
 
-    # Find all of the matching files and attempt to load the data
-    for root, filename in find_files(
-        file_extensions=file_extensions,
-        search_directories=search_directories,
-        excluded_filenames=excluded_filenames,
-        return_dir=True,
-    ):
-        root = os.path.realpath(root)
-        base_uri = f"file:{root}/"
-        file_data = load_file(os.path.join(root, filename), file_type)
-        key = file_data.get(data_key, filename)
-        schema = jsonref.JsonRef.replace_refs(file_data, base_uri=base_uri, jsonschema=True, loader=load_file)
-        data.update(
-            {key: {"schema_id": file_data.get("$id"), "schema_file": filename, "schema_root": root, "schema": schema}}
-        )
-        # import pdb; pdb.set_trace()
+#     # Find all of the matching files and attempt to load the data
+#     for root, filename in find_files(
+#         file_extensions=file_extensions,
+#         search_directories=search_directories,
+#         excluded_filenames=excluded_filenames,
+#         return_dir=True,
+#     ):
+#         root = os.path.realpath(root)
+#         base_uri = f"file:{root}/"
+#         file_data = load_file(os.path.join(root, filename), file_type)
+#         key = file_data.get(data_key, filename)
+#         # import pdb; pdb.set_trace()
+#         schema = jsonref.JsonRef.replace_refs(file_data, base_uri=base_uri, jsonschema=True, loader=load_file)
+#         # import pdb; pdb.set_trace()
+#         data.update(
+#             {key: {"schema_id": file_data.get("$id"), "schema_file": filename, "schema_root": root, "schema": schema}}
+#         )
 
-    return data
+
+#     return data

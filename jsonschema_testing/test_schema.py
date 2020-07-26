@@ -15,6 +15,7 @@ from ruamel.yaml import YAML
 
 from jsonschema_testing import utils
 from .schemas.manager import SchemaManager
+from .instances.file import InstanceFileManager
 from .ansible_inventory import AnsibleInventory
 from .utils import warn, error
 
@@ -29,78 +30,78 @@ SCHEMA_TEST_DIR = "tests"
 CFG = utils.load_config()
 
 
-def get_instance_filenames(file_extensions, search_directories, excluded_filenames):
-    """
-    Returns a list of filenames for the instances that we are going to validate
-    """
+# def get_instance_filenames(file_extensions, search_directories, excluded_filenames):
+#     """
+#     Returns a list of filenames for the instances that we are going to validate
+#     """
 
-    data = utils.find_files(
-        file_extensions=file_extensions, search_directories=search_directories, excluded_filenames=excluded_filenames
-    )
+#     data = utils.find_files(
+#         file_extensions=file_extensions, search_directories=search_directories, excluded_filenames=excluded_filenames
+#     )
 
-    return data
-
-
-def get_schemas(file_extensions, search_directories, excluded_filenames, file_type):
-    """
-    Returns a dictionary of schema IDs and schema data
-    """
-
-    data = utils.load_data(
-        file_extensions=file_extensions,
-        search_directories=search_directories,
-        excluded_filenames=excluded_filenames,
-        file_type=file_type,
-        data_key="$id",
-    )
-
-    return data
+#     return data
 
 
-def map_file_by_tag(filename):
-    contents = Path(filename).read_text()
-    matches = []
-    SCHEMA_TAG = "jsonschema"
+# def get_schemas(file_extensions, search_directories, excluded_filenames, file_type):
+#     """
+#     Returns a dictionary of schema IDs and schema data
+#     """
 
-    if SCHEMA_TAG in contents:
-        line_regexp = r"^#.*{0}:\s*(.*)$".format(SCHEMA_TAG)
-        m = re.match(line_regexp, contents, re.MULTILINE)
-        if m:
-            matches = [x.strip() for x in m.group(1).split(",")]
-            # print(f"{filename} Found schema tag: {matches}")
+#     data = utils.load_data(
+#         file_extensions=file_extensions,
+#         search_directories=search_directories,
+#         excluded_filenames=excluded_filenames,
+#         file_type=file_type,
+#         data_key="$id",
+#     )
 
-    return matches
+#     return data
 
 
-def get_instance_schema_mapping(schemas, instances, schema_mapping):
-    """
-    Returns a dictionary of instances and the schema IDs they map to
+# def map_file_by_tag(filename):
+#     contents = Path(filename).read_text()
+#     matches = []
+#     SCHEMA_TAG = "jsonschema"
 
-    This is currently based on filenames, but could use wildcard patterns or other key detection heuristics in the future
-    """
-    # Dict to return matching schemas
-    instance_schema_mapping = defaultdict(list)
+#     if SCHEMA_TAG in contents:
+#         line_regexp = r"^#.*{0}:\s*(.*)$".format(SCHEMA_TAG)
+#         m = re.match(line_regexp, contents, re.MULTILINE)
+#         if m:
+#             matches = [x.strip() for x in m.group(1).split(",")]
+#             # print(f"{filename} Found schema tag: {matches}")
 
-    if not isinstance(schema_mapping, dict):
-        error("Expected schema_mapping to be a dictionary")
-        raise TypeError
+#     return matches
 
-    if not isinstance(instances, list):
-        error("Expected instances to be a list of instance filenames")
-        raise TypeError
 
-    # Map each instance to a set of schemas to validate the instance data against.
-    for instance_filename in instances:
-        for filepattern, schema_ids in schema_mapping.items():
-            if instance_filename.endswith(filepattern):
-                # Append the list of schema IDs to the matching filename,
-                # Note that is does not confirm that the schema is actually known/loaded
-                # we could do that check here, but currently it is done in check_schemas_exist
-                instance_schema_mapping[instance_filename].extend(schema_ids)
+# def get_instance_schema_mapping(schemas, instances, schema_mapping):
+#     """
+#     Returns a dictionary of instances and the schema IDs they map to
 
-        instance_schema_mapping[instance_filename].extend(map_file_by_tag(instance_filename))
+#     This is currently based on filenames, but could use wildcard patterns or other key detection heuristics in the future
+#     """
+#     # Dict to return matching schemas
+#     instance_schema_mapping = defaultdict(list)
 
-    return instance_schema_mapping
+#     if not isinstance(schema_mapping, dict):
+#         error("Expected schema_mapping to be a dictionary")
+#         raise TypeError
+
+#     if not isinstance(instances, list):
+#         error("Expected instances to be a list of instance filenames")
+#         raise TypeError
+
+#     # Map each instance to a set of schemas to validate the instance data against.
+#     for instance_filename in instances:
+#         for filepattern, schema_ids in schema_mapping.items():
+#             if instance_filename.endswith(filepattern):
+#                 # Append the list of schema IDs to the matching filename,
+#                 # Note that is does not confirm that the schema is actually known/loaded
+#                 # we could do that check here, but currently it is done in check_schemas_exist
+#                 instance_schema_mapping[instance_filename].extend(schema_ids)
+
+#         instance_schema_mapping[instance_filename].extend(map_file_by_tag(instance_filename))
+
+#     return instance_schema_mapping
 
 
 def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
@@ -128,7 +129,7 @@ def check_schemas_exist(schemas, instance_file_to_schemas_mapping):
     return not errors
 
 
-def validate_instances(schema_manager, instances, instance_file_to_schemas_mapping, show_pass=False, strict=False):
+def validate_instances(schema_manager, instance_manager, show_pass=False, strict=False):
     """[summary]
 
     Args:
@@ -140,52 +141,85 @@ def validate_instances(schema_manager, instances, instance_file_to_schemas_mappi
 
     error_exists = False
 
-    for schema_id, schema in schema_manager.iter_schemas():
-        # schema_file = schema_info["schema_file"]
-        # schema_root = schema_info["schema_root"]
-        # schema_id = schema_info["schema_id"]
-        # schema = schema_info["schema"]
-        # config_validator = Draft7Validator(schema)
+    for instance in instance_manager.instances:
 
-        for instance_file in instances:
-            # We load the data on demand now, so we are not storing all instances in memory
-            instance_data = utils.load_file(instance_file)
+        error_exists_inner_loop = False
 
-            # Get schemas which should be checked for this instance file. If the instance should not
-            # be checked for adherence to this schema, skip checking it.
-            if schema_id not in instance_file_to_schemas_mapping.get(instance_file):
-                continue
-
-            error_exists_inner_loop = False
-
-            for err in schema.validate(instance_data, strict=strict):
-                if len(err.absolute_path) > 0:
+        for err in instance.validate(schema_manager, strict):
+            
+            if len(err.absolute_path) > 0:
                     print(
                         colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-                        f" [FILE] {instance_file}"
+                        f" [FILE] {instance.path}/{instance.filename}"
                         f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
                         # f" [SCHEMA] {schema_file.split('/')[-1]}"
-                        f" [SCHEMA] {schema.filename}"
+                        f" [SCHEMA] {','.join(instance.matches)}"
                     )
-                if len(err.absolute_path) == 0:
-                    print(
-                        colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-                        f" [FILE] {instance_file}"
-                        # f" [SCHEMA] {schema_file.split('/')[-1]}"
-                        f" [SCHEMA] {schema.filename}"
-                    )
+            if len(err.absolute_path) == 0:
+                print(
+                    colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
+                    f" [FILE] {instance.path}/{instance.filename}"
+                    # f" [SCHEMA] {schema_file.split('/')[-1]}"
+                    f" [SCHEMA] {','.join(instance.matches)}"
+                )
+                
+            error_exists = True
+            error_exists_inner_loop = True
 
-                error_exists = True
-                error_exists_inner_loop = True
-
-            if not error_exists_inner_loop and show_pass:
-                # print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
-                # For now show the fully qualified schema id, in the future if we have our own BASE_URL
-                # we could for example strip that off to have a ntc/core/ntp shortened names displayed
-                print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file} | [FILE] {instance_file}")
+        if not error_exists_inner_loop and show_pass:
+            # print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
+            # For now show the fully qualified schema id, in the future if we have our own BASE_URL
+            # we could for example strip that off to have a ntc/core/ntp shortened names displayed
+            print(colored(f"PASS", "green") + f" | [SCHEMA] {','.join(instance.matches)} | [FILE] {instance.path}/{instance.filename}")
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
+
+
+    # for schema_id, schema in schema_manager.iter_schemas():
+    #     # schema_file = schema_info["schema_file"]
+    #     # schema_root = schema_info["schema_root"]
+    #     # schema_id = schema_info["schema_id"]
+    #     # schema = schema_info["schema"]
+    #     # config_validator = Draft7Validator(schema)
+
+    #     for instance_file in instances:
+    #         # We load the data on demand now, so we are not storing all instances in memory
+    #         instance_data = utils.load_file(instance_file)
+
+    #         # Get schemas which should be checked for this instance file. If the instance should not
+    #         # be checked for adherence to this schema, skip checking it.
+    #         if schema_id not in instance_file_to_schemas_mapping.get(instance_file):
+    #             continue
+
+    #         error_exists_inner_loop = False
+
+    #         for err in schema.validate(instance_data, strict=strict):
+    #             if len(err.absolute_path) > 0:
+    #                 print(
+    #                     colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
+    #                     f" [FILE] {instance_file}"
+    #                     f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
+    #                     # f" [SCHEMA] {schema_file.split('/')[-1]}"
+    #                     f" [SCHEMA] {schema.filename}"
+    #                 )
+    #             if len(err.absolute_path) == 0:
+    #                 print(
+    #                     colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
+    #                     f" [FILE] {instance_file}"
+    #                     # f" [SCHEMA] {schema_file.split('/')[-1]}"
+    #                     f" [SCHEMA] {schema.filename}"
+    #                 )
+
+    #             error_exists = True
+    #             error_exists_inner_loop = True
+
+    #         if not error_exists_inner_loop and show_pass:
+    #             # print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
+    #             # For now show the fully qualified schema id, in the future if we have our own BASE_URL
+    #             # we could for example strip that off to have a ntc/core/ntp shortened names displayed
+    #             print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file} | [FILE] {instance_file}")
+
 
 
 @click.group()
@@ -325,70 +359,38 @@ def validate_schema(show_pass, show_checks, strict):
         strict (bool): Forces a stricter schema check that warns about unexpected additional properties
     """
 
-    # Get Dict of Instance File Path and Data
-    instances = get_instance_filenames(
-        file_extensions=CFG.get("instance_file_extensions"),
-        search_directories=CFG.get("instance_search_directories", ["./"]),
-        excluded_filenames=CFG.get("instance_exclude_filenames", []),
-    )
-
-    if not instances:
-        error("No instance files were found to validate")
-        sys.exit(1)
-
-    # Load schema info
-    schemas = utils.load_schema_info(
-        file_extensions=CFG.get("schema_file_extensions"),
-        search_directories=CFG.get("schema_search_directories", ["./"]),
-        excluded_filenames=CFG.get("schema_exclude_filenames", []),
-    )
-
-    if not schemas:
-        error("No schemas were loaded")
-        sys.exit(1)
-
+    # ---------------------------------------------------------------------
+    # Load Schema(s) from disk
+    # ---------------------------------------------------------------------
     sm = SchemaManager(
         schema_directories=CFG.get("schema_search_directories", ["./"]),
         excluded_filenames=CFG.get("schema_exclude_filenames", []),
     )
 
-    # Get Mapping of Instance to Schema
-    instance_file_to_schemas_mapping = get_instance_schema_mapping(
-        schemas=schemas, instances=instances, schema_mapping=CFG.get("schema_mapping")
+    if not sm.schemas:
+        error("No schemas were loaded")
+        sys.exit(1)
+
+    # ---------------------------------------------------------------------
+    # Load Instances
+    # ---------------------------------------------------------------------
+    ifm = InstanceFileManager(
+        search_directories=CFG.get("instance_search_directories", ["./"]),
+        excluded_filenames=CFG.get("instance_exclude_filenames", []),
+        schema_mapping=CFG.get("schema_mapping"),
     )
 
-    # Use strict compliance with schema, additionalProperties will be reported
-    # if strict:
-    #     for schemaid, schemainfo in schemas.items():
-    #         schema = schemainfo["schema"]
-    #         if schema.get("additionalProperties", False) is not False:
-    #             print(f"{schema['$id']}: Overriding existing additionalProperties: {schema['additionalProperties']}")
-
-    #         schema["additionalProperties"] = False
-
-    #         # XXX This should be recursive, e.g. all sub-objects, currently it only goes one level deep, look in jsonschema for utilitiies
-    #         for p, prop in schema.get("properties", {}).items():
-    #             items = prop.get("items", {})
-    #             if items.get("type") == "object":
-    #                 if items.get("additionalProperties", False) is not False:
-    #                     print(
-    #                         f"{schema['$id']}: Overriding item {p}.additionalProperties: {items['additionalProperties']}"
-    #                     )
-    #                 items["additionalProperties"] = False
+    if not ifm.instances:
+        error("No instance files were found to validate")
+        sys.exit(1)
 
     if show_checks:
-        print("Instance File                                     Schema")
-        print("-" * 80)
-        for instance_file, schema in instance_file_to_schemas_mapping.items():
-            print(f"{instance_file:50} {schema}")
+        ifm.print_instances_schema_mapping()
         sys.exit(0)
-
-    check_schemas_exist(schemas, instance_file_to_schemas_mapping)
 
     validate_instances(
         schema_manager=sm,
-        instances=instances,
-        instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
+        instance_manager=ifm,
         show_pass=show_pass,
         strict=strict
     )
@@ -450,38 +452,6 @@ def check_schemas(show_pass, show_checks):
         instance_file_to_schemas_mapping=instance_file_to_schemas_mapping,
         show_pass=show_pass,
     )
-
-
-# def validate(context, schema, vars_dir=None, hosts=None):
-#     """
-#     Executes Pytest to validate data against schema
-
-#     Args:
-#         schema (list): The specific schema to execute tests against.
-#         vars_dir (str): The path to device directories containig variable definitions.
-#         hosts (str): The comma-separated subset of hosts to execute against.
-
-#     Example:
-#         $ python -m invoke validate -s ntp -s snmp -v ../my_project/hostvars -h csr1,eos1
-#         python -m pytest tests/test_data_against_schema.py --schema=ntp --schema=ntp --hosts=csr1,eos1 -vv
-#         ============================= test session starts =============================
-#         collecting ... collected 4 items
-#         tests/test_data_against_schema.py::test_config_definitions_against_schema[ntp-validator0-csr1] PASSED [ 25%]
-#         tests/test_data_against_schema.py::test_config_definitions_against_schema[snmp-validator1-csr1] PASSED [ 50%]
-#         tests/test_data_against_schema.py::test_config_definitions_against_schema[ntp-validator0-eos1] PASSED [ 75%]
-#         tests/test_data_against_schema.py::test_config_definitions_against_schema[snmp-validator1-eos1] PASSED [ 100%]
-#         $
-#     """
-#     cmd = f"python -m pytest {SCHEMA_TEST_DIR}/test_data_against_schema.py"
-#     if schema:
-#         schema_flag = " --schema=".join(schema)
-#         cmd += f" --schema={schema_flag}"
-#     if vars_dir is not None:
-#         cmd += f" --hostvars={vars_dir}"
-#     if hosts is not None:
-#         cmd += f" --hosts={hosts}"
-#     context.run(f"{cmd} -vv", echo=True)
-
 
 @main.command()
 @click.option("--schema", "-s", help=" The name of the schema to validate against.", required=True)

@@ -1,11 +1,10 @@
 
+import copy
 from jsonschema import (
-    RefResolver,
     Draft7Validator,
     draft7_format_checker,
     ValidationError,
 )
-
 
 class JsonSchema:
 
@@ -23,7 +22,6 @@ class JsonSchema:
 
     def get_id(self):
         return self.id
-
 
     def validate(self, data, strict=False):
 

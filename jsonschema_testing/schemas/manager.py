@@ -19,6 +19,7 @@ class SchemaManager:
         )
 
         for root, filename in files:
+            root = os.path.realpath(root)
             schema = self.create_schema_from_file(root, filename)
             self.schemas[schema.get_id()] = schema
 
@@ -30,7 +31,7 @@ class SchemaManager:
         schema_type = "jsonschema"
         base_uri = f"file:{root}/"
         schema = jsonref.JsonRef.replace_refs(file_data, base_uri=base_uri, jsonschema=True, loader=load_file)
-
+        
         key = file_data.get("$id", filename)
         
         schema = JsonSchema(
