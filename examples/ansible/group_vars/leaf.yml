@@ -1,0 +1,6 @@
+
+
+dns_servers:
+  - address: 12
+  - address: "10.2.2.2"
+

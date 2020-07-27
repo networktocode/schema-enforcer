@@ -1,7 +1,9 @@
 
 
 
-
+dns_servers:
+  - address: "10.1.1.1"
+  - address: "10.2.2.2"
 
 interfaces:
   swp1:
