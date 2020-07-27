@@ -6,6 +6,7 @@ from jsonschema_testing.utils import find_files, load_file
 
 SCHEMA_TAG = "jsonschema"
 
+
 class InstanceFileManager:
     """InstanceFileManager."""
 
@@ -79,7 +80,7 @@ class InstanceFile:
         """
         if not content:
             content = Path(os.path.join(self.full_path, self.filename)).read_text()
-        
+
         matches = []
 
         if SCHEMA_TAG in content:

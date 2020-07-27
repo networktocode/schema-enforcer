@@ -11,6 +11,7 @@ from jsonschema import (
 v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
 v7schema = json.loads(v7data.decode("utf-8"))
 
+
 class JsonSchema:
 
     schematype = "jsonchema"
@@ -76,7 +77,7 @@ class JsonSchema:
         if self.strict_validator:
             return self.strict_validator
 
-        # Create a copy if the schema first and modify it to insert `additionalProperties` 
+        # Create a copy if the schema first and modify it to insert `additionalProperties`
         schema = copy.deepcopy(self.data)
 
         if schema.get("additionalProperties", False) is not False:

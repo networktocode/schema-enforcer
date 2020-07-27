@@ -79,6 +79,7 @@ def validate_instances(schema_manager, instance_manager, show_pass=False, strict
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
 
+
 @click.group()
 def main():
     pass
@@ -282,16 +283,10 @@ def check_schemas(show_pass):
                     f" [SCHEMA] {schema_id}"
                 )
             if len(err.absolute_path) == 0:
-                print(
-                    colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-                    f" [SCHEMA] {schema_id}"
-                )
+                print(colored(f"FAIL", "red") + f" | [ERROR] {err.message}" f" [SCHEMA] {schema_id}")
 
         if not error_exists_inner_loop and show_pass:
-            print(
-                colored(f"PASS", "green")
-                + f" | [SCHEMA] {schema_id} is valid"
-            )
+            print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_id} is valid")
 
     if not error_exists:
         print(colored("ALL SCHEMAS ARE VALID", "green"))
@@ -486,11 +481,7 @@ def ansible(inventory, limit, show_pass):
             )
 
         elif len(err.absolute_path) == 0:
-            print(
-                colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-                f" [HOST] {host.name}"
-                f" [SCHEMA] {schema_id}"
-            )
+            print(colored(f"FAIL", "red") + f" | [ERROR] {err.message}" f" [HOST] {host.name}" f" [SCHEMA] {schema_id}")
 
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
@@ -505,7 +496,7 @@ def ansible(inventory, limit, show_pass):
         sys.exit(1)
 
     # ---------------------------------------------------------------------
-    # Load Ansible Inventory file 
+    # Load Ansible Inventory file
     #  - generate hostvar for all devices in the inventory
     #  - Validate Each key in the hostvar individually against the schemas defined in the var jsonschema_mapping
     # ---------------------------------------------------------------------
@@ -521,7 +512,7 @@ def ansible(inventory, limit, show_pass):
 
         # Generate host_var and automatically remove all keys inserted by ansible
         hostvar = inv.get_clean_host_vars(host)
-        
+
         # if jsonschema_mapping variable is defined, used it to determine which schema to use to validate each key
         # if jsonschema_mapping is not defined, validate each key in the inventory agains all schemas in the SchemaManager
         mapping = None
@@ -533,7 +524,7 @@ def ansible(inventory, limit, show_pass):
 
         for key, value in hostvar.items():
             if mapping and key in mapping.keys():
-                applicable_schemas = { schema_id: sm.schemas[schema_id] for schema_id in mapping[key] }
+                applicable_schemas = {schema_id: sm.schemas[schema_id] for schema_id in mapping[key]}
             else:
                 applicable_schemas = sm.schemas
 
@@ -545,10 +536,7 @@ def ansible(inventory, limit, show_pass):
                     print_error(host, schema_id, err)
 
                 if not error_exists_inner_loop and show_pass:
-                    print(
-                        colored(f"PASS", "green")
-                        + f" | [HOST] {host.name} | [VAR] {key} | [SCHEMA] {schema_id}"
-                    )
+                    print(colored(f"PASS", "green") + f" | [HOST] {host.name} | [VAR] {key} | [SCHEMA] {schema_id}")
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
