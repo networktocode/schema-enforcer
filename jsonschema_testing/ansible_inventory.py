@@ -54,3 +54,16 @@ class AnsibleInventory(object):
         data = self.var_mgr.get_vars(host=host)
         templar = Templar(variables=data, loader=self.loader)
         return templar.template(data, fail_on_undefined=False)
+
+    def get_clean_host_vars(self, host):
+
+        KEYS_CLEANUP = [ 'inventory_file', 'inventory_dir', 'inventory_hostname', 'inventory_hostname_short', 'group_names', 'ansible_facts', 'playbook_dir', 'ansible_playbook_python', 
+        'groups', 'omit', 'ansible_version']
+
+        hv = self.get_host_vars(host)
+        
+        for key in KEYS_CLEANUP:
+            if key in hv:
+                del hv[key]
+
+        return hv 
