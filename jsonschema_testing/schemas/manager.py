@@ -12,8 +12,8 @@ class SchemaManager:
         """Initialize the SchemaManager and search for all schema files in the schema_directories.
 
         Args:
-            schema_directories  (list, str): The list of directories or python package names to search for schema files.
-            (list, str): Specify any files that should be excluded from importing as schemas (exact matches).
+            schema_directories (list, str): The list of directories or python package names to search for schema files.
+            excluded_filenames (list, str): Specify any files that should be excluded from importing as schemas (exact matches).
         """
         self.schemas = {}
 
