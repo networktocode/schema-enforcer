@@ -60,3 +60,13 @@ class SchemaManager:
             Iterator: Iterator of all schemas in K,v format (key, value)
         """
         return self.schemas.items()
+
+    def test_schemas(self):
+        """Tests is all schemas are passing their tests."""
+
+        # For each schema in the library, 
+        #  - Check if there is a test directory for this schema.
+        #  - Load all valid files and ensure everything is reporting correctly.
+        #  - Load all invalid files and ensure the correct errors are reported. 
+
+        

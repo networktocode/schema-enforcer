@@ -26,56 +26,7 @@ import re
 
 SCHEMA_TEST_DIR = "tests"
 
-
-def validate_instances(schema_manager, instance_manager, show_pass=False, strict=False):
-    """[summary]
-
-    Args:
-        schema_manager (SchemaManager): [description]
-        instance_manager (InstanceFileManager): [description]
-        show_pass (bool, optional): Show in CLI all tests executed even if they pass. Defaults to False.
-        strict (bool, optional): 
-    """
-
-    error_exists = False
-
-    for instance in instance_manager.instances:
-
-        error_exists_inner_loop = False
-
-        for err in instance.validate(schema_manager, strict):
-
-            if len(err.absolute_path) > 0:
-                print(
-                    colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-                    f" [FILE] {instance.path}/{instance.filename}"
-                    f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
-                    # f" [SCHEMA] {schema_file.split('/')[-1]}"
-                    f" [SCHEMA] {','.join(instance.matches)}"
-                )
-            if len(err.absolute_path) == 0:
-                print(
-                    colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-                    f" [FILE] {instance.path}/{instance.filename}"
-                    # f" [SCHEMA] {schema_file.split('/')[-1]}"
-                    f" [SCHEMA] {','.join(instance.matches)}"
-                )
-
-            error_exists = True
-            error_exists_inner_loop = True
-
-        if not error_exists_inner_loop and show_pass:
-            # print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_file.split('/')[-1]} | [FILE] {instance_file}")
-            # For now show the fully qualified schema id, in the future if we have our own BASE_URL
-            # we could for example strip that off to have a ntc/core/ntp shortened names displayed
-            print(
-                colored(f"PASS", "green")
-                + f" | [SCHEMA] {','.join(instance.matches)} | [FILE] {instance.path}/{instance.filename}"
-            )
-
-    if not error_exists:
-        print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
-
+CFG = utils.load_config()
 
 @click.group()
 def main():
@@ -131,7 +82,24 @@ def validate_schema(show_pass, show_checks, strict):
         ifm.print_instances_schema_mapping()
         sys.exit(0)
 
-    validate_instances(schema_manager=sm, instance_manager=ifm, show_pass=show_pass, strict=strict)
+
+    error_exists = False
+    for instance in ifm.instances:
+        for result in instance.validate(sm, strict):
+
+            result.instance_type = "FILE"
+            result.instance_name = instance.filename
+            result.instance_location = instance.path
+
+            if not result.passed():
+                error_exists = True
+                result.print()
+
+            elif result.passed() and show_pass:
+                result.print()
+
+    if not error_exists:
+        print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
 
 
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
@@ -155,22 +123,19 @@ def check_schemas(show_pass):
 
     error_exists = False
     for schema_id, schema in sm.iter_schemas():
-        error_exists_inner_loop = False
-        for err in schema.check_if_valid():
-            error_exists_inner_loop = True
-            error_exists = True
-            if len(err.absolute_path) > 0:
-                print(
-                    colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-                    f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
-                    f" [SCHEMA] {schema_id}"
-                )
-            if len(err.absolute_path) == 0:
-                print(colored(f"FAIL", "red") + f" | [ERROR] {err.message}" f" [SCHEMA] {schema_id}")
+        for result in schema.check_if_valid():
+            
+            result.instance_type = "SCHEMA"
+            result.instance_name = schema_id
+            result.instance_location = ""
 
-        if not error_exists_inner_loop and show_pass:
-            print(colored(f"PASS", "green") + f" | [SCHEMA] {schema_id} is valid")
+            if not result.passed():
+                error_exists = True
+                result.print()
 
+            elif result.passed() and show_pass:
+                result.print()
+ 
     if not error_exists:
         print(colored("ALL SCHEMAS ARE VALID", "green"))
 
@@ -311,24 +276,24 @@ def ansible(inventory, limit, show_pass):
     else:
         config.load()
 
-    def print_error(host, schema_id, err):
-        """Print Validation error for ansible host to screen.
+    # def print_error(host, schema_id, err):
+    #     """Print Validation error for ansible host to screen.
         
-        Args:
-            host (host): Ansible host object
-            schema_id (string): Name of the schema
-            err (ValidationError): JsonSchema Validation error
-        """
-        if len(err.absolute_path) > 0:
-            print(
-                colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-                f" [HOST] {host.name}"
-                f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
-                f" [SCHEMA] {schema_id}"
-            )
+    #     Args:
+    #         host (host): Ansible host object
+    #         schema_id (string): Name of the schema
+    #         err (ValidationError): JsonSchema Validation error
+    #     """
+    #     if len(err.absolute_path) > 0:
+    #         print(
+    #             colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
+    #             f" [HOST] {host.name}"
+    #             f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
+    #             f" [SCHEMA] {schema_id}"
+    #         )
 
-        elif len(err.absolute_path) == 0:
-            print(colored(f"FAIL", "red") + f" | [ERROR] {err.message}" f" [HOST] {host.name}" f" [SCHEMA] {schema_id}")
+    #     elif len(err.absolute_path) == 0:
+    #         print(colored(f"FAIL", "red") + f" | [ERROR] {err.message}" f" [HOST] {host.name}" f" [SCHEMA] {schema_id}")
 
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
@@ -366,6 +331,7 @@ def ansible(inventory, limit, show_pass):
 
         applicable_schemas = {}
 
+        error_exists = False
         for key, value in hostvar.items():
             if mapping and key in mapping.keys():
                 applicable_schemas = {schema_id: sm.schemas[schema_id] for schema_id in mapping[key]}
@@ -373,14 +339,18 @@ def ansible(inventory, limit, show_pass):
                 applicable_schemas = sm.schemas
 
             for schema_id, schema in applicable_schemas.items():
-                error_exists_inner_loop = False
-                for err in schema.validate({key: value}):
-                    error_exists = True
-                    error_exists_inner_loop = True
-                    print_error(host, schema_id, err)
+                for result in schema.validate({key: value}):
+                    
+                    result.instance_type = "VAR"
+                    result.instance_name = key
+                    result.instance_location = host.name
 
-                if not error_exists_inner_loop and show_pass:
-                    print(colored(f"PASS", "green") + f" | [HOST] {host.name} | [VAR] {key} | [SCHEMA] {schema_id}")
+                    if not result.passed():
+                        error_exists = True
+                        result.print()
+
+                    elif result.passed() and show_pass:
+                        print(colored(f"PASS", "green") + f" | [HOST] {host.name} | [VAR] {key} | [SCHEMA] {schema_id}")
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))

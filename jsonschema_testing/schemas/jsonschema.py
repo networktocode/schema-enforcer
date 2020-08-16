@@ -4,8 +4,8 @@ import json
 from jsonschema import (
     Draft7Validator,
     draft7_format_checker,
-    ValidationError,
 )
+from jsonschema_testing.validation import ValidationResult, ResultEnum
 
 # TODO do we need to catch a possible exception here ?
 v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
@@ -50,7 +50,22 @@ class JsonSchema:
         else:
             validator = self.__get_validator()
 
-        return validator.iter_errors(data)
+        has_error = False
+        for err in validator.iter_errors(data):
+
+            has_error = True
+            yield ValidationResult(
+                schema_id=self.id,
+                result=ResultEnum.failed,
+                message=err.message,
+                absolute_path=list(err.absolute_path)
+            )
+
+        if not has_error:
+            yield ValidationResult(
+                schema_id=self.id,
+                result=ResultEnum.passed,
+            )
 
     def __get_validator(self):
         """Return the validator for this schema, create if it doesn't exist already.
@@ -100,7 +115,24 @@ class JsonSchema:
         """Check if the schema itself is valid against JasonSchema draft7.
         
         Returns:
-            Iterator: Iterator of ValidationError
+            Iterator: Iterator of ValidationResult
         """
         validator = Draft7Validator(v7schema)
-        return validator.iter_errors(self.data)
+
+        has_error = False
+        for err in validator.iter_errors(self.data):
+
+            has_error = True
+
+            yield ValidationResult(
+                schema_id=self.id,
+                result=ResultEnum.failed,
+                message=err.message,
+                absolute_path=list(err.absolute_path)
+            )
+
+        if not has_error:
+            yield ValidationResult(
+                schema_id=self.id,
+                result=ResultEnum.passed,
+            )
