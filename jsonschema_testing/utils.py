@@ -237,48 +237,6 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
     return validator
 
 
-def generate_validation_error_attributes(json_var_file, validator):
-    """
-    Generates a map between ValidationError Attributes and their values.
-
-    Args:
-        json_var_file (str): The path to a json variable file.
-        validator (jsonschema.Validator): A validator to validate var data.
-
-    Returns:
-        dict: Keys are attribute names, and values are the attribute's value.
-
-    Example:
-        >>> validator = load_schema_from_json_file(schema_root_dir, schema_filepath)
-        >>> invalid_data = "tests/mocks/invalid/ntp/invalid_ip.json"
-        >>> error_attrs = generate_validation_error_attributes(invalid_data, validator)
-        >>> for attr, value in error_attributes.items():
-        ...     print(f"{attr:20} = {value}")
-        ...
-        absolute_path        = deque(['ntp_servers', 0, 'address'])
-        absolute_schema_path = deque(['properties', 'ntp_servers', 'items', ...])
-        cause                = None
-        context              = []
-        message              = '10.1.1.1000' is not a 'ipv4'
-        parent               = None
-        path                 = deque(['ntp_servers', 0, 'address'])
-        schema               = {'type': 'string', 'format': 'ipv4'}
-        schema_path          = deque(['properties', 'ntp_servers', 'items', ...])
-        validator            = format
-        validator_value      = ipv4
-        >>>
-    """
-    with open(json_var_file, encoding="utf-8") as fh:
-        var_data = json.load(fh)
-    try:
-        validator.validate(var_data)
-        error_attrs = {}
-    except ValidationError as error:
-        error_attrs = {attr: getattr(error, attr) for attr in VALIDATION_ERROR_ATTRS}
-
-    return error_attrs
-
-
 def dump_data_to_yaml(data, yaml_path):
     """
     Dumps data to a YAML file with special formatting.
@@ -570,7 +528,9 @@ def load_file(filename, file_type=None):
 
     Files with json extension are loaded with json, otherwise yaml is assumed.
 
-    Returns parsed object of respective loader.
+    Returns:
+        dict or list: content of the file in a python variable.
+    
     """
     if not file_type:
         file_type = "json" if filename.endswith(".json") else "yaml"
@@ -606,3 +566,26 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
         data.update({key: file_data})
 
     return data
+
+def find_and_load_file(filename, formats=["yml", "yaml", "json"])
+    """
+    Search a file based on multiple extensions and load its content if found.
+    
+    Args:
+        filename (str): Full filename of the file to search and load, without the extension.
+        formats (List[str]): List of formats to search.
+
+    Returns:
+        dict, list or None: content of the file in a python variable. None if no found could be found.
+    """
+    for ext in formats:
+
+        file_ext = f"{filename}.{ext}"
+        if not os.path.isfile(file_ext):
+            continue
+        
+        data = load_file(file_ext)
+        return data
+
+    return None
+

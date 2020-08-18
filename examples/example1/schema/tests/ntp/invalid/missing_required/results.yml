@@ -1,0 +1,10 @@
+---
+results:
+  - result: "ResultEnum.failed"
+    schema_id: "schemas/ntp"
+    absolute_path: []
+    message: "Additional properties are not allowed ('ntp_server' was unexpected)"
+  - result: "ResultEnum.failed"
+    schema_id: "schemas/ntp"
+    absolute_path: []
+    message: "'ntp_servers' is a required property"

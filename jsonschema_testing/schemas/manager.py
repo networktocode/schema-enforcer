@@ -1,7 +1,12 @@
 import os
 import jsonref
-from jsonschema_testing.utils import load_file, find_files
+from termcolor import colored
+from jsonschema_testing.utils import load_file, load_data, find_and_load_file, find_files, dump_data_to_yaml
+from jsonschema_testing.validation import ValidationResult, ResultEnum
+
 from .jsonschema import JsonSchema
+
+
 
 
 class SchemaManager:
@@ -62,11 +67,145 @@ class SchemaManager:
         return self.schemas.items()
 
     def test_schemas(self):
-        """Tests is all schemas are passing their tests."""
-
-        # For each schema in the library, 
-        #  - Check if there is a test directory for this schema.
-        #  - Load all valid files and ensure everything is reporting correctly.
-        #  - Load all invalid files and ensure the correct errors are reported. 
-
+        """Tests if all schemas are passing their tests.
         
+        For each schema, 3 set of tests will be potentially executed.
+          - schema must be Draft7 valid
+          - Valid tests must pass
+          - Invalid tests must pass 
+        """
+
+        test_dir = "schema/tests"
+        error_exists = False
+
+        for schema_id, schema in self.iter_schemas():
+            
+            schema_valid = schema.check_if_valid()
+            valid_results = self.test_schema_valid(schema_id)
+            invalid_results = self.test_schema_invalid(schema_id)
+
+            for result in valid_results + invalid_results:
+                if not result.passed():
+                    error_exists = True
+                    result.print()
+
+                elif result.passed():
+                    result.print()
+        
+        if not error_exists:
+            print(colored("ALL SCHEMAS ARE VALID", "green"))
+
+
+    def test_schema_valid(self, schema_id):
+        """
+        Execute all valid tests for a given schema. 
+
+        Args:
+            schema_id (str): unique identifier of a schema
+        
+        Returns:
+            list of ValidationResult
+        """
+
+        #TODO Check if top dir is present
+        #TODO Check if valid dir is present
+            
+        # See how we can define a better name
+        valid_test_dir = f"schema/tests/{short_schema_id}/valid"
+        short_schema_id = schema_id.split("/")[1]
+
+        valid_files = find_files(
+            file_extensions=[".yaml", ".yml", ".json"],
+            search_directories=[valid_test_dir],
+            excluded_filenames=[],
+            return_dir=True,
+        )
+
+        results = []
+
+        for root, filename in valid_files:
+
+            test_data = load_file(os.path.join(root, filename))
+            
+            error_exists = False
+            for result in schema.validate(test_data, strict=strict):
+                result.instance_name = filename
+                result.instance_location = root
+                result.instance_type = "TEST"
+                results.append(result)
+        
+        return results
+
+    def test_schema_invalid(self, schema_id):
+        """
+        Execute all invalid tests for a given schema. 
+
+        Args:
+            schema_id (str): unique identifier of a schema
+        
+        Returns:
+            list of ValidationResult
+        """
+
+        invalid_test_dir = f"schema/tests/{short_schema_id}/invalid"
+        test_dirs = next(os.walk(invalid_test_dir))[1]
+        
+        results = []
+        for test_dir in test_dirs:
+
+            # TODO Check if data and expected results are present
+            data = find_and_load_file(os.path.join(root, invalid_test_dir, test_dir, "data"))
+            expected_results = find_and_load_file(os.path.join(root, invalid_test_dir, test_dir, "results"))
+            results = schema.validate_to_dict(data)
+
+            if not expected_results: 
+                continue
+
+            results_sorted = sorted(results, key = lambda i: i['message'])
+            expected_results_sorted = sorted(expected_results, key = lambda i: i['message'])
+
+            params = dict(
+                schema_id=schema_id,
+                instance_type="TEST",
+                instance_name=test_dir,
+                instance_location=invalid_test_dir
+            )
+
+            if results_sorted != expected_results_sorted:
+                params["result"] = ResultEnum.failed
+                params["message"] = "Invalid test do not match"
+            else:
+                params["result"] = ResultEnum.passed
+
+            val = ValidationResult(**params)
+            results.append(val)
+
+        return results
+
+    def generate_invalid_tests_expected(self, schema_id):
+        """
+        Generate the expected invalid tests for a given Schema.
+
+        Args:
+            schema_id (str): unique identifier of a schema
+        """
+
+        # TODO check if schema is present
+        schema = self.schema[schema_id]
+
+        root = os.path.abspath(os.getcwd())
+        short_schema_id = schema_id.split("/")[1]
+
+        # TODO Get base test directory from configuration
+        # TODO Check if invalid dir exist for this schema
+        # Find list of all subdirectory in the invalid dir
+        invalid_test_dir = f"schema/tests/{short_schema_id}/invalid"
+        test_dirs = next(os.walk(invalid_test_dir))[1]
+
+        # For each test, load the data file, test the data against the schema and save the results
+        for test_dir in test_dirs:
+            data = find_and (os.path.join(root, invalid_test_dir, test_dir, "data"))
+            results = schema.validate_to_dict(data)
+            result_file = os.path.join(root, invalid_test_dir, test_dir, "results.yml")
+            dump_data_to_yaml({"results": results}, result_file)
+            print(f"Generated/Updated results file: {result_file}")

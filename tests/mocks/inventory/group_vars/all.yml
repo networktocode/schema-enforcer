@@ -1,3 +1,0 @@
----
-# This tests that inventory resolves Jinja2 variables
-dns_servers: "{{ os_dns | default(region_dns) }}"

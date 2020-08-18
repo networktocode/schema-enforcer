@@ -1,5 +1,0 @@
----
-message: "'10.1.1.1' is not of type 'object'"
-schema_path: "deque(['properties', 'dns_servers', 'items', 'type'])"
-validator: "type"
-validator_value: "object"

@@ -41,7 +41,6 @@ class JsonSchema:
         Args:
             data (dict, list): Data to validate against the schema
             strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
-
         Returns:
             Iterator: Iterator of ValidationError
         """
@@ -66,6 +65,9 @@ class JsonSchema:
                 schema_id=self.id,
                 result=ResultEnum.passed,
             )
+
+    def validate_to_dict(self, data, strict=False):
+        return [ result.dict(exclude_unset=True,exclude_none=True) for result in self.validate(data=data, strict=strict)]
 
     def __get_validator(self):
         """Return the validator for this schema, create if it doesn't exist already.
@@ -128,11 +130,17 @@ class JsonSchema:
                 schema_id=self.id,
                 result=ResultEnum.failed,
                 message=err.message,
-                absolute_path=list(err.absolute_path)
+                absolute_path=list(err.absolute_path),
+                instance_type="SCHEMA",
+                instance_name=self.id,
+                instance_location=""
             )
 
         if not has_error:
             yield ValidationResult(
                 schema_id=self.id,
                 result=ResultEnum.passed,
+                instance_type="SCHEMA",
+                instance_name=self.id,
+                instance_location=""
             )

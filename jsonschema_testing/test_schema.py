@@ -176,17 +176,7 @@ def view_validation_error(schema, mock):
     config.load()
 
     sm = SchemaManager(config=config.SETTINGS)
-
-    # TODO need to refactor this one this one
-    # schema_root_dir = os.path.realpath(CFG["json_schema_path"])
-    # schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-    # mock_file = f"tests/mocks/{schema}/invalid/{mock}.json"
-
-    # validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-    # error_attributes = utils.generate_validation_error_attributes(mock_file, validator)
-    # print()
-    # for attr, value in error_attributes.items():
-    #     print(f"{attr:20} = {value}")
+    sm.test_schemas()
 
 
 @main.command()
@@ -212,21 +202,12 @@ def generate_invalid_expected(schema):
         invalid_ip.yml
         $
     """
-    config.load()
-    # TODO need to refactor this one this one
-    # schema_root_dir = os.path.realpath(CFG["json_schema_path"])
+    sm = SchemaManager(
+        schema_directories=CFG.get("schema_search_directories", ["./"]),
+        excluded_filenames=CFG.get("schema_exclude_filenames", []),
+    )
 
-    # schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-    # validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-    # mock_path = f"tests/mocks/{schema}/invalid"
-    # for invalid_mock in glob(f"{mock_path}/*.json"):
-    #     error_attributes = utils.generate_validation_error_attributes(invalid_mock, validator)
-    #     mock_attributes = {attr: str(error_attributes[attr]) for attr in error_attributes}
-    #     mock_attributes_formatted = utils.ensure_strings_have_quotes_mapping(mock_attributes)
-    #     mock_response = f"{invalid_mock[:-4]}yml"
-    #     print(f"Writing file to {mock_response}")
-    #     with open(mock_response, "w", encoding="utf-8") as fh:
-    #         utils.YAML_HANDLER.dump(mock_attributes_formatted, fh)
+    sm.generate_invalid_tests_expected(schema=schema)
 
 
 @main.command()
@@ -275,25 +256,6 @@ def ansible(inventory, limit, show_pass):
         config.load(config_data={"ansible_inventory": inventory})
     else:
         config.load()
-
-    # def print_error(host, schema_id, err):
-    #     """Print Validation error for ansible host to screen.
-        
-    #     Args:
-    #         host (host): Ansible host object
-    #         schema_id (string): Name of the schema
-    #         err (ValidationError): JsonSchema Validation error
-    #     """
-    #     if len(err.absolute_path) > 0:
-    #         print(
-    #             colored(f"FAIL", "red") + f" | [ERROR] {err.message}"
-    #             f" [HOST] {host.name}"
-    #             f" [PROPERTY] {':'.join(str(item) for item in err.absolute_path)}"
-    #             f" [SCHEMA] {schema_id}"
-    #         )
-
-    #     elif len(err.absolute_path) == 0:
-    #         print(colored(f"FAIL", "red") + f" | [ERROR] {err.message}" f" [HOST] {host.name}" f" [SCHEMA] {schema_id}")
 
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
@@ -350,7 +312,7 @@ def ansible(inventory, limit, show_pass):
                         result.print()
 
                     elif result.passed() and show_pass:
-                        print(colored(f"PASS", "green") + f" | [HOST] {host.name} | [VAR] {key} | [SCHEMA] {schema_id}")
+                        result.print()
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))

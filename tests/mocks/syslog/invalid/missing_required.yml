@@ -1,5 +1,0 @@
----
-message: "'syslog_servers' is a required property"
-schema_path: "deque(['required'])"
-validator: "required"
-validator_value: "['syslog_servers']"

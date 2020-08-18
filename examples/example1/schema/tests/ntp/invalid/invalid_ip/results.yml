@@ -1,0 +1,4 @@
+---
+results:
+  - result: "ResultEnum.passed"
+    schema_id: "schemas/ntp"
