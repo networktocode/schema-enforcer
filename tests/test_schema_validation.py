@@ -11,9 +11,7 @@ YAML_HANDLER = YAML()
 
 
 def build_deque_path(path):
-    path_formatted = [
-        f"'{entry}'" if isinstance(entry, str) else str(entry) for entry in path
-    ]
+    path_formatted = [f"'{entry}'" if isinstance(entry, str) else str(entry) for entry in path]
     return f"deque([{', '.join(path_formatted)}])"
 
 
