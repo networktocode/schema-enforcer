@@ -420,41 +420,6 @@ def convert_json_to_yaml(json_path, yaml_path, silent=False):
         dump_data_to_yaml(json_data, yaml_file)
 
 
-def resolve_json_refs(json_schema_path, output_path):
-    """
-    Loads JSONSchema schema files, resolves ``refs``, and writes to a file.
-
-    Args:
-        json_schema_path: The path to JSONSchema schema definitions.
-        output_path: The path to write updated JSONSchema schema files.
-
-    Returns:
-        None: JSONSchema definitions are written to files.
-
-    Example:
-        >>> json_schema_path = "schema/json/schemas"
-        >>> os.listdir(json_schema_path)
-        ['ntp.json', 'snmp.json']
-        >>> output_path = "schema/json/full_schemas"
-        >>> os.isdir(output_path)
-        False
-        >>> resolve_json_refs(json_schema_path, output_path)
-        >>> os.listdir(output_path)
-        ['ntp.json', 'snmp.json']
-        >>>
-    """
-    os.makedirs(output_path, exist_ok=True)
-    # It is necessary to replace backslashes with forward slashes on Windows systems
-    base_uri = f"file:{os.path.realpath(json_schema_path)}/".replace("\\", "/")
-    for file in glob.iglob(f"{json_schema_path}/*.json"):
-        path, filename = get_path_and_filename(file)
-        with open(file, encoding="utf-8") as fh:
-            schema = jsonref.load(fh, base_uri=base_uri, jsonschema=True)
-        json_file = f"{output_path}/{filename}.json"
-        print(f"Converting {file} -> {json_file}")
-        dump_data_to_json(schema, json_file)
-
-
 def get_schema_properties(schema_files):
     """
     Maps schema filenames to top-level properties.
@@ -526,53 +491,6 @@ def dump_schema_vars(output_dir, schema_properties, variables):
             print(f"-> {schema}")
             yaml_file = f"{output_dir}/{schema}.yml"
             dump_data_to_yaml(schema_data, yaml_file)
-
-
-def generate_hostvars(inventory_path, schema_path, output_path):
-    """
-    Generates variable files per host per schema file.
-
-    This creates a directory per host and then writes a var file per schema file.
-    The var files will contain only the data that corresponds with the top-level
-    properties in the schema files. For example, if the `ntp.json` schema file
-    defines top-level properites for "ntp_servers" and "ntp_authentication", then
-    the `ntp.yml` vars file will only have the variables for "ntp_servers" and
-    "ntp_authentication". If the device does not have have top-level data defined,
-    then a var file will not be written for that host.
-
-    Args:
-        inventory_path (str): The path to Ansible inventory.
-        schema_path (str): The path to the schema definition directory.
-        output_path (str): The path to write var files to.
-
-    Returns:
-        None: Var files are written per schema per host.
-
-    Example:
-        >>> inventory_path = "inventory"
-        >>> schema_path = "schema/json/schemas"
-        >>> os.listdir(schema_path)
-        ['bgp.json', 'ntp.json']
-        >>> ouput_dir = "hostvars"
-        >>> os.listdir(output_dir)
-        []
-        >>> generate_hostvars(ansible_inventory, schema_path, output_path)
-        >>> os.listdir(output_dir)
-        ['host1', 'host2', 'host3']
-        >>> os.listdir(f"{output_dir}/host1")
-        ['bgp.yml', 'ntp.yml']
-        >>> os.listdr(f"{output_dir}/host2")
-        ['ntp.yml']
-    """
-    schema_files = glob.glob(f"{schema_path}/*.json")
-    schema_properties = get_schema_properties(schema_files)
-    inventory = AnsibleInventory(inventory_path)
-    hosts = inventory.get_hosts_containing()
-    for host in hosts:
-        print(f"Generating var files for {host}")
-        output_dir = f"{output_path}/{host}"
-        host_vars = inventory.get_host_vars(host)
-        dump_schema_vars(output_dir, schema_properties, host_vars)
 
 
 def find_files(file_extensions, search_directories, excluded_filenames, return_dir=False):
