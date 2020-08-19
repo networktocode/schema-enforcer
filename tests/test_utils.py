@@ -79,15 +79,11 @@ def test_get_conversion_filepaths():
     json_path = yaml_path.replace("yaml", "json")
     actual = utils.get_conversion_filepaths(yaml_path, "yml", json_path, "json")
     expected_defs = [
-        (
-            f"{yaml_path}/definitions/{subdir}/ip.yml",
-            f"{json_path}/definitions/{subdir}/ip.json",
-        )
+        (f"{yaml_path}/definitions/{subdir}/ip.yml", f"{json_path}/definitions/{subdir}/ip.json",)
         for subdir in ("arrays", "objects", "properties")
     ]
     expected_schemas = [
-        (f"{yaml_path}/schemas/{schema}.yml", f"{json_path}/schemas/{schema}.json")
-        for schema in ("dns", "ntp")
+        (f"{yaml_path}/schemas/{schema}.yml", f"{json_path}/schemas/{schema}.json") for schema in ("dns", "ntp")
     ]
     mock = set(expected_defs + expected_schemas)
     # the results in actual are unordered, so test just ensures contents are the same
@@ -111,9 +107,7 @@ def test_generate_validation_error_attributes():
     actual = utils.generate_validation_error_attributes(invalid_data, validator)
     mock = {
         "message": "'10.1.1.1000' is not a 'ipv4'",
-        "schema_path": deque(
-            ["properties", "ntp_servers", "items", "properties", "address", "format"]
-        ),
+        "schema_path": deque(["properties", "ntp_servers", "items", "properties", "address", "format"]),
         "validator": "format",
         "validator_value": "ipv4",
     }
@@ -189,9 +183,7 @@ def test_resolve_json_refs():
 
 
 def test_get_schema_properties():
-    schema_files = [
-        f"tests/mocks/schema/json/schemas/{schema}.json" for schema in ("dns", "ntp")
-    ]
+    schema_files = [f"tests/mocks/schema/json/schemas/{schema}.json" for schema in ("dns", "ntp")]
     actual = utils.get_schema_properties(schema_files)
     mock = {
         "dns": ["dns_servers"],

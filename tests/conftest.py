@@ -13,9 +13,7 @@ CFG = utils.load_config()
 # It is necessary to replace backslashes with forward slashes on Windows systems
 BASE_URI = f"file:{os.path.realpath(CFG['json_schema_path'])}/".replace("\\", "/")
 JSON_SCHEMA_DEFINITIONS = CFG["json_schema_definitions"]
-JSON_SCHEMA_FILES = [
-    os.path.basename(file) for file in glob.glob(f"{JSON_SCHEMA_DEFINITIONS}/*.json")
-]
+JSON_SCHEMA_FILES = [os.path.basename(file) for file in glob.glob(f"{JSON_SCHEMA_DEFINITIONS}/*.json")]
 DATA_MODELS = [os.path.splitext(filename)[0] for filename in JSON_SCHEMA_FILES]
 
 
@@ -53,9 +51,7 @@ def get_schema_test_data(test_type, models, validators):
         Testing snmpv3.json against snmp schema
         >>>
     """
-    model_test_file_map = {
-        model: glob.glob(f"tests/mocks/{model}/{test_type}/*.json") for model in models
-    }
+    model_test_file_map = {model: glob.glob(f"tests/mocks/{model}/{test_type}/*.json") for model in models}
     return (
         (model, validator, utils.get_path_and_filename(valid_test_file)[1])
         for model, validator in zip(models, validators)
@@ -82,10 +78,7 @@ def read_schema(model):
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--schema",
-        action="append",
-        default=[],
-        help="List of schemas to validate config files against.",
+        "--schema", action="append", default=[], help="List of schemas to validate config files against.",
     )
     parser.addoption(
         "--hostvars",
@@ -94,10 +87,7 @@ def pytest_addoption(parser):
         help="The path to the directory of host variables to validate against schema.",
     )
     parser.addoption(
-        "--hosts",
-        action="store",
-        default=None,
-        help="List of hosts to execute tests against.",
+        "--hosts", action="store", default=None, help="List of hosts to execute tests against.",
     )
 
 
@@ -120,9 +110,7 @@ def pytest_generate_tests(metafunc):
     schemas = [read_schema(model) for model in models]
     validators = [
         Draft7Validator(
-            schema,
-            format_checker=draft7_format_checker,
-            resolver=RefResolver(base_uri=BASE_URI, referrer=schema),
+            schema, format_checker=draft7_format_checker, resolver=RefResolver(base_uri=BASE_URI, referrer=schema),
         )
         for schema in schemas
     ]

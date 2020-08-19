@@ -24,14 +24,13 @@ def test_init_groups(ansible_inv):
         "na": ["host3"],
         "emea": ["host4"],
         "nyc": ["host3"],
-        "lon": ["host4"]
+        "lon": ["host4"],
     }
     vars = ansible_inv.var_mgr.get_vars()
     actual = vars["groups"]
     actual.pop("all")
     actual.pop("ungrouped")
     assert actual == expected
-
 
 
 def test_get_hosts_containing_no_var(ansible_inv):
@@ -50,21 +49,12 @@ def test_get_hosts_containing_var(ansible_inv):
 
 def test_get_host_vars(ansible_inv):
     expected = {
-        "dns_servers": [
-            {"address": "10.7.7.7", "vrf": "mgmt"},
-            {"address": "10.8.8.8"},
-        ],
+        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"},],
         "group_names": ["ios", "na", "nyc"],
         "inventory_hostname": "host3",
         "ntp_servers": [{"address": "10.3.3.3"}],
-        "os_dns": [
-            {"address": "10.7.7.7", "vrf": "mgmt"},
-            {"address": "10.8.8.8"},
-        ],
-        "region_dns": [
-            {"address": "10.1.1.1", "vrf": "mgmt"},
-            {"address": "10.2.2.2"},
-        ],
+        "os_dns": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"},],
+        "region_dns": [{"address": "10.1.1.1", "vrf": "mgmt"}, {"address": "10.2.2.2"},],
     }
 
     filtered_hosts = ansible_inv.get_hosts_containing(var="os_dns")
