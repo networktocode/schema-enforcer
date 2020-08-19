@@ -6,7 +6,7 @@ from invoke import task
 # Can be set to a separate Python version to be used for launching or building container
 PYTHON_VER = os.getenv("PYTHON_VER", "3.6")
 # Name of the docker image/container
-NAME = os.getenv("IMAGE_NAME", "python-template")
+NAME = os.getenv("IMAGE_NAME", "jsonschema-testing")
 # Gather current working directory for Docker commands
 PWD = os.getcwd()
 
