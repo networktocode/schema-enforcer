@@ -4,13 +4,10 @@ import toml
 from pathlib import Path
 from typing import Set, Dict, List, Optional
 
-from pydantic import (
-    BaseModel,
-    BaseSettings,
-    ValidationError
-)
+from pydantic import BaseModel, BaseSettings, ValidationError
 
 SETTINGS = None
+
 
 class Settings(BaseSettings):
 
@@ -46,7 +43,7 @@ def load(config_file_name="pyproject.toml", config_data=None):
 
     if config_data:
         SETTINGS = Settings(**config_data)
-        return 
+        return
     if os.path.exists(config_file_name):
         config_string = Path(config_file_name).read_text()
         config_tmp = toml.loads(config_string)
@@ -63,8 +60,9 @@ def load(config_file_name="pyproject.toml", config_data=None):
 
     SETTINGS = Settings()
 
+
 # CONFIG_DEFAULTS = {
-# 
+#
 # "schema_search_directories": ["schema/schemas/"],
 # "schema_file_extensions": [".json", ".yml"],
 # "instance_exclude_filenames": [".yamllint.yml", ".travis.yml"],

@@ -3,6 +3,7 @@ import jsonref
 from jsonschema_testing.utils import load_file, find_files
 from .jsonschema import JsonSchema
 
+
 class SchemaManager:
     """THe SchemaManager class is designed to load and organaized all the schemas."""
 
@@ -15,7 +16,7 @@ class SchemaManager:
         """
         self.schemas = {}
         self.config = config
-        
+
         full_schema_dir = f"{config.main_directory}/{config.schema_directory}/"
 
         files = find_files(

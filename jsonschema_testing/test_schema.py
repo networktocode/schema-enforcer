@@ -26,6 +26,7 @@ import re
 
 SCHEMA_TEST_DIR = "tests"
 
+
 def validate_instances(schema_manager, instance_manager, show_pass=False, strict=False):
     """[summary]
 
@@ -106,7 +107,7 @@ def validate_schema(show_pass, show_checks, strict):
         show_checks (bool): show schemas which will be validated against each instance file
         strict (bool): Forces a stricter schema check that warns about unexpected additional properties
     """
-    config.load() 
+    config.load()
 
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
@@ -142,7 +143,7 @@ def check_schemas(show_pass):
     Args:
         show_pass (bool): show successful schema validations
     """
-    config.load() 
+    config.load()
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
     # ---------------------------------------------------------------------
@@ -210,7 +211,6 @@ def view_validation_error(schema, mock):
     config.load()
 
     sm = SchemaManager(config=config.SETTINGS)
-
 
     # TODO need to refactor this one this one
     # schema_root_dir = os.path.realpath(CFG["json_schema_path"])
@@ -306,7 +306,7 @@ def ansible(inventory, limit, show_pass):
         PASS | [HOST] spine1 | [VAR] interfaces | [SCHEMA] schemas/interfaces
         ALL SCHEMA VALIDATION CHECKS PASSED
     """
-    config.load() 
+    config.load()
 
     def print_error(host, schema_id, err):
         """Print Validation error for ansible host to screen.

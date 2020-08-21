@@ -525,10 +525,8 @@ def find_files(file_extensions, search_directories, excluded_filenames, excluded
             abs_excluded = os.path.abspath(directory)
             if abs_current.startswith(abs_excluded):
                 return True
-        
-        return False 
 
-
+        return False
 
     if not isinstance(search_directories, list):
         search_directories = list(search_directories)
@@ -549,12 +547,12 @@ def find_files(file_extensions, search_directories, excluded_filenames, excluded
             search_directory = dir
 
         for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
-            
+
             if is_part_of_excluded_dirs(root):
                 continue
 
             for file in files:
-                # Extract the extension of the file and check if the extension matches the list 
+                # Extract the extension of the file and check if the extension matches the list
                 _, ext = os.path.splitext(file)
                 if ext in file_extensions:
                     if file not in excluded_filenames:
