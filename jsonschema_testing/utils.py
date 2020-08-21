@@ -507,7 +507,7 @@ def find_files(file_extensions, search_directories, excluded_filenames, excluded
     """
 
     def is_part_of_excluded_dirs(current_dir):
-        """Check if the current_dir is part of one of the excluded directory.
+        """Check if the current_dir is part of one of excluded_directories.
         
         To simplify the matching all dirs are converted to absolute path
 

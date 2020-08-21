@@ -10,22 +10,36 @@ SETTINGS = None
 
 
 class Settings(BaseSettings):
+    """
+    Main Settings Class for the project.
+    The type of each setting is defined using Python annotations 
+    and is validated when a config file is loaded with Pydantic.
+    
+    Most input files specific to this project are expected to be located in the same directory
+    schema/
+     - definitions
+     - schemas
+    """
 
+    # Main directory names
     main_directory: str = "schema"
     definition_directory: str = "definitions"
     schema_directory: str = "schemas"
 
-    instance_file_extensions: List[str] = [".json", ".yaml", ".yml"]
-    instance_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
-    instance_search_directories: List[str] = ["./"]
-
+    # Settings specific to the schema files
     schema_file_extensions: List[str] = [".json", ".yaml", ".yml"]  # Do we still need that ?
     schema_file_exclude_filenames: List[str] = []
+
+    # settings specific to search and identify all instance file to validate
+    instance_search_directories: List[str] = ["./"]
+    instance_file_extensions: List[str] = [".json", ".yaml", ".yml"]
+    instance_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
 
     schema_mapping: Dict = dict()
 
     class Config:
-        # env_prefix = 'my_prefix_'  # defaults to no prefix, i.e. ""
+        """Additional parameters to automatically map environment variable to some settings."""
+
         fields = {
             "main_directory": {"env": "jsonschema_directory"},
             "definition_directory": {"env": "jsonschema_definition_directory"},
@@ -34,7 +48,11 @@ class Settings(BaseSettings):
 
 def load(config_file_name="pyproject.toml", config_data=None):
     """
-    
+    Load a configuration file in pyproject.toml format that contains the settings.
+
+    The settings for this app are expected to be in [tool.json_schema_testing] in TOML
+    if nothing is found in the config file or if the config file do not exist, the default values will be used.
+
     Args:
         config_file_name (str, optional): Name of the configuration file to load. Defaults to "pyproject.toml".
         config_data (dict, optional): dict to load as the config file instead of reading the file. Defaults to None.
@@ -59,24 +77,3 @@ def load(config_file_name="pyproject.toml", config_data=None):
             return
 
     SETTINGS = Settings()
-
-
-# CONFIG_DEFAULTS = {
-#
-# "schema_search_directories": ["schema/schemas/"],
-# "schema_file_extensions": [".json", ".yml"],
-# "instance_exclude_filenames": [".yamllint.yml", ".travis.yml"],
-# "instance_search_directories": ["hostvars/"],
-# "instance_file_extensions": [".json", ".yml"],
-# "yaml_schema_path": "schema/yaml/schemas/",   REMOVED
-# "json_schema_path": "schema/json/schemas/",   REMOVED
-# Define location to place schema definitions after resolving ``$ref``
-# "json_schema_definitions": "schema/json/definitions", REPLACED with schema_definitions_directory
-# "yaml_schema_definitions": "schema/yaml/definitions", REPLACE with schema_definitions_directory
-# "json_full_schema_definitions": "schema/json/full_schemas", REMOVED
-# Define network device variables location
-# "device_variables": "hostvars/",    REMOVED
-# Define path to inventory
-# "inventory_path": "inventory/",     REMOVED
-# "schema_mapping": {},               DONE
-# }
