@@ -1,0 +1,5 @@
+# jsonschema: schemas/dns_servers_v2
+---
+dns_servers:
+  - host: "10.1.1.1"
+  - host: "10.2.2.2"
