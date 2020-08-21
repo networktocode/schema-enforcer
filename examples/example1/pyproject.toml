@@ -1,25 +1,11 @@
 [tool.jsonschema_testing]
-schema_exclude_filenames = []
-schema_search_directories = ["schema/schemas/"]
-# schema_search_directories = ["/site/cfg/schemas/", "ntc_schemas_core"]  # ntc_schemas_.. (without /) will be found as a python package
+schema_file_exclude_filenames = []
+
+definition_directory = "definitions"
+schema_directory = "schemas"
 
 instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
-instance_search_directories = ["hostvars/"]
-
-yaml_schema_path = "schema/yaml/schemas/"
-json_schema_path = "schema/json/schemas/"
-
-# Define location to place schema definitions after resolving ``$ref``
-json_schema_definitions = "schema/json/definitions"
-yaml_schema_definitions = "schema/yaml/definitions"
-json_full_schema_definitions = "schema/json/full_schemas"
-
-# Define network device variables location
-device_variables = "examples/hostvars"
-
-# Define path to inventory
-inventory_path = "examples/inventory"
-
+# instance_search_directories = ["hostvars/"]
 
 [tool.jsonschema_testing.schema_mapping]
 # Map instance filename to schema filename

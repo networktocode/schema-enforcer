@@ -10,18 +10,20 @@ SCHEMA_TAG = "jsonschema"
 class InstanceFileManager:
     """InstanceFileManager."""
 
-    def __init__(self, search_directories, excluded_filenames, schema_mapping):
+    def __init__(self, config):
         """Initialize the interface File manager.
         The file manager will locate all potential instance files in the search directories
         """
         self.instances = []
+        self.config = config
 
         # Find all instance files
         # TODO need to load file extensions from the config
         files = find_files(
-            file_extensions=[".yaml", ".yml", ".json"],
-            search_directories=search_directories,
-            excluded_filenames=excluded_filenames,
+            file_extensions=config.instance_file_extensions,
+            search_directories=config.instance_search_directories,
+            excluded_filenames=config.schema_file_exclude_filenames,
+            excluded_directories=[config.main_directory],
             return_dir=True,
         )
 
@@ -29,8 +31,8 @@ class InstanceFileManager:
         # Create the InstanceFile object and save it
         for root, filename in files:
             matches = []
-            if filename in schema_mapping:
-                matches.extend(schema_mapping[filename])
+            if filename in config.schema_mapping:
+                matches.extend(config.schema_mapping[filename])
 
             instance = InstanceFile(root=root, filename=filename, matches=matches)
             self.instances.append(instance)

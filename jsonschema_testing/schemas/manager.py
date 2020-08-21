@@ -1,14 +1,12 @@
 import os
 import jsonref
 from jsonschema_testing.utils import load_file, find_files
-
 from .jsonschema import JsonSchema
-
 
 class SchemaManager:
     """THe SchemaManager class is designed to load and organaized all the schemas."""
 
-    def __init__(self, schema_directories, excluded_filenames):
+    def __init__(self, config):
         """Initialize the SchemaManager and search for all schema files in the schema_directories.
 
         Args:
@@ -16,11 +14,14 @@ class SchemaManager:
             excluded_filenames (list, str): Specify any files that should be excluded from importing as schemas (exact matches).
         """
         self.schemas = {}
+        self.config = config
+        
+        full_schema_dir = f"{config.main_directory}/{config.schema_directory}/"
 
         files = find_files(
             file_extensions=[".yaml", ".yml", ".json"],
-            search_directories=schema_directories,
-            excluded_filenames=excluded_filenames,
+            search_directories=[full_schema_dir],
+            excluded_filenames=config.schema_file_exclude_filenames,
             return_dir=True,
         )
 
