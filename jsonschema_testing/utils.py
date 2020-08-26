@@ -567,7 +567,8 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
 
     return data
 
-def find_and_load_file(filename, formats=["yml", "yaml", "json"])
+
+def find_and_load_file(filename, formats=["yml", "yaml", "json"]):
     """
     Search a file based on multiple extensions and load its content if found.
     
@@ -583,9 +584,8 @@ def find_and_load_file(filename, formats=["yml", "yaml", "json"])
         file_ext = f"{filename}.{ext}"
         if not os.path.isfile(file_ext):
             continue
-        
+
         data = load_file(file_ext)
         return data
 
     return None
-

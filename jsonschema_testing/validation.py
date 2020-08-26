@@ -1,12 +1,13 @@
-
 from typing import Dict, FrozenSet, List, Optional, Sequence, Set, Tuple, Union, Any
 from enum import Enum, IntEnum
 from pydantic import BaseModel
 from termcolor import colored
 
+
 class ResultEnum(str, Enum):
-    passed = 'PASS'
-    failed = 'FAIL'
+    passed = "PASS"
+    failed = "FAIL"
+
 
 class ValidationResult(BaseModel):
 
@@ -45,7 +46,4 @@ class ValidationResult(BaseModel):
         )
 
     def print_passed(self):
-        print(
-            colored(f"PASS", "green") + 
-            f" [{self.instance_type}] {self.instance_location}/{self.instance_name}"
-        )
+        print(colored(f"PASS", "green") + f" [{self.instance_type}] {self.instance_location}/{self.instance_name}")

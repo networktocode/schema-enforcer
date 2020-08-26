@@ -28,6 +28,7 @@ SCHEMA_TEST_DIR = "tests"
 
 CFG = utils.load_config()
 
+
 @click.group()
 def main():
     pass
@@ -82,7 +83,6 @@ def validate_schema(show_pass, show_checks, strict):
         ifm.print_instances_schema_mapping()
         sys.exit(0)
 
-
     error_exists = False
     for instance in ifm.instances:
         for result in instance.validate(sm, strict):
@@ -124,7 +124,7 @@ def check_schemas(show_pass):
     error_exists = False
     for schema_id, schema in sm.iter_schemas():
         for result in schema.check_if_valid():
-            
+
             result.instance_type = "SCHEMA"
             result.instance_name = schema_id
             result.instance_location = ""
@@ -135,7 +135,7 @@ def check_schemas(show_pass):
 
             elif result.passed() and show_pass:
                 result.print()
- 
+
     if not error_exists:
         print(colored("ALL SCHEMAS ARE VALID", "green"))
 
@@ -302,7 +302,7 @@ def ansible(inventory, limit, show_pass):
 
             for schema_id, schema in applicable_schemas.items():
                 for result in schema.validate({key: value}):
-                    
+
                     result.instance_type = "VAR"
                     result.instance_name = key
                     result.instance_location = host.name

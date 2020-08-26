@@ -7,8 +7,6 @@ from jsonschema_testing.validation import ValidationResult, ResultEnum
 from .jsonschema import JsonSchema
 
 
-
-
 class SchemaManager:
     """THe SchemaManager class is designed to load and organaized all the schemas."""
 
@@ -79,7 +77,7 @@ class SchemaManager:
         error_exists = False
 
         for schema_id, schema in self.iter_schemas():
-            
+
             schema_valid = schema.check_if_valid()
             valid_results = self.test_schema_valid(schema_id)
             invalid_results = self.test_schema_invalid(schema_id)
@@ -91,10 +89,9 @@ class SchemaManager:
 
                 elif result.passed():
                     result.print()
-        
+
         if not error_exists:
             print(colored("ALL SCHEMAS ARE VALID", "green"))
-
 
     def test_schema_valid(self, schema_id):
         """
@@ -107,9 +104,9 @@ class SchemaManager:
             list of ValidationResult
         """
 
-        #TODO Check if top dir is present
-        #TODO Check if valid dir is present
-            
+        # TODO Check if top dir is present
+        # TODO Check if valid dir is present
+
         # See how we can define a better name
         valid_test_dir = f"schema/tests/{short_schema_id}/valid"
         short_schema_id = schema_id.split("/")[1]
@@ -126,14 +123,14 @@ class SchemaManager:
         for root, filename in valid_files:
 
             test_data = load_file(os.path.join(root, filename))
-            
+
             error_exists = False
             for result in schema.validate(test_data, strict=strict):
                 result.instance_name = filename
                 result.instance_location = root
                 result.instance_type = "TEST"
                 results.append(result)
-        
+
         return results
 
     def test_schema_invalid(self, schema_id):
@@ -149,7 +146,7 @@ class SchemaManager:
 
         invalid_test_dir = f"schema/tests/{short_schema_id}/invalid"
         test_dirs = next(os.walk(invalid_test_dir))[1]
-        
+
         results = []
         for test_dir in test_dirs:
 
@@ -158,17 +155,14 @@ class SchemaManager:
             expected_results = find_and_load_file(os.path.join(root, invalid_test_dir, test_dir, "results"))
             results = schema.validate_to_dict(data)
 
-            if not expected_results: 
+            if not expected_results:
                 continue
 
-            results_sorted = sorted(results, key = lambda i: i['message'])
-            expected_results_sorted = sorted(expected_results, key = lambda i: i['message'])
+            results_sorted = sorted(results, key=lambda i: i["message"])
+            expected_results_sorted = sorted(expected_results, key=lambda i: i["message"])
 
             params = dict(
-                schema_id=schema_id,
-                instance_type="TEST",
-                instance_name=test_dir,
-                instance_location=invalid_test_dir
+                schema_id=schema_id, instance_type="TEST", instance_name=test_dir, instance_location=invalid_test_dir
             )
 
             if results_sorted != expected_results_sorted:
@@ -204,7 +198,7 @@ class SchemaManager:
 
         # For each test, load the data file, test the data against the schema and save the results
         for test_dir in test_dirs:
-            data = find_and (os.path.join(root, invalid_test_dir, test_dir, "data"))
+            data = find_and(os.path.join(root, invalid_test_dir, test_dir, "data"))
             results = schema.validate_to_dict(data)
             result_file = os.path.join(root, invalid_test_dir, test_dir, "results.yml")
             dump_data_to_yaml({"results": results}, result_file)
