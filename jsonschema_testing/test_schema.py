@@ -121,23 +121,7 @@ def check_schemas(show_pass):
         error("No schemas were loaded")
         sys.exit(1)
 
-    error_exists = False
-    for schema_id, schema in sm.iter_schemas():
-        for result in schema.check_if_valid():
-
-            result.instance_type = "SCHEMA"
-            result.instance_name = schema_id
-            result.instance_location = ""
-
-            if not result.passed():
-                error_exists = True
-                result.print()
-
-            elif result.passed() and show_pass:
-                result.print()
-
-    if not error_exists:
-        print(colored("ALL SCHEMAS ARE VALID", "green"))
+    sm.test_schemas()
 
 
 @main.command()

@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     main_directory: str = "schema"
     definition_directory: str = "definitions"
     schema_directory: str = "schemas"
+    test_directory: str = "tests"
 
     # Settings specific to the schema files
     schema_file_extensions: List[str] = [".json", ".yaml", ".yml"]  # Do we still need that ?

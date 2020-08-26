@@ -115,30 +115,37 @@ class JsonSchema:
         """Check if the schema itself is valid against JasonSchema draft7.
         
         Returns:
-            Iterator: Iterator of ValidationResult
+            List[ValidationResult]
         """
         validator = Draft7Validator(v7schema)
 
+        results = []
         has_error = False
         for err in validator.iter_errors(self.data):
 
             has_error = True
 
-            yield ValidationResult(
-                schema_id=self.id,
-                result=ResultEnum.failed,
-                message=err.message,
-                absolute_path=list(err.absolute_path),
-                instance_type="SCHEMA",
-                instance_name=self.id,
-                instance_location="",
+            results.append(
+                ValidationResult(
+                    schema_id=self.id,
+                    result=ResultEnum.failed,
+                    message=err.message,
+                    absolute_path=list(err.absolute_path),
+                    instance_type="SCHEMA",
+                    instance_name=self.id,
+                    instance_location="",
+                )
             )
 
         if not has_error:
-            yield ValidationResult(
-                schema_id=self.id,
-                result=ResultEnum.passed,
-                instance_type="SCHEMA",
-                instance_name=self.id,
-                instance_location="",
+            results.append(
+                ValidationResult(
+                    schema_id=self.id,
+                    result=ResultEnum.passed,
+                    instance_type="SCHEMA",
+                    instance_name=self.id,
+                    instance_location="",
+                )
             )
+
+        return results

@@ -20,7 +20,7 @@ class ValidationResult(BaseModel):
     strict: bool = False
 
     # if failed
-    absolute_path: Optional[List[str]]
+    absolute_path: Optional[List[str]] = []
     message: Optional[str]
 
     def passed(self):

@@ -72,8 +72,6 @@ class SchemaManager:
           - Valid tests must pass
           - Invalid tests must pass 
         """
-
-        test_dir = "schema/tests"
         error_exists = False
 
         for schema_id, schema in self.iter_schemas():
@@ -82,18 +80,16 @@ class SchemaManager:
             valid_results = self.test_schema_valid(schema_id)
             invalid_results = self.test_schema_invalid(schema_id)
 
-            for result in valid_results + invalid_results:
+            for result in schema_valid + valid_results + invalid_results:
                 if not result.passed():
                     error_exists = True
-                    result.print()
 
-                elif result.passed():
-                    result.print()
+                result.print()
 
         if not error_exists:
             print(colored("ALL SCHEMAS ARE VALID", "green"))
 
-    def test_schema_valid(self, schema_id):
+    def test_schema_valid(self, schema_id, strict=False):
         """
         Execute all valid tests for a given schema. 
 
@@ -104,12 +100,15 @@ class SchemaManager:
             list of ValidationResult
         """
 
+        schema = self.schemas[schema_id]
+
         # TODO Check if top dir is present
         # TODO Check if valid dir is present
 
         # See how we can define a better name
-        valid_test_dir = f"schema/tests/{short_schema_id}/valid"
         short_schema_id = schema_id.split("/")[1]
+        test_dir = self._get_test_directory()
+        valid_test_dir = f"{test_dir}/{short_schema_id}/valid"
 
         valid_files = find_files(
             file_extensions=[".yaml", ".yml", ".json"],
@@ -133,7 +132,7 @@ class SchemaManager:
 
         return results
 
-    def test_schema_invalid(self, schema_id):
+    def test_schema_invalid(self, schema_id, strict=False):
         """
         Execute all invalid tests for a given schema. 
 
@@ -144,7 +143,12 @@ class SchemaManager:
             list of ValidationResult
         """
 
-        invalid_test_dir = f"schema/tests/{short_schema_id}/invalid"
+        schema = self.schemas[schema_id]
+
+        root = os.path.abspath(os.getcwd())
+        test_dir = self._get_test_directory()
+        short_schema_id = schema_id.split("/")[1]
+        invalid_test_dir = f"{test_dir}/{short_schema_id}/invalid"
         test_dirs = next(os.walk(invalid_test_dir))[1]
 
         results = []
@@ -153,13 +157,13 @@ class SchemaManager:
             # TODO Check if data and expected results are present
             data = find_and_load_file(os.path.join(root, invalid_test_dir, test_dir, "data"))
             expected_results = find_and_load_file(os.path.join(root, invalid_test_dir, test_dir, "results"))
-            results = schema.validate_to_dict(data)
+            tmp_results = schema.validate_to_dict(data)
 
             if not expected_results:
                 continue
 
-            results_sorted = sorted(results, key=lambda i: i["message"])
-            expected_results_sorted = sorted(expected_results, key=lambda i: i["message"])
+            results_sorted = sorted(tmp_results, key=lambda i: i.get("message", ""))
+            expected_results_sorted = sorted(expected_results["results"], key=lambda i: i.get("message", ""))
 
             params = dict(
                 schema_id=schema_id, instance_type="TEST", instance_name=test_dir, instance_location=invalid_test_dir
@@ -174,7 +178,7 @@ class SchemaManager:
             val = ValidationResult(**params)
             results.append(val)
 
-        return results
+        return results  # [ ValidationResult(**result) for result in results ]
 
     def generate_invalid_tests_expected(self, schema_id):
         """
@@ -190,10 +194,10 @@ class SchemaManager:
         root = os.path.abspath(os.getcwd())
         short_schema_id = schema_id.split("/")[1]
 
-        # TODO Get base test directory from configuration
         # TODO Check if invalid dir exist for this schema
         # Find list of all subdirectory in the invalid dir
-        invalid_test_dir = f"schema/tests/{short_schema_id}/invalid"
+        test_dir = self._get_test_directory()
+        invalid_test_dir = f"{test_dir}/{short_schema_id}/invalid"
         test_dirs = next(os.walk(invalid_test_dir))[1]
 
         # For each test, load the data file, test the data against the schema and save the results
@@ -203,3 +207,7 @@ class SchemaManager:
             result_file = os.path.join(root, invalid_test_dir, test_dir, "results.yml")
             dump_data_to_yaml({"results": results}, result_file)
             print(f"Generated/Updated results file: {result_file}")
+
+    def _get_test_directory(self):
+        """Return the path to the main schema test directory."""
+        return f"{self.config.main_directory}/{self.config.test_directory}"
