@@ -5,7 +5,7 @@ from jsonschema import (
     Draft7Validator,
     draft7_format_checker,
 )
-from jsonschema_testing.validation import ValidationResult, ResultEnum
+from jsonschema_testing.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
 
 # TODO do we need to catch a possible exception here ?
 v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
@@ -54,12 +54,12 @@ class JsonSchema:
 
             has_error = True
             yield ValidationResult(
-                schema_id=self.id, result=ResultEnum.failed, message=err.message, absolute_path=list(err.absolute_path)
+                schema_id=self.id, result=RESULT_FAIL, message=err.message, absolute_path=list(err.absolute_path)
             )
 
         if not has_error:
             yield ValidationResult(
-                schema_id=self.id, result=ResultEnum.passed,
+                schema_id=self.id, result=RESULT_PASS,
             )
 
     def validate_to_dict(self, data, strict=False):
@@ -136,7 +136,7 @@ class JsonSchema:
             results.append(
                 ValidationResult(
                     schema_id=self.id,
-                    result=ResultEnum.failed,
+                    result=RESULT_FAIL,
                     message=err.message,
                     absolute_path=list(err.absolute_path),
                     instance_type="SCHEMA",
@@ -149,7 +149,7 @@ class JsonSchema:
             results.append(
                 ValidationResult(
                     schema_id=self.id,
-                    result=ResultEnum.passed,
+                    result=RESULT_PASS,
                     instance_type="SCHEMA",
                     instance_name=self.id,
                     instance_location="",

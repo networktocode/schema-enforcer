@@ -1,4 +1,4 @@
 ---
 results:
-  - result: "ResultEnum.passed"
+  - result: "PASS"
     schema_id: "schemas/dns_servers"

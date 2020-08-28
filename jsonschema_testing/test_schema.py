@@ -125,45 +125,6 @@ def check_schemas(show_pass):
 
 
 @main.command()
-@click.option("--schema", "-s", help=" The name of the schema to validate against.", required=True)
-@click.option(
-    "--mock", "-m", "mock_file", help="The name of the mock file to view the error attributes.", required=True
-)
-def view_validation_error(schema, mock):
-    """
-    Generates ValidationError from invalid mock data and prints available Attrs.
-
-    This is meant to be used as an aid to generate test cases for invalid mock
-    schema data.
-
-    Args:
-        schema (str): The name of the schema to validate against.
-        mock_file (str): The name of the mock file to view the error attributes.
-
-    Example:
-        $ test-schema view-validation-error -s ntp -m invalid_ip
-
-        absolute_path        = deque(['ntp_servers', 0, 'address'])
-        absolute_schema_path = deque(['properties', 'ntp_servers', 'items', ...])
-        cause                = None
-        context              = []
-        message              = '10.1.1.1000' is not a 'ipv4'
-        parent               = None
-        path                 = deque(['ntp_servers', 0, 'address'])
-        schema               = {'type': 'string', 'format': 'ipv4'}
-        schema_path          = deque(['properties', 'ntp_servers', 'items', ...])
-        validator            = format
-        validator_value      = ipv4
-
-        $
-    """
-    config.load()
-
-    sm = SchemaManager(config=config.SETTINGS)
-    sm.test_schemas()
-
-
-@main.command()
 @click.option("--schema", help="The name of the schema to validate against.", required=True)
 def generate_invalid_expected(schema):
     """

@@ -1,6 +1,6 @@
 ---
 results:
-  - result: "ResultEnum.failed"
+  - result: "FAIL"
     schema_id: "schemas/syslog_servers"
     absolute_path: []
     message: "'syslog_servers' is a required property"

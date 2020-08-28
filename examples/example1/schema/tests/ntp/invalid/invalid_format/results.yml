@@ -1,6 +1,6 @@
 ---
 results:
-  - result: "ResultEnum.failed"
+  - result: "FAIL"
     schema_id: "schemas/ntp"
     absolute_path:
       - "ntp_servers"

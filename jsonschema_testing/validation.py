@@ -1,22 +1,17 @@
 from typing import Dict, FrozenSet, List, Optional, Sequence, Set, Tuple, Union, Any
 from enum import Enum, IntEnum
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from termcolor import colored
 
-
-class ResultEnum(str, Enum):
-    """Enum to store the result of a test, either PASS or FAIL."""
-
-    passed = "PASS"
-    failed = "FAIL"
-
+RESULT_PASS = "PASS"
+RESULT_FAIL = "FAIL"
 
 class ValidationResult(BaseModel):
     """The ValidationResult object is meant to store the result of a given test 
     along with some contextual information about the test itself.
     """
 
-    result: ResultEnum
+    result: str
     schema_id: str
     instance_name: Optional[str]
     instance_location: Optional[str]
@@ -28,13 +23,19 @@ class ValidationResult(BaseModel):
     absolute_path: Optional[List[str]] = []
     message: Optional[str]
 
+    @validator('result')
+    def result_must_be_pass_or_fail(cls, v):
+        if v.upper() not in [RESULT_PASS, RESULT_FAIL]:
+            raise ValueError('must be either PASS or FAIL')
+        return v.upper()
+
     def passed(self):
         """Return True or False to indicate if the test has passed.
         
         Returns
             Bool: indicate if the test passed or failed
         """
-        if self.result == ResultEnum.passed:
+        if self.result == RESULT_PASS:
             return True
 
         return False

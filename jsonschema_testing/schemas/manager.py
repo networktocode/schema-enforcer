@@ -1,8 +1,9 @@
 import os
+import json
 import jsonref
 from termcolor import colored
 from jsonschema_testing.utils import load_file, load_data, find_and_load_file, find_files, dump_data_to_yaml
-from jsonschema_testing.validation import ValidationResult, ResultEnum
+from jsonschema_testing.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
 
 from .jsonschema import JsonSchema
 
@@ -162,18 +163,22 @@ class SchemaManager:
             if not expected_results:
                 continue
 
+            # Currently the expected results are using OrderedDict instead of Dict
+            # the easiest way to remove that is to dump into JSON and convert back into a "normal" dict
+            expected_results = json.loads(json.dumps(expected_results["results"]))
+
             results_sorted = sorted(tmp_results, key=lambda i: i.get("message", ""))
-            expected_results_sorted = sorted(expected_results["results"], key=lambda i: i.get("message", ""))
+            expected_results_sorted = sorted(expected_results, key=lambda i: i.get("message", ""))
 
             params = dict(
                 schema_id=schema_id, instance_type="TEST", instance_name=test_dir, instance_location=invalid_test_dir
             )
-
+            import pdb; pdb.set_trace()
             if results_sorted != expected_results_sorted:
-                params["result"] = ResultEnum.failed
+                params["result"] = RESULT_FAIL
                 params["message"] = "Invalid test do not match"
             else:
-                params["result"] = ResultEnum.passed
+                params["result"] = RESULT_PASS
 
             val = ValidationResult(**params)
             results.append(val)
