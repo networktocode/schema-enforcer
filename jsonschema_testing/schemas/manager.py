@@ -173,9 +173,6 @@ class SchemaManager:
             params = dict(
                 schema_id=schema_id, instance_type="TEST", instance_name=test_dir, instance_location=invalid_test_dir
             )
-            import pdb
-
-            pdb.set_trace()
             if results_sorted != expected_results_sorted:
                 params["result"] = RESULT_FAIL
                 params["message"] = "Invalid test do not match"
