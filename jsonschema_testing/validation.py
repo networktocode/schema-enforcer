@@ -6,6 +6,7 @@ from termcolor import colored
 RESULT_PASS = "PASS"
 RESULT_FAIL = "FAIL"
 
+
 class ValidationResult(BaseModel):
     """The ValidationResult object is meant to store the result of a given test 
     along with some contextual information about the test itself.
@@ -23,10 +24,10 @@ class ValidationResult(BaseModel):
     absolute_path: Optional[List[str]] = []
     message: Optional[str]
 
-    @validator('result')
+    @validator("result")
     def result_must_be_pass_or_fail(cls, v):
         if v.upper() not in [RESULT_PASS, RESULT_FAIL]:
-            raise ValueError('must be either PASS or FAIL')
+            raise ValueError("must be either PASS or FAIL")
         return v.upper()
 
     def passed(self):
