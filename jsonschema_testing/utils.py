@@ -530,7 +530,6 @@ def load_file(filename, file_type=None):
 
     Returns:
         dict or list: content of the file in a python variable.
-    
     """
     if not file_type:
         file_type = "json" if filename.endswith(".json") else "yaml"
@@ -553,7 +552,7 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
 
     If file_type is not specified, yaml is assumed unless file_extension matches json
 
-    Dictionary returned is based on the filename, unless a data_key is specifiied
+    Dictionary returned is based on the filename, unless a data_key is specified
     """
     data = {}
 
@@ -577,7 +576,7 @@ def find_and_load_file(filename, formats=["yml", "yaml", "json"]):
         formats (List[str]): List of formats to search.
 
     Returns:
-        dict, list or None: content of the file in a python variable. None if no found could be found.
+        dict, list or None: content of the file in a python variable. None if no file could be found.
     """
     for ext in formats:
 

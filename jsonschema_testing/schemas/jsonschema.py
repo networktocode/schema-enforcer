@@ -42,7 +42,7 @@ class JsonSchema:
             data (dict, list): Data to validate against the schema
             strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
         Returns:
-            Iterator: Iterator of ValidationError
+            Iterator: Iterator of ValidationResult
         """
         if strict:
             validator = self.__get_strict_validator()
@@ -63,6 +63,14 @@ class JsonSchema:
             )
 
     def validate_to_dict(self, data, strict=False):
+        """Return a list of ValidationResult generated with the validate() function in dict() format instead of Python Object.
+        
+        Args:
+            data (dict, list): Data to validate against the schema
+            strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
+        Returns:
+            list of dictionnary 
+        """
         return [
             result.dict(exclude_unset=True, exclude_none=True) for result in self.validate(data=data, strict=strict)
         ]

@@ -189,7 +189,7 @@ class SchemaManager:
         """
 
         # TODO check if schema is present
-        schema = self.schema[schema_id]
+        schema = self.schemas[schema_id]
 
         root = os.path.abspath(os.getcwd())
         short_schema_id = schema_id.split("/")[1]
@@ -202,7 +202,7 @@ class SchemaManager:
 
         # For each test, load the data file, test the data against the schema and save the results
         for test_dir in test_dirs:
-            data = find_and(os.path.join(root, invalid_test_dir, test_dir, "data"))
+            data = find_and_load_file(os.path.join(root, invalid_test_dir, test_dir, "data"))
             results = schema.validate_to_dict(data)
             result_file = os.path.join(root, invalid_test_dir, test_dir, "results.yml")
             dump_data_to_yaml({"results": results}, result_file)

@@ -5,11 +5,16 @@ from termcolor import colored
 
 
 class ResultEnum(str, Enum):
+    """Enum to store the result of a test, either PASS or FAIL."""
+
     passed = "PASS"
     failed = "FAIL"
 
 
 class ValidationResult(BaseModel):
+    """The ValidationResult object is meant to store the result of a given test 
+    along with some contextual information about the test itself.
+    """
 
     result: ResultEnum
     schema_id: str
@@ -24,21 +29,25 @@ class ValidationResult(BaseModel):
     message: Optional[str]
 
     def passed(self):
-
+        """Return True or False to indicate if the test has passed.
+        
+        Returns
+            Bool: indicate if the test passed or failed
+        """
         if self.result == ResultEnum.passed:
             return True
 
         return False
 
     def print(self):
-
-        if self.result == ResultEnum.failed:
+        """Print the result of the test in CLI."""
+        if self.passed():
+            self.print_passed()
+        else:
             self.print_failed()
 
-        else:
-            self.print_passed()
-
     def print_failed(self):
+        """Print the result of the test to CLI when the test failed."""
         print(
             colored(f"FAIL", "red") + f" | [ERROR] {self.message}"
             f" [{self.instance_type}] {self.instance_location}/{self.instance_name}"
@@ -46,4 +55,5 @@ class ValidationResult(BaseModel):
         )
 
     def print_passed(self):
+        """Print the result of the test to CLI when the test passed."""
         print(colored(f"PASS", "green") + f" [{self.instance_type}] {self.instance_location}/{self.instance_name}")

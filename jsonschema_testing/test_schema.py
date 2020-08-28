@@ -186,12 +186,10 @@ def generate_invalid_expected(schema):
         invalid_ip.yml
         $
     """
-    sm = SchemaManager(
-        schema_directories=CFG.get("schema_search_directories", ["./"]),
-        excluded_filenames=CFG.get("schema_exclude_filenames", []),
-    )
+    config.load()
 
-    sm.generate_invalid_tests_expected(schema=schema)
+    sm = SchemaManager(config=config.SETTINGS)
+    sm.generate_invalid_tests_expected(schema_id=schema)
 
 
 @main.command()
