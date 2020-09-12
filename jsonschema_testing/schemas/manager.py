@@ -65,6 +65,20 @@ class SchemaManager:
         """
         return self.schemas.items()
 
+    def print_schemas_list(self):
+        """Print the list of all schemas to the cli.
+        
+        To avoid very long location string, dynamically replace the current dir with a dot
+        """
+
+        current_dir = os.getcwd()
+        columns = "{:20}{:12}{:30} {:20}"
+        print(columns.format("Name", "Type", "Location", "Filename"))
+        for schema_name, schema in self.iter_schemas():
+            print(
+                columns.format(schema_name, schema.schematype, schema.root.replace(current_dir, "."), schema.filename)
+            )
+
     def test_schemas(self):
         """Tests if all schemas are passing their tests.
         

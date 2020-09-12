@@ -13,20 +13,12 @@ from termcolor import colored
 from jsonschema import Draft7Validator
 from ruamel.yaml import YAML
 
-from jsonschema_testing import utils
+from jsonschema_testing.utils import MutuallyExclusiveOption
 from jsonschema_testing import config
 from .schemas.manager import SchemaManager
 from .instances.file import InstanceFileManager
 from .ansible_inventory import AnsibleInventory
 from .utils import warn, error
-
-
-import pkgutil
-import re
-
-SCHEMA_TEST_DIR = "tests"
-
-CFG = utils.load_config()
 
 
 @click.group()
@@ -50,10 +42,11 @@ def main():
     show_default=True,
 )
 @main.command()
-def validate_schema(show_pass, show_checks, strict):
+def validate(show_pass, show_checks, strict):
     """
     Validates instance files against defined schema
-
+    \f
+    
     Args:
         show_pass (bool): show successful schema validations
         show_checks (bool): show schemas which will be validated against each instance file
@@ -102,16 +95,48 @@ def validate_schema(show_pass, show_checks, strict):
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
 
 
-@click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
+@click.option(
+    "--list",
+    default=False,
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["generate_invalid", "check"],
+    help="List all available schemas",
+    is_flag=True,
+    show_default=True,
+)
+@click.option(
+    "--check",
+    default=False,
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["generate_invalid", "list", "schema"],
+    help="Validates that all schemas are valid (spec and unit tests)",
+    is_flag=True,
+    show_default=True,
+)
+@click.option(
+    "--generate-invalid",
+    default=False,
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["check", "list"],
+    help="Generates expected invalid data from a given schema [--schema]",
+    is_flag=True,
+    show_default=True,
+)
+@click.option("--schema", help="The name of a schema.")
 @main.command()
-def check_schemas(show_pass):
+def schema(check, generate_invalid, list, schema):
     """
-    Self validates that the defined schema files are compliant with draft7
+    Manage your schemas
+    \f
 
     Args:
-        show_pass (bool): show successful schema validations
+        check (bool): Validates that all schemas are valid (spec and unit tests)
+        generate_invalid (bool): Generates expected invalid data from a given schema
+        list (bool): List all available schemas
+        schema (str): The name of a schema.
     """
     config.load()
+
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
     # ---------------------------------------------------------------------
@@ -121,36 +146,21 @@ def check_schemas(show_pass):
         error("No schemas were loaded")
         sys.exit(1)
 
-    sm.test_schemas()
+    if list:
+        sm.print_schemas_list()
+        sys.exit(0)
 
+    if generate_invalid:
+        if not schema:
+            sys.exit(
+                "Please indicate the name of the schema you'd like to generate the invalid data for using --schema"
+            )
+        sm.generate_invalid_tests_expected(schema_id=schema)
+        sys.exit(0)
 
-@main.command()
-@click.option("--schema", help="The name of the schema to validate against.", required=True)
-def generate_invalid_expected(schema):
-    """
-    Generates expected ValidationError data from mock_file and writes to mock dir.
-
-    This is meant to be used as an aid to generate test cases for invalid mock
-    schema data.
-
-    Args:
-        schema (str): The name of the schema to validate against.
-
-    Example:
-        $ ls tests/mocks/ntp/invalid/
-        invalid_format.json    invalid_ip.json
-        $ test-schema generate-invalid-expected --schema ntp
-        Writing file to tests/mocks/ntp/invalid/invalid_format.yml
-        Writing file to tests/mocks/ntp/invalid/invalid_ip.yml
-        $ ls tests/mocks/ntp/invalid/
-        invalid_format.json    invalid_format.yml    invalid_ip.json
-        invalid_ip.yml
-        $
-    """
-    config.load()
-
-    sm = SchemaManager(config=config.SETTINGS)
-    sm.generate_invalid_tests_expected(schema_id=schema)
+    if check:
+        sm.test_schemas()
+        sys.exit(0)
 
 
 @main.command()
@@ -159,11 +169,12 @@ def generate_invalid_expected(schema):
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
 def ansible(inventory, limit, show_pass):
     """
-    Validate the hostvar for all hosts within the Ansible inventory provided. 
+    Validate the hostvar for all hosts within an Ansible inventory. 
     The hostvar are dynamically rendered based on groups. 
 
     For each host, if a variable `jsonschema_mapping` is defined, it will be used
     to determine which schemas should be use to validate each key.
+    \f
 
     Args:
         inventory (string): The name of the inventory file to validate against
@@ -259,7 +270,3 @@ def ansible(inventory, limit, show_pass):
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
-
-
-if __name__ == "__main__":
-    main()

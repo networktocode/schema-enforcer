@@ -20,6 +20,7 @@ from termcolor import colored
 import importlib
 from collections import defaultdict
 
+from click import command, option, Option, UsageError
 
 YAML_HANDLER = YAML()
 YAML_HANDLER.indent(sequence=4, offset=2)
@@ -588,3 +589,38 @@ def find_and_load_file(filename, formats=["yml", "yaml", "json"]):
         return data
 
     return None
+
+
+class MutuallyExclusiveOption(Option):
+    """Add support for Mutually Exclusive option in Click.
+    
+    @command(help="Run the command.")
+    @option('--jar-file', cls=MutuallyExclusiveOption,
+            help="The jar file the topology lives in.",
+            mutually_exclusive=["other_arg"])
+    @option('--other-arg',
+            cls=MutuallyExclusiveOption,
+            help="The jar file the topology lives in.",
+            mutually_exclusive=["jar_file"])
+    def cli(jar_file, other_arg):
+        print "Running cli."
+        print "jar-file: {}".format(jar_file)
+        print "other-arg: {}".format(other_arg)
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
+        help = kwargs.get("help", "")
+        if self.mutually_exclusive:
+            ex_str = ", ".join(self.mutually_exclusive)
+            kwargs["help"] = help + (" NOTE: This argument is mutually exclusive with " " arguments: [" + ex_str + "].")
+        super().__init__(*args, **kwargs)
+
+    def handle_parse_result(self, ctx, opts, args):
+        if self.mutually_exclusive.intersection(opts) and self.name in opts:
+            raise UsageError(
+                "Illegal usage: `{}` is mutually exclusive with "
+                "arguments `{}`.".format(self.name, ", ".join(self.mutually_exclusive))
+            )
+
+        return super().handle_parse_result(ctx, opts, args)
