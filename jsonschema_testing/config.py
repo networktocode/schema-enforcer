@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     instance_file_extensions: List[str] = [".json", ".yaml", ".yml"]
     instance_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
 
+    ansible_inventory: Optional[str]
     schema_mapping: Dict = dict()
 
     class Config:

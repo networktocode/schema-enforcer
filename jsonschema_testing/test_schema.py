@@ -265,7 +265,7 @@ def generate_invalid_expected(schema):
 
 
 @main.command()
-@click.option("--inventory", "-i", help="Ansible inventory file.", required=True)
+@click.option("--inventory", "-i", help="Ansible inventory file.", required=False)
 @click.option("--host", "-h", "limit", help="Limit the execution to a single host.", required=False)
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
 def ansible(inventory, limit, show_pass):
@@ -306,7 +306,10 @@ def ansible(inventory, limit, show_pass):
         PASS | [HOST] spine1 | [VAR] interfaces | [SCHEMA] schemas/interfaces
         ALL SCHEMA VALIDATION CHECKS PASSED
     """
-    config.load()
+    if inventory:
+        config.load(config_data={"ansible_inventory": inventory})
+    else:
+        config.load()
 
     def print_error(host, schema_id, err):
         """Print Validation error for ansible host to screen.
@@ -341,7 +344,7 @@ def ansible(inventory, limit, show_pass):
     #  - generate hostvar for all devices in the inventory
     #  - Validate Each key in the hostvar individually against the schemas defined in the var jsonschema_mapping
     # ---------------------------------------------------------------------
-    inv = AnsibleInventory(inventory=inventory)
+    inv = AnsibleInventory(inventory=config.SETTINGS.ansible_inventory)
     hosts = inv.get_hosts_containing()
     print(f"Found {len(hosts)} hosts in the inventory")
 
