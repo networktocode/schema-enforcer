@@ -493,7 +493,7 @@ def dump_schema_vars(output_dir, schema_properties, variables):
             dump_data_to_yaml(schema_data, yaml_file)
 
 
-def find_files(file_extensions, search_directories, excluded_filenames, return_dir=False):
+def find_files(file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False):
     """
     Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames.
 
@@ -505,6 +505,28 @@ def find_files(file_extensions, search_directories, excluded_filenames, return_d
     Returns:
         list: Each element of the list will be a Tuple if return_dir is True otherwise it will be a string
     """
+
+    def is_part_of_excluded_dirs(current_dir):
+        """Check if the current_dir is part of one of excluded_directories.
+        
+        To simplify the matching all dirs are converted to absolute path
+
+        Args:
+            current_dir (str): Relative or Absolute path to a directory
+
+        Returns:
+            bool: 
+                True if the current_directory is part of the list of excluded directories
+                False otherwise
+        """
+
+        for directory in excluded_directories:
+            abs_current = os.path.abspath(current_dir)
+            abs_excluded = os.path.abspath(directory)
+            if abs_current.startswith(abs_excluded):
+                return True
+
+        return False
 
     if not isinstance(search_directories, list):
         search_directories = list(search_directories)
@@ -525,7 +547,12 @@ def find_files(file_extensions, search_directories, excluded_filenames, return_d
             search_directory = dir
 
         for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
+
+            if is_part_of_excluded_dirs(root):
+                continue
+
             for file in files:
+                # Extract the extension of the file and check if the extension matches the list
                 _, ext = os.path.splitext(file)
                 if ext in file_extensions:
                     if file not in excluded_filenames:

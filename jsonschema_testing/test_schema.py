@@ -14,6 +14,7 @@ from jsonschema import Draft7Validator
 from ruamel.yaml import YAML
 
 from jsonschema_testing import utils
+from jsonschema_testing import config
 from .schemas.manager import SchemaManager
 from .instances.file import InstanceFileManager
 from .ansible_inventory import AnsibleInventory
@@ -23,11 +24,7 @@ from .utils import warn, error
 import pkgutil
 import re
 
-YAML_HANDLER = YAML()
-
 SCHEMA_TEST_DIR = "tests"
-
-CFG = utils.load_config()
 
 
 def validate_instances(schema_manager, instance_manager, show_pass=False, strict=False):
@@ -110,14 +107,12 @@ def validate_schema(show_pass, show_checks, strict):
         show_checks (bool): show schemas which will be validated against each instance file
         strict (bool): Forces a stricter schema check that warns about unexpected additional properties
     """
+    config.load()
 
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
     # ---------------------------------------------------------------------
-    sm = SchemaManager(
-        schema_directories=CFG.get("schema_search_directories", ["./"]),
-        excluded_filenames=CFG.get("schema_exclude_filenames", []),
-    )
+    sm = SchemaManager(config=config.SETTINGS)
 
     if not sm.schemas:
         error("No schemas were loaded")
@@ -126,11 +121,7 @@ def validate_schema(show_pass, show_checks, strict):
     # ---------------------------------------------------------------------
     # Load Instances
     # ---------------------------------------------------------------------
-    ifm = InstanceFileManager(
-        search_directories=CFG.get("instance_search_directories", ["./"]),
-        excluded_filenames=CFG.get("instance_exclude_filenames", []),
-        schema_mapping=CFG.get("schema_mapping"),
-    )
+    ifm = InstanceFileManager(config=config.SETTINGS)
 
     if not ifm.instances:
         error("No instance files were found to validate")
@@ -152,13 +143,11 @@ def check_schemas(show_pass):
     Args:
         show_pass (bool): show successful schema validations
     """
+    config.load()
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
     # ---------------------------------------------------------------------
-    sm = SchemaManager(
-        schema_directories=CFG.get("schema_search_directories", ["./"]),
-        excluded_filenames=CFG.get("schema_exclude_filenames", []),
-    )
+    sm = SchemaManager(config=config.SETTINGS)
 
     if not sm.schemas:
         error("No schemas were loaded")
@@ -219,15 +208,20 @@ def view_validation_error(schema, mock):
 
         $
     """
-    schema_root_dir = os.path.realpath(CFG["json_schema_path"])
-    schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-    mock_file = f"tests/mocks/{schema}/invalid/{mock}.json"
+    config.load()
 
-    validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-    error_attributes = utils.generate_validation_error_attributes(mock_file, validator)
-    print()
-    for attr, value in error_attributes.items():
-        print(f"{attr:20} = {value}")
+    sm = SchemaManager(config=config.SETTINGS)
+
+    # TODO need to refactor this one this one
+    # schema_root_dir = os.path.realpath(CFG["json_schema_path"])
+    # schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
+    # mock_file = f"tests/mocks/{schema}/invalid/{mock}.json"
+
+    # validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
+    # error_attributes = utils.generate_validation_error_attributes(mock_file, validator)
+    # print()
+    # for attr, value in error_attributes.items():
+    #     print(f"{attr:20} = {value}")
 
 
 @main.command()
@@ -253,23 +247,25 @@ def generate_invalid_expected(schema):
         invalid_ip.yml
         $
     """
-    schema_root_dir = os.path.realpath(CFG["json_schema_path"])
+    config.load()
+    # TODO need to refactor this one this one
+    # schema_root_dir = os.path.realpath(CFG["json_schema_path"])
 
-    schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-    validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-    mock_path = f"tests/mocks/{schema}/invalid"
-    for invalid_mock in glob(f"{mock_path}/*.json"):
-        error_attributes = utils.generate_validation_error_attributes(invalid_mock, validator)
-        mock_attributes = {attr: str(error_attributes[attr]) for attr in error_attributes}
-        mock_attributes_formatted = utils.ensure_strings_have_quotes_mapping(mock_attributes)
-        mock_response = f"{invalid_mock[:-4]}yml"
-        print(f"Writing file to {mock_response}")
-        with open(mock_response, "w", encoding="utf-8") as fh:
-            utils.YAML_HANDLER.dump(mock_attributes_formatted, fh)
+    # schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
+    # validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
+    # mock_path = f"tests/mocks/{schema}/invalid"
+    # for invalid_mock in glob(f"{mock_path}/*.json"):
+    #     error_attributes = utils.generate_validation_error_attributes(invalid_mock, validator)
+    #     mock_attributes = {attr: str(error_attributes[attr]) for attr in error_attributes}
+    #     mock_attributes_formatted = utils.ensure_strings_have_quotes_mapping(mock_attributes)
+    #     mock_response = f"{invalid_mock[:-4]}yml"
+    #     print(f"Writing file to {mock_response}")
+    #     with open(mock_response, "w", encoding="utf-8") as fh:
+    #         utils.YAML_HANDLER.dump(mock_attributes_formatted, fh)
 
 
 @main.command()
-@click.option("--inventory", "-i", help="Ansible inventory file.", required=True)
+@click.option("--inventory", "-i", help="Ansible inventory file.", required=False)
 @click.option("--host", "-h", "limit", help="Limit the execution to a single host.", required=False)
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
 def ansible(inventory, limit, show_pass):
@@ -310,6 +306,10 @@ def ansible(inventory, limit, show_pass):
         PASS | [HOST] spine1 | [VAR] interfaces | [SCHEMA] schemas/interfaces
         ALL SCHEMA VALIDATION CHECKS PASSED
     """
+    if inventory:
+        config.load(config_data={"ansible_inventory": inventory})
+    else:
+        config.load()
 
     def print_error(host, schema_id, err):
         """Print Validation error for ansible host to screen.
@@ -333,10 +333,7 @@ def ansible(inventory, limit, show_pass):
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
     # ---------------------------------------------------------------------
-    sm = SchemaManager(
-        schema_directories=CFG.get("schema_search_directories", ["./"]),
-        excluded_filenames=CFG.get("schema_exclude_filenames", []),
-    )
+    sm = SchemaManager(config=config.SETTINGS)
 
     if not sm.schemas:
         error("No schemas were loaded")
@@ -347,7 +344,7 @@ def ansible(inventory, limit, show_pass):
     #  - generate hostvar for all devices in the inventory
     #  - Validate Each key in the hostvar individually against the schemas defined in the var jsonschema_mapping
     # ---------------------------------------------------------------------
-    inv = AnsibleInventory(inventory="inventory.ini")
+    inv = AnsibleInventory(inventory=config.SETTINGS.ansible_inventory)
     hosts = inv.get_hosts_containing()
     print(f"Found {len(hosts)} hosts in the inventory")
 
