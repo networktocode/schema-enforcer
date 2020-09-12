@@ -1,6 +1,6 @@
 import pytest
 
-from utils.ansible_inventory import AnsibleInventory
+from jsonschema_testing.ansible_inventory import AnsibleInventory
 
 
 INVENTORY_DIR = "tests/mocks/inventory"
