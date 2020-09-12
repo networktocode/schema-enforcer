@@ -102,7 +102,6 @@ def validate(show_pass, show_checks, strict):
     mutually_exclusive=["generate_invalid", "check"],
     help="List all available schemas",
     is_flag=True,
-    show_default=True,
 )
 @click.option(
     "--check",
@@ -111,7 +110,6 @@ def validate(show_pass, show_checks, strict):
     mutually_exclusive=["generate_invalid", "list", "schema"],
     help="Validates that all schemas are valid (spec and unit tests)",
     is_flag=True,
-    show_default=True,
 )
 @click.option(
     "--generate-invalid",
@@ -120,7 +118,6 @@ def validate(show_pass, show_checks, strict):
     mutually_exclusive=["check", "list"],
     help="Generates expected invalid data from a given schema [--schema]",
     is_flag=True,
-    show_default=True,
 )
 @click.option("--schema", help="The name of a schema.")
 @main.command()
