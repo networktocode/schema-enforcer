@@ -1,8 +1,0 @@
----
-region_dns:
-  - address: "10.1.1.1"
-    vrf: "mgmt"
-  - address: "10.2.2.2"
-
-ntp_servers:
-  - address: "10.3.3.3"

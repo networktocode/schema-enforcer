@@ -4,8 +4,8 @@ import json
 from jsonschema import (
     Draft7Validator,
     draft7_format_checker,
-    ValidationError,
 )
+from jsonschema_testing.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
 
 # TODO do we need to catch a possible exception here ?
 v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
@@ -41,16 +41,39 @@ class JsonSchema:
         Args:
             data (dict, list): Data to validate against the schema
             strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
-
         Returns:
-            Iterator: Iterator of ValidationError
+            Iterator: Iterator of ValidationResult
         """
         if strict:
             validator = self.__get_strict_validator()
         else:
             validator = self.__get_validator()
 
-        return validator.iter_errors(data)
+        has_error = False
+        for err in validator.iter_errors(data):
+
+            has_error = True
+            yield ValidationResult(
+                schema_id=self.id, result=RESULT_FAIL, message=err.message, absolute_path=list(err.absolute_path)
+            )
+
+        if not has_error:
+            yield ValidationResult(
+                schema_id=self.id, result=RESULT_PASS,
+            )
+
+    def validate_to_dict(self, data, strict=False):
+        """Return a list of ValidationResult generated with the validate() function in dict() format instead of Python Object.
+        
+        Args:
+            data (dict, list): Data to validate against the schema
+            strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
+        Returns:
+            list of dictionnary 
+        """
+        return [
+            result.dict(exclude_unset=True, exclude_none=True) for result in self.validate(data=data, strict=strict)
+        ]
 
     def __get_validator(self):
         """Return the validator for this schema, create if it doesn't exist already.
@@ -100,7 +123,37 @@ class JsonSchema:
         """Check if the schema itself is valid against JasonSchema draft7.
         
         Returns:
-            Iterator: Iterator of ValidationError
+            List[ValidationResult]
         """
         validator = Draft7Validator(v7schema)
-        return validator.iter_errors(self.data)
+
+        results = []
+        has_error = False
+        for err in validator.iter_errors(self.data):
+
+            has_error = True
+
+            results.append(
+                ValidationResult(
+                    schema_id=self.id,
+                    result=RESULT_FAIL,
+                    message=err.message,
+                    absolute_path=list(err.absolute_path),
+                    instance_type="SCHEMA",
+                    instance_name=self.id,
+                    instance_location="",
+                )
+            )
+
+        if not has_error:
+            results.append(
+                ValidationResult(
+                    schema_id=self.id,
+                    result=RESULT_PASS,
+                    instance_type="SCHEMA",
+                    instance_name=self.id,
+                    instance_location="",
+                )
+            )
+
+        return results

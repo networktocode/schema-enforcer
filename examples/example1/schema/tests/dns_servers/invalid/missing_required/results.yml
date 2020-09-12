@@ -1,0 +1,6 @@
+---
+results:
+  - result: "FAIL"
+    schema_id: "schemas/dns_servers"
+    absolute_path: []
+    message: "'dns_servers' is a required property"
