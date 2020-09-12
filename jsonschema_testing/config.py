@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     # settings specific to search and identify all instance file to validate
     instance_search_directories: List[str] = ["./"]
     instance_file_extensions: List[str] = [".json", ".yaml", ".yml"]
-    instance_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
+    instance_file_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
 
     ansible_inventory: Optional[str]
     schema_mapping: Dict = dict()

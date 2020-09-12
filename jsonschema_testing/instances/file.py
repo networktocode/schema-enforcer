@@ -22,7 +22,7 @@ class InstanceFileManager:
         files = find_files(
             file_extensions=config.instance_file_extensions,
             search_directories=config.instance_search_directories,
-            excluded_filenames=config.schema_file_exclude_filenames,
+            excluded_filenames=config.instance_file_exclude_filenames,
             excluded_directories=[config.main_directory],
             return_dir=True,
         )
