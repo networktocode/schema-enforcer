@@ -1,7 +1,6 @@
 import os
 import json
 import shutil
-from collections import deque
 
 from jsonschema_testing import utils
 

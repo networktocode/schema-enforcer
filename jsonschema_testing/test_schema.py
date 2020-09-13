@@ -1,24 +1,17 @@
 # Standard Imports
-import json
-import os
 import sys
-from pathlib import Path
-
 from glob import glob
-from collections import defaultdict
 
 # Third Party Imports
 import click
 from termcolor import colored
-from jsonschema import Draft7Validator
-from ruamel.yaml import YAML
 
 from jsonschema_testing.utils import MutuallyExclusiveOption
 from jsonschema_testing import config
-from .schemas.manager import SchemaManager
-from .instances.file import InstanceFileManager
-from .ansible_inventory import AnsibleInventory
-from .utils import warn, error
+from jsonschema_testing.schemas.manager import SchemaManager
+from jsonschema_testing.instances.file import InstanceFileManager
+from jsonschema_testing.ansible_inventory import AnsibleInventory
+from jsonschema_testing.utils import warn, error
 
 
 @click.group()

@@ -4,7 +4,7 @@ import toml
 from pathlib import Path
 from typing import Set, Dict, List, Optional
 
-from pydantic import BaseModel, BaseSettings, ValidationError
+from pydantic import BaseSettings, ValidationError
 
 SETTINGS = None
 

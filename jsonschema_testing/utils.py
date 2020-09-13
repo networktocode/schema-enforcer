@@ -5,46 +5,20 @@ from collections.abc import Mapping, Sequence
 
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
-import jsonref
 from jsonschema import (
     RefResolver,
     Draft7Validator,
     draft7_format_checker,
-    ValidationError,
 )
 
-from .ansible_inventory import AnsibleInventory
-import toml
-from pathlib import Path
 from termcolor import colored
 import importlib
-from collections import defaultdict
 
-from click import command, option, Option, UsageError
+from click import Option, UsageError
 
 YAML_HANDLER = YAML()
 YAML_HANDLER.indent(sequence=4, offset=2)
 YAML_HANDLER.explicit_start = True
-VALIDATION_ERROR_ATTRS = ["message", "schema_path", "validator", "validator_value"]
-CONFIG_DEFAULTS = {
-    "schema_exclude_filenames": [],
-    "schema_search_directories": ["schema/schemas/"],
-    "schema_file_extensions": [".json", ".yml"],
-    "instance_exclude_filenames": [".yamllint.yml", ".travis.yml"],
-    "instance_search_directories": ["hostvars/"],
-    "instance_file_extensions": [".json", ".yml"],
-    "yaml_schema_path": "schema/yaml/schemas/",
-    "json_schema_path": "schema/json/schemas/",
-    # Define location to place schema definitions after resolving ``$ref``
-    "json_schema_definitions": "schema/json/definitions",
-    "yaml_schema_definitions": "schema/yaml/definitions",
-    "json_full_schema_definitions": "schema/json/full_schemas",
-    # Define network device variables location
-    "device_variables": "hostvars/",
-    # Define path to inventory
-    "inventory_path": "inventory/",
-    "schema_mapping": {},
-}
 
 
 def warn(msg):
@@ -53,44 +27,6 @@ def warn(msg):
 
 def error(msg):
     print(colored("  ERROR |", "red"), msg)
-
-
-def load_config(tool_name="jsonschema_testing", defaults={}):
-    """
-    Loads configuration files and merges values based on precedence.
-
-    Loads configuration from pyprojects.toml under the specified tool.{toolname} section.
-
-    Retuns:
-        dict: The values from the cfg files.
-    """
-    # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
-    # TODO should we search parent folders for pyproject.toml ?
-
-    config = defaultdict()
-    config.update(CONFIG_DEFAULTS)
-    config.update(defaults)
-
-    try:
-        config_string = Path("pyproject.toml").read_text()
-        tomlcfg = toml.loads(config_string)
-        config.update(tomlcfg["tool"][tool_name])
-    except KeyError:
-        warn(f"[tool.{tool_name}] section is not defined in pyproject.toml,")
-        warn(f"Please see {tool_name}/example/ folder for sample of this section")
-        warn(f"Using built-in defaults for [tool.{tool_name}]")
-
-    except (FileNotFoundError, UnboundLocalError):
-        warn(f"Could not find pyproject.toml in the current working directory.")
-        warn(f"Script is being executed from CWD: {os.getcwd()}")
-        warn(f"Using built-in defaults for [tool.{tool_name}]")
-
-    if not len(config["schema_mapping"]):
-        warn(
-            f"[tool.{tool_name}.schema_mapping] is not defined, instances must be tagged to apply schemas to instances"
-        )
-
-    return config
 
 
 def get_path_and_filename(filepath):
@@ -286,170 +222,6 @@ def dump_data_to_json(data, json_path):
     with open(json_path, "w", encoding="utf-8") as fh:
         json.dump(data, fh, indent=4)
         fh.write("\n")
-
-
-def fix_references(data, old_file_ext, new_file_ext, _recursive=False, **kwargs):
-    """
-    Updates any relative $ref so that they point to the new_file_ext for local file resolution
-
-    """
-    try:
-        if not isinstance(data["$ref"], str):
-            raise TypeError
-    except (TypeError, LookupError):
-        pass
-    else:
-        if "://" not in data["$ref"]:
-            data["$ref"] = data["$ref"].replace(old_file_ext, new_file_ext)
-            # re.sub(f"%s{old_file_ext}", new_file_ext, data["$ref"])  # regex needs to handle #fragmenets
-        return data
-
-    # Recurse through the data and replace any relative $ref file extensions
-    if isinstance(data, Mapping):
-        data = type(data)((k, fix_references(v, old_file_ext, new_file_ext, _recursive=True)) for k, v in data.items())
-    elif isinstance(data, Sequence) and not isinstance(data, str):
-        data = type(data)(fix_references(v, old_file_ext, new_file_ext) for i, v in enumerate(data))
-
-    return data
-
-
-def convert_yaml_to_json(yaml_path, json_path, silent=False):
-    """
-    Reads YAML files and writes them to JSON files.
-
-    Args:
-        yaml_path (str): The root directory containing YAML files to convert to JSON.
-        json_path (str): The root directory to build JSON files from YAML files in
-                         ``yaml_path``.
-
-    Returns:
-        None: JSON files are written with data from YAML files.
-
-    Example:
-        >>> os.listdir("schema/")
-        ['yaml']
-        >>> convert_yaml_to_json("schema/yaml", "schema/json")
-        >>> os.listdir("schema/")
-        ['json', 'yaml']
-        >>> os.listdir("schema/json/schema")
-        ['ntp.json', 'snmp.json']
-        >>>
-    """
-    yaml_json_pairs = get_conversion_filepaths(yaml_path, "yml", json_path, "json")
-    for yaml_file, json_file in yaml_json_pairs:
-        with open(yaml_file, encoding="utf-8") as fh:
-            yaml_data = YAML_HANDLER.load(fh)
-
-        yaml_data = fix_references(data=yaml_data, old_file_ext=".yml", new_file_ext=".json")
-        if not silent:
-            print(f"Converting {yaml_file} -> {json_file}")
-        dump_data_to_json(yaml_data, json_file)
-
-
-def convert_json_to_yaml(json_path, yaml_path, silent=False):
-    """
-    Reads JSON files and writes them to YAML files.
-
-    Args:
-        json_path (str): The root directory containing JSON files to convert to YAML.
-        yaml_path (str): The root directory to build YAML files from JSON files in
-                         ``json_path``.
-
-    Returns:
-        None: YAML files are written with data from JSON files.
-
-    Example:
-        >>> os.listdir("schema/")
-        ['json']
-        >>> convert_json_to_yaml("schema/json", "schema/yaml")
-        >>> os.listdir("schema/")
-        ['json', 'yaml']
-        >>> os.listdir("schema/yaml/schema")
-        ['ntp.yml', 'snmp.yml']
-        >>>
-    """
-    json_yaml_pairs = get_conversion_filepaths(json_path, "json", yaml_path, "yml")
-    for json_file, yaml_file in json_yaml_pairs:
-        with open(json_file, encoding="utf-8") as fh:
-            json_data = json.load(fh)
-
-        json_data = fix_references(data=json_data, old_file_ext=".json", new_file_ext=".yml")
-        if not silent:
-            print(f"Converting {json_file} -> {yaml_file}")
-        dump_data_to_yaml(json_data, yaml_file)
-
-
-def get_schema_properties(schema_files):
-    """
-    Maps schema filenames to top-level properties.
-
-    Args:
-        schema_files (iterable): The list of schema definition files.
-
-    Returns:
-        dict: Schema filenames are the keys, and the values are list of property names.
-
-    Example:
-        >>> schema_files = [
-        ...     'schema/json/schemas/ntp.json', 'schema/json/schemas/snmp.json'
-        ... ]
-        >>> schema_property_map = get_schema_properties(schema_files)
-        >>> print(schema_property_map)
-        {
-            'ntp': ['ntp_servers', 'ntp_authentication'],
-            'snmp': ['snmp_servers']
-        }
-        >>>
-    """
-    schema_property_map = {}
-    for schema_file in schema_files:
-        with open(schema_file, encoding="utf-8") as fh:
-            schema = json.load(fh)
-
-        path, filename = get_path_and_filename(schema_file)
-        schema_property_map[filename] = list(schema["properties"].keys())
-
-    return schema_property_map
-
-
-def dump_schema_vars(output_dir, schema_properties, variables):
-    """
-    Writes variable data to file per schema in schema_properties.
-
-    Args:
-        output_dir (str): The directory to write variable files to.
-        schema_properties (dict): The mapping of schema files to top-level properties.
-        variables (dict): The variables per inventory source.
-
-    Returns:
-        None: Files are written for each schema definition.
-
-    Example:
-        >>> output_dir = "inventory/hostvars/host1"
-        >>> schema_files = glob.glob("schema/json/schemas/*.json")
-        >>> schema_properties = get_schema_properties(schema_files)
-        >>> host_variables = magic_hostvar_generator()
-        >>> os.isdir(output_dir)
-        False
-        >>> dump_schema_vars(output_dir, schema_properties, host_variables)
-        >>> os.listdir(output_dir)
-        ['ntp.yml', 'snmp.yml']
-        >>>
-    """
-    os.makedirs(output_dir, exist_ok=True)
-    # Somewhat of a hack to remove non basic object types from data structure
-    variables = json.loads(json.dumps(variables))
-    for schema, properties in schema_properties.items():
-        schema_data = {}
-        for prop in properties:
-            try:
-                schema_data[prop] = variables[prop]
-            except KeyError:
-                pass
-        if schema_data:
-            print(f"-> {schema}")
-            yaml_file = f"{output_dir}/{schema}.yml"
-            dump_data_to_yaml(schema_data, yaml_file)
 
 
 def find_files(file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False):
