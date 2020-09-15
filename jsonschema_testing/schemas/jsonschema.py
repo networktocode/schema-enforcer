@@ -1,10 +1,8 @@
+"""class to manage jsonschema type schema."""
 import copy
 import pkgutil
 import json
-from jsonschema import (
-    Draft7Validator,
-    draft7_format_checker,
-)
+from jsonschema import Draft7Validator  # pylint: disable=import-self
 from jsonschema_testing.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
 
 # TODO do we need to catch a possible exception here ?
@@ -13,6 +11,7 @@ v7schema = json.loads(v7data.decode("utf-8"))
 
 
 class JsonSchema:
+    """class to manage jsonschema type schema."""
 
     schematype = "jsonchema"
 
@@ -27,7 +26,7 @@ class JsonSchema:
         self.filename = filename
         self.root = root
         self.data = schema
-        self.id = self.data.get("$id")
+        self.id = self.data.get("$id")  # pylint: disable=invalid-name
         self.validator = None
         self.strict_validator = None
 
@@ -64,12 +63,12 @@ class JsonSchema:
 
     def validate_to_dict(self, data, strict=False):
         """Return a list of ValidationResult generated with the validate() function in dict() format instead of Python Object.
-        
+
         Args:
             data (dict, list): Data to validate against the schema
             strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
         Returns:
-            list of dictionnary 
+            list of dictionnary
         """
         return [
             result.dict(exclude_unset=True, exclude_none=True) for result in self.validate(data=data, strict=strict)
@@ -79,7 +78,7 @@ class JsonSchema:
         """Return the validator for this schema, create if it doesn't exist already.
 
         Returns:
-            Draft7Validator: Validator for this schema 
+            Draft7Validator: Validator for this schema
         """
         if self.validator:
             return self.validator
@@ -108,12 +107,14 @@ class JsonSchema:
 
         schema["additionalProperties"] = False
 
-        # XXX This should be recursive, e.g. all sub-objects, currently it only goes one level deep, look in jsonschema for utilitiies
-        for p, prop in schema.get("properties", {}).items():
+        # TODO This should be recursive, e.g. all sub-objects, currently it only goes one level deep, look in jsonschema for utilitiies
+        for prop_name, prop in schema.get("properties", {}).items():
             items = prop.get("items", {})
             if items.get("type") == "object":
                 if items.get("additionalProperties", False) is not False:
-                    print(f"{schema['$id']}: Overriding item {p}.additionalProperties: {items['additionalProperties']}")
+                    print(
+                        f"{schema['$id']}: Overriding item {prop_name}.additionalProperties: {items['additionalProperties']}"
+                    )
                 items["additionalProperties"] = False
 
         self.strict_validator = Draft7Validator(schema)
@@ -121,7 +122,7 @@ class JsonSchema:
 
     def check_if_valid(self):
         """Check if the schema itself is valid against JasonSchema draft7.
-        
+
         Returns:
             List[ValidationResult]
         """

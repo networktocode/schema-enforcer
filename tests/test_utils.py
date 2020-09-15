@@ -43,14 +43,14 @@ def test_get_path_and_filename():
 def test_ensure_yaml_output_format():
     data_formatted = utils.ensure_strings_have_quotes_mapping(TEST_DATA)
     yaml_path = "tests/mocks/utils/.formatted.yml"
-    with open(yaml_path, "w", encoding="utf-8") as fh:
-        utils.YAML_HANDLER.dump(data_formatted, fh)
+    with open(yaml_path, "w", encoding="utf-8") as fileh:
+        utils.YAML_HANDLER.dump(data_formatted, fileh)
 
-    with open(yaml_path, encoding="utf-8") as fh:
-        actual = fh.read()
+    with open(yaml_path, encoding="utf-8") as fileh:
+        actual = fileh.read()
 
-    with open("tests/mocks/utils/formatted.yml") as fh:
-        mock = fh.read()
+    with open("tests/mocks/utils/formatted.yml") as fileh:
+        mock = fileh.read()
 
     assert actual == mock
     os.remove(yaml_path)
@@ -77,19 +77,19 @@ def test_load_schema_from_json_file():
     schema_root_dir = os.path.realpath("tests/mocks/schema/json")
     schema_filepath = f"{schema_root_dir}/schemas/ntp.json"
     validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-    with open("tests/mocks/ntp/valid/full_implementation.json", encoding="utf-8") as fh:
+    with open("tests/mocks/ntp/valid/full_implementation.json", encoding="utf-8") as fileh:
         # testing validation tests that the RefResolver works as expected
-        validator.validate(json.load(fh))
+        validator.validate(json.load(fileh))
 
 
 def test_dump_data_to_yaml():
     test_file = "tests/mocks/utils/.test_data.yml"
     assert not os.path.isfile(test_file)
     utils.dump_data_to_yaml(TEST_DATA, test_file)
-    with open(test_file, encoding="utf-8") as fh:
-        actual = fh.read()
-    with open("tests/mocks/utils/formatted.yml") as fh:
-        mock = fh.read()
+    with open(test_file, encoding="utf-8") as fileh:
+        actual = fileh.read()
+    with open("tests/mocks/utils/formatted.yml") as fileh:
+        mock = fileh.read()
     assert actual == mock
     os.remove(test_file)
     assert not os.path.isfile(test_file)
@@ -99,10 +99,10 @@ def test_dump_data_json():
     test_file = "tests/mocks/utils/.test_data.json"
     assert not os.path.isfile(test_file)
     utils.dump_data_to_json(TEST_DATA, test_file)
-    with open(test_file, encoding="utf-8") as fh:
-        actual = fh.read()
-    with open("tests/mocks/utils/formatted.json") as fh:
-        mock = fh.read()
+    with open(test_file, encoding="utf-8") as fileh:
+        actual = fileh.read()
+    with open("tests/mocks/utils/formatted.json") as fileh:
+        mock = fileh.read()
     assert actual == mock
     os.remove(test_file)
     assert not os.path.isfile(test_file)
@@ -128,10 +128,10 @@ def test_dump_schema_vars():
     host_variables = ANSIBLE_HOST_VARIABLES["host1"]
     utils.dump_schema_vars(output_dir, schema_properties, host_variables)
     for file in ("dns.yml", "ntp.yml"):
-        with open(f"{output_dir}/{file}", encoding="utf-8") as fh:
-            actual = fh.read()
-        with open(f"tests/mocks/utils/host1/{file}", encoding="utf-8") as fh:
-            mock = fh.read()
+        with open(f"{output_dir}/{file}", encoding="utf-8") as fileh:
+            actual = fileh.read()
+        with open(f"tests/mocks/utils/host1/{file}", encoding="utf-8") as fileh:
+            mock = fileh.read()
 
         assert actual == mock
 

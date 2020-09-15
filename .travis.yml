@@ -12,4 +12,5 @@ before_script:
 script:
   - "invoke black -p $TRAVIS_PYTHON_VERSION"
   - "invoke yamllint -p $TRAVIS_PYTHON_VERSION"
+  - "invoke pylint -p $TRAVIS_PYTHON_VERSION"
   - "invoke pytest -p $TRAVIS_PYTHON_VERSION"

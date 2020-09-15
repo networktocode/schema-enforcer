@@ -1,20 +1,22 @@
+"""settings definition for the config file."""
+import sys
 import os
 import os.path
-import toml
 from pathlib import Path
-from typing import Set, Dict, List, Optional
+from typing import Dict, List, Optional
 
+import toml
 from pydantic import BaseSettings, ValidationError
 
 SETTINGS = None
 
 
-class Settings(BaseSettings):
+class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     """
     Main Settings Class for the project.
-    The type of each setting is defined using Python annotations 
+    The type of each setting is defined using Python annotations
     and is validated when a config file is loaded with Pydantic.
-    
+
     Most input files specific to this project are expected to be located in the same directory
     schema/
      - definitions
@@ -39,7 +41,7 @@ class Settings(BaseSettings):
     ansible_inventory: Optional[str]
     schema_mapping: Dict = dict()
 
-    class Config:
+    class Config:  # pylint: disable=too-few-public-methods
         """Additional parameters to automatically map environment variable to some settings."""
 
         fields = {
@@ -59,7 +61,7 @@ def load(config_file_name="pyproject.toml", config_data=None):
         config_file_name (str, optional): Name of the configuration file to load. Defaults to "pyproject.toml".
         config_data (dict, optional): dict to load as the config file instead of reading the file. Defaults to None.
     """
-    global SETTINGS
+    global SETTINGS  # pylint: disable=global-statement
 
     if config_data:
         SETTINGS = Settings(**config_data)
@@ -71,11 +73,11 @@ def load(config_file_name="pyproject.toml", config_data=None):
         if "tool" in config_tmp and "jsonschema_testing" in config_tmp.get("tool", {}):
             try:
                 SETTINGS = Settings(**config_tmp["tool"]["jsonschema_testing"])
-            except ValidationError as e:
-                print(f"Configuration not valid, found {len(e.errors())} error(s)")
-                for error in e.errors():
+            except ValidationError as exc:
+                print(f"Configuration not valid, found {len(exc.errors())} error(s)")
+                for error in exc.errors():
                     print(f"  {'/'.join(error['loc'])} | {error['msg']} ({error['type']})")
-                exit(0)
+                sys.exit(1)
             return
 
     SETTINGS = Settings()

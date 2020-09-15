@@ -1,3 +1,4 @@
+"""Ansible Inventory class to generate final hostvars based on group_vars and host_vars."""
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars.manager import VariableManager
@@ -5,7 +6,9 @@ from ansible.template import Templar
 
 
 # Referenced https://github.com/fgiorgetti/qpid-dispatch-tests/ for the below class
-class AnsibleInventory(object):
+class AnsibleInventory:
+    """AnsibleInventory."""
+
     def __init__(self, inventory=None, extra_vars=None):
         """Imitates Ansible Inventory Loader.
 
@@ -54,8 +57,16 @@ class AnsibleInventory(object):
         return templar.template(data, fail_on_undefined=False)
 
     def get_clean_host_vars(self, host):
+        """Return clean hostvars for a given host, cleaned up of all keys inserted by Templar.
 
-        KEYS_CLEANUP = [
+        Args:
+            host (str): hostname
+
+        Returns:
+            dict: clean hostvar
+        """
+
+        keys_cleanup = [
             "inventory_file",
             "inventory_dir",
             "inventory_hostname",
@@ -69,10 +80,10 @@ class AnsibleInventory(object):
             "ansible_version",
         ]
 
-        hv = self.get_host_vars(host)
+        hostvars = self.get_host_vars(host)
 
-        for key in KEYS_CLEANUP:
-            if key in hv:
-                del hv[key]
+        for key in keys_cleanup:
+            if key in hostvars:
+                del hostvars[key]
 
-        return hv
+        return hostvars

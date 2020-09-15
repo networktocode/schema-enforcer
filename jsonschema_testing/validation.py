@@ -1,5 +1,6 @@
+"""Validation related classes."""
 from typing import List, Optional, Any
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator  # pylint: disable=no-name-in-module
 from termcolor import colored
 
 RESULT_PASS = "PASS"
@@ -7,7 +8,7 @@ RESULT_FAIL = "FAIL"
 
 
 class ValidationResult(BaseModel):
-    """The ValidationResult object is meant to store the result of a given test 
+    """The ValidationResult object is meant to store the result of a given test.
     along with some contextual information about the test itself.
     """
 
@@ -24,14 +25,15 @@ class ValidationResult(BaseModel):
     message: Optional[str]
 
     @validator("result")
-    def result_must_be_pass_or_fail(cls, v):
-        if v.upper() not in [RESULT_PASS, RESULT_FAIL]:
+    def result_must_be_pass_or_fail(cls, var):  # pylint: disable=no-self-argument, no-self-use
+        """Validate that result either PASS or FAIL."""
+        if var.upper() not in [RESULT_PASS, RESULT_FAIL]:
             raise ValueError("must be either PASS or FAIL")
-        return v.upper()
+        return var.upper()
 
     def passed(self):
         """Return True or False to indicate if the test has passed.
-        
+
         Returns
             Bool: indicate if the test passed or failed
         """
@@ -50,11 +52,11 @@ class ValidationResult(BaseModel):
     def print_failed(self):
         """Print the result of the test to CLI when the test failed."""
         print(
-            colored(f"FAIL", "red") + f" | [ERROR] {self.message}"
+            colored("FAIL", "red") + f" | [ERROR] {self.message}"
             f" [{self.instance_type}] {self.instance_location}/{self.instance_name}"
             f" [PROPERTY] {':'.join(str(item) for item in self.absolute_path)}"
         )
 
     def print_passed(self):
         """Print the result of the test to CLI when the test passed."""
-        print(colored(f"PASS", "green") + f" [{self.instance_type}] {self.instance_location}/{self.instance_name}")
+        print(colored("PASS", "green") + f" [{self.instance_type}] {self.instance_location}/{self.instance_name}")

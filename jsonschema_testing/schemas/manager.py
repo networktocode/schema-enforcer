@@ -1,11 +1,12 @@
+"""Schema manager."""
 import os
 import json
 import jsonref
 from termcolor import colored
-from jsonschema_testing.utils import load_file, load_data, find_and_load_file, find_files, dump_data_to_yaml
+from jsonschema_testing.utils import load_file, find_and_load_file, find_files, dump_data_to_yaml
 from jsonschema_testing.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
 
-from .jsonschema import JsonSchema
+from jsonschema_testing.schemas.jsonschema import JsonSchema
 
 
 class SchemaManager:
@@ -37,9 +38,9 @@ class SchemaManager:
             schema = self.create_schema_from_file(root, filename)
             self.schemas[schema.get_id()] = schema
 
-    def create_schema_from_file(self, root, filename):
+    def create_schema_from_file(self, root, filename):  # pylint: disable=no-self-use
         """Create a new JsonSchema object for a given file
-        
+
         Load the content from disk and resolve all JSONRef within the schema file
 
         Args:
@@ -52,7 +53,7 @@ class SchemaManager:
         file_data = load_file(os.path.join(root, filename))
 
         # TODO Find the type of Schema based on the Type, currently only jsonschema is supported
-        schema_type = "jsonschema"
+        # schema_type = "jsonschema"
         base_uri = f"file:{root}/"
         schema_full = jsonref.JsonRef.replace_refs(file_data, base_uri=base_uri, jsonschema=True, loader=load_file)
         return JsonSchema(schema=schema_full, filename=filename, root=root)
@@ -67,7 +68,7 @@ class SchemaManager:
 
     def print_schemas_list(self):
         """Print the list of all schemas to the cli.
-        
+
         To avoid very long location string, dynamically replace the current dir with a dot
         """
 
@@ -81,11 +82,11 @@ class SchemaManager:
 
     def test_schemas(self):
         """Tests if all schemas are passing their tests.
-        
+
         For each schema, 3 set of tests will be potentially executed.
           - schema must be Draft7 valid
           - Valid tests must pass
-          - Invalid tests must pass 
+          - Invalid tests must pass
         """
         error_exists = False
 
@@ -106,11 +107,11 @@ class SchemaManager:
 
     def test_schema_valid(self, schema_id, strict=False):
         """
-        Execute all valid tests for a given schema. 
+        Execute all valid tests for a given schema.
 
         Args:
             schema_id (str): unique identifier of a schema
-        
+
         Returns:
             list of ValidationResult
         """
@@ -138,7 +139,6 @@ class SchemaManager:
 
             test_data = load_file(os.path.join(root, filename))
 
-            error_exists = False
             for result in schema.validate(test_data, strict=strict):
                 result.instance_name = filename
                 result.instance_location = root
@@ -147,13 +147,13 @@ class SchemaManager:
 
         return results
 
-    def test_schema_invalid(self, schema_id, strict=False):
+    def test_schema_invalid(self, schema_id):  # pylint: disable=too-many-locals
         """
-        Execute all invalid tests for a given schema. 
+        Execute all invalid tests for a given schema.
 
         Args:
             schema_id (str): unique identifier of a schema
-        
+
         Returns:
             list of ValidationResult
         """

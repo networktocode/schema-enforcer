@@ -1,18 +1,20 @@
+"""Library of utility functions."""
 import os
 import json
 import glob
 from collections.abc import Mapping, Sequence
+import importlib
 
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
-from jsonschema import (
+from jsonschema import (  # pylint: disable=no-name-in-module
     RefResolver,
     Draft7Validator,
     draft7_format_checker,
 )
 
 from termcolor import colored
-import importlib
+
 
 from click import Option, UsageError
 
@@ -22,10 +24,12 @@ YAML_HANDLER.explicit_start = True
 
 
 def warn(msg):
+    """Print warning message in yellow."""
     print(colored("WARNING |", "yellow"), msg)
 
 
 def error(msg):
+    """Print a error message in red."""
     print(colored("  ERROR |", "red"), msg)
 
 
@@ -47,7 +51,7 @@ def get_path_and_filename(filepath):
         'ntp'
         >>>
     """
-    file, extension = os.path.splitext(filepath)
+    file, _ = os.path.splitext(filepath)
     return os.path.split(file)
 
 
@@ -161,8 +165,8 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
         >>>
     """
     base_uri = f"file:{schema_root_dir}/".replace("\\", "/")
-    with open(os.path.join(schema_root_dir, schema_filepath), encoding="utf-8") as fh:
-        schema_definition = json.load(fh)
+    with open(os.path.join(schema_root_dir, schema_filepath), encoding="utf-8") as fileh:
+        schema_definition = json.load(fileh)
 
     # Notes: The Draft7Validator will use the base_uri to resolve any relative references within the loaded schema_defnition
     # these references must match the full filenames currently, unless we modify the RefResolver to handle other cases.
@@ -195,8 +199,8 @@ def dump_data_to_yaml(data, yaml_path):
         >>>
     """
     data_formatted = ensure_strings_have_quotes_mapping(data)
-    with open(yaml_path, "w", encoding="utf-8") as fh:
-        YAML_HANDLER.dump(data_formatted, fh)
+    with open(yaml_path, "w", encoding="utf-8") as fileh:
+        YAML_HANDLER.dump(data_formatted, fileh)
 
 
 def dump_data_to_json(data, json_path):
@@ -219,9 +223,9 @@ def dump_data_to_json(data, json_path):
         ["dns.json", "ntp.json", "snmp.json"]
         >>>
     """
-    with open(json_path, "w", encoding="utf-8") as fh:
-        json.dump(data, fh, indent=4)
-        fh.write("\n")
+    with open(json_path, "w", encoding="utf-8") as fileh:
+        json.dump(data, fileh, indent=4)
+        fileh.write("\n")
 
 
 def get_schema_properties(schema_files):
@@ -245,10 +249,10 @@ def get_schema_properties(schema_files):
     """
     schema_property_map = {}
     for schema_file in schema_files:
-        with open(schema_file, encoding="utf-8") as fh:
-            schema = json.load(fh)
+        with open(schema_file, encoding="utf-8") as fileh:
+            schema = json.load(fileh)
 
-        path, filename = get_path_and_filename(schema_file)
+        _, filename = get_path_and_filename(schema_file)
         schema_property_map[filename] = list(schema["properties"].keys())
 
     return schema_property_map
@@ -291,7 +295,9 @@ def dump_schema_vars(output_dir, schema_properties, variables):
             dump_data_to_yaml(schema_data, yaml_file)
 
 
-def find_files(file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False):
+def find_files(
+    file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False
+):  # pylint: disable=dangerous-default-value
     """
     Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames.
 
@@ -306,14 +312,14 @@ def find_files(file_extensions, search_directories, excluded_filenames, excluded
 
     def is_part_of_excluded_dirs(current_dir):
         """Check if the current_dir is part of one of excluded_directories.
-        
+
         To simplify the matching all dirs are converted to absolute path
 
         Args:
             current_dir (str): Relative or Absolute path to a directory
 
         Returns:
-            bool: 
+            bool:
                 True if the current_directory is part of the list of excluded directories
                 False otherwise
         """
@@ -330,11 +336,11 @@ def find_files(file_extensions, search_directories, excluded_filenames, excluded
         search_directories = list(search_directories)
 
     filenames = []
-    for search_directory in search_directories:
+    for search_directory in search_directories:  # pylint: disable=too-many-nested-blocks
         # if the search_directory is a simple name without a / we try to find it as a python package looking in the {pkg}/schemas/ dir
         if "/" not in search_directory:
             try:
-                dir = os.path.join(
+                directory = os.path.join(
                     os.path.dirname(importlib.machinery.PathFinder().find_module(search_directory).get_filename()),
                     "schemas",
                 )
@@ -342,7 +348,7 @@ def find_files(file_extensions, search_directories, excluded_filenames, excluded
                 error(f"Failed to find python package `{search_directory}' for loading {search_directory}/schemas/")
                 continue
 
-            search_directory = dir
+            search_directory = directory
 
         for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
 
@@ -380,8 +386,8 @@ def load_file(filename, file_type=None):
         filename = filename.replace("file://", "")
 
     handler = YAML_HANDLER if file_type == "yaml" else json
-    with open(filename, "r") as f:
-        file_data = handler.load(f)
+    with open(filename, "r") as fileh:
+        file_data = handler.load(fileh)
 
     return file_data
 
@@ -398,7 +404,7 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
 
     # Find all of the matching files and attempt to load the data
     for filename in find_files(
-        file_extension=file_extensions, search_directories=search_directories, excluded_filenames=excluded_filenames
+        file_extensions=file_extensions, search_directories=search_directories, excluded_filenames=excluded_filenames
     ):
         file_data = load_file(filename, file_type)
         key = file_data.get(data_key, filename)
@@ -407,10 +413,10 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
     return data
 
 
-def find_and_load_file(filename, formats=["yml", "yaml", "json"]):
+def find_and_load_file(filename, formats=["yml", "yaml", "json"]):  # pylint: disable=dangerous-default-value
     """
     Search a file based on multiple extensions and load its content if found.
-    
+
     Args:
         filename (str): Full filename of the file to search and load, without the extension.
         formats (List[str]): List of formats to search.
@@ -432,30 +438,45 @@ def find_and_load_file(filename, formats=["yml", "yaml", "json"]):
 
 class MutuallyExclusiveOption(Option):
     """Add support for Mutually Exclusive option in Click.
-    
-    @command(help="Run the command.")
-    @option('--jar-file', cls=MutuallyExclusiveOption,
-            help="The jar file the topology lives in.",
-            mutually_exclusive=["other_arg"])
-    @option('--other-arg',
-            cls=MutuallyExclusiveOption,
-            help="The jar file the topology lives in.",
-            mutually_exclusive=["jar_file"])
-    def cli(jar_file, other_arg):
-        print "Running cli."
-        print "jar-file: {}".format(jar_file)
-        print "other-arg: {}".format(other_arg)
+
+    Examples:
+        @command(help="Run the command.")
+        @option('--jar-file', cls=MutuallyExclusiveOption,
+                help="The jar file the topology lives in.",
+                mutually_exclusive=["other_arg"])
+        @option('--other-arg',
+                cls=MutuallyExclusiveOption,
+                help="The jar file the topology lives in.",
+                mutually_exclusive=["jar_file"])
+        def cli(jar_file, other_arg):
+            print "Running cli."
+            print "jar-file: {}".format(jar_file)
+            print "other-arg: {}".format(other_arg)
     """
 
     def __init__(self, *args, **kwargs):
         self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
-        help = kwargs.get("help", "")
+        help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
         if self.mutually_exclusive:
             ex_str = ", ".join(self.mutually_exclusive)
             kwargs["help"] = help + (" NOTE: This argument is mutually exclusive with " " arguments: [" + ex_str + "].")
         super().__init__(*args, **kwargs)
 
     def handle_parse_result(self, ctx, opts, args):
+        """Validate that two mutually exclusive arguments are not provided together.
+
+        Args:
+            ctx : context
+            opts : options
+            args : arguments
+
+        Raises:
+            UsageError: if two mutually exclusive arguments are provided
+
+        Returns:
+            ctx, opts, args
+        """
+
         if self.mutually_exclusive.intersection(opts) and self.name in opts:
             raise UsageError(
                 "Illegal usage: `{}` is mutually exclusive with "
