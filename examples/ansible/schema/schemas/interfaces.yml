@@ -1,15 +1,15 @@
-
+---
 $schema: "http://json-schema.org/draft-07/schema#"
 $id: "schemas/interfaces"
 description: "Interfaces configuration schema."
-type: object
+type: "object"
 properties:
   interfaces:
-    type: object
+    type: "object"
     patternProperties:
       ^swp.*$:
         properties:
           type:
-            type: string
+            type: "string"
           description:
-            type: string
+            type: "string"
