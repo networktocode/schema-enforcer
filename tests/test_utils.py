@@ -84,6 +84,9 @@ def test_load_schema_from_json_file():
 
 def test_dump_data_to_yaml():
     test_file = "tests/mocks/utils/.test_data.yml"
+    if os.path.isfile(test_file):
+        os.remove(test_file)
+
     assert not os.path.isfile(test_file)
     utils.dump_data_to_yaml(TEST_DATA, test_file)
     with open(test_file, encoding="utf-8") as fileh:
