@@ -11,3 +11,4 @@ before_script:
   - "invoke build-test-container -p $TRAVIS_PYTHON_VERSION"
 script:
   - "invoke black -p $TRAVIS_PYTHON_VERSION"
+  - "invoke yamllint -p $TRAVIS_PYTHON_VERSION"

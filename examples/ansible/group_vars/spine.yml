@@ -1,12 +1,9 @@
-
-
-
+---
 dns_servers:
   - address: "10.1.1.1"
   - address: "10.2.2.2"
-
 interfaces:
   swp1:
-    role: uplink
+    role: "uplink"
   swp2:
-    role: uplink
+    role: "uplink"
