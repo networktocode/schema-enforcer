@@ -224,6 +224,73 @@ def dump_data_to_json(data, json_path):
         fh.write("\n")
 
 
+def get_schema_properties(schema_files):
+    """
+    Maps schema filenames to top-level properties.
+    Args:
+        schema_files (iterable): The list of schema definition files.
+    Returns:
+        dict: Schema filenames are the keys, and the values are list of property names.
+    Example:
+        >>> schema_files = [
+        ...     'schema/json/schemas/ntp.json', 'schema/json/schemas/snmp.json'
+        ... ]
+        >>> schema_property_map = get_schema_properties(schema_files)
+        >>> print(schema_property_map)
+        {
+            'ntp': ['ntp_servers', 'ntp_authentication'],
+            'snmp': ['snmp_servers']
+        }
+        >>>
+    """
+    schema_property_map = {}
+    for schema_file in schema_files:
+        with open(schema_file, encoding="utf-8") as fh:
+            schema = json.load(fh)
+
+        path, filename = get_path_and_filename(schema_file)
+        schema_property_map[filename] = list(schema["properties"].keys())
+
+    return schema_property_map
+
+
+def dump_schema_vars(output_dir, schema_properties, variables):
+    """
+    Writes variable data to file per schema in schema_properties.
+    Args:
+        output_dir (str): The directory to write variable files to.
+        schema_properties (dict): The mapping of schema files to top-level properties.
+        variables (dict): The variables per inventory source.
+    Returns:
+        None: Files are written for each schema definition.
+    Example:
+        >>> output_dir = "inventory/hostvars/host1"
+        >>> schema_files = glob.glob("schema/json/schemas/*.json")
+        >>> schema_properties = get_schema_properties(schema_files)
+        >>> host_variables = magic_hostvar_generator()
+        >>> os.isdir(output_dir)
+        False
+        >>> dump_schema_vars(output_dir, schema_properties, host_variables)
+        >>> os.listdir(output_dir)
+        ['ntp.yml', 'snmp.yml']
+        >>>
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    # Somewhat of a hack to remove non basic object types from data structure
+    variables = json.loads(json.dumps(variables))
+    for schema, properties in schema_properties.items():
+        schema_data = {}
+        for prop in properties:
+            try:
+                schema_data[prop] = variables[prop]
+            except KeyError:
+                pass
+        if schema_data:
+            print(f"-> {schema}")
+            yaml_file = f"{output_dir}/{schema}.yml"
+            dump_data_to_yaml(schema_data, yaml_file)
+
+
 def find_files(file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False):
     """
     Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames.
