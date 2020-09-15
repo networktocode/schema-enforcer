@@ -86,6 +86,8 @@ def validate(show_pass, show_checks, strict):
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
+    else:
+        sys.exit(1)
 
 
 @click.option(
@@ -260,3 +262,5 @@ def ansible(inventory, limit, show_pass):
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
+    else:
+        sys.exit(1)
