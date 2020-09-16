@@ -1,0 +1,40 @@
+{
+    "ipv4_network": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "network": {
+                "$ref": "../properties/ip.json#ipv4_address"
+            },
+            "mask": {
+                "$ref": "../properties/ip.json#ipv4_cidr"
+            },
+            "vrf": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "network",
+            "mask"
+        ]
+    },
+    "ipv4_host": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "address": {
+                "$ref": "../properties/ip.json#ipv4_address"
+            },
+            "vrf": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "address"
+        ]
+    }
+}

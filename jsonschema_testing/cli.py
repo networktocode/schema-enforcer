@@ -1,28 +1,19 @@
-# Standard Imports
-import json
-import os
+"""main cli commands."""
 import sys
-from pathlib import Path
 
-from glob import glob
-from collections import defaultdict
-
-# Third Party Imports
 import click
 from termcolor import colored
-from jsonschema import Draft7Validator
-from ruamel.yaml import YAML
 
 from jsonschema_testing.utils import MutuallyExclusiveOption
 from jsonschema_testing import config
-from .schemas.manager import SchemaManager
-from .instances.file import InstanceFileManager
-from .ansible_inventory import AnsibleInventory
-from .utils import warn, error
+from jsonschema_testing.schemas.manager import SchemaManager
+from jsonschema_testing.instances.file import InstanceFileManager
+from jsonschema_testing.ansible_inventory import AnsibleInventory
+from jsonschema_testing.utils import error
 
 
 @click.group()
-def main():
+def main():  # pylint: disable=missing-function-docstring
     pass
 
 
@@ -46,7 +37,7 @@ def validate(show_pass, show_checks, strict):
     """
     Validates instance files against defined schema
     \f
-    
+
     Args:
         show_pass (bool): show successful schema validations
         show_checks (bool): show schemas which will be validated against each instance file
@@ -57,9 +48,9 @@ def validate(show_pass, show_checks, strict):
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
     # ---------------------------------------------------------------------
-    sm = SchemaManager(config=config.SETTINGS)
+    smgr = SchemaManager(config=config.SETTINGS)
 
-    if not sm.schemas:
+    if not smgr.schemas:
         error("No schemas were loaded")
         sys.exit(1)
 
@@ -78,7 +69,7 @@ def validate(show_pass, show_checks, strict):
 
     error_exists = False
     for instance in ifm.instances:
-        for result in instance.validate(sm, strict):
+        for result in instance.validate(smgr, strict):
 
             result.instance_type = "FILE"
             result.instance_name = instance.filename
@@ -93,10 +84,13 @@ def validate(show_pass, show_checks, strict):
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
+    else:
+        sys.exit(1)
 
 
 @click.option(
     "--list",
+    "list_schemas",
     default=False,
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["generate_invalid", "check"],
@@ -121,7 +115,7 @@ def validate(show_pass, show_checks, strict):
 )
 @click.option("--schema", help="The name of a schema.")
 @main.command()
-def schema(check, generate_invalid, list, schema):
+def schema(check, generate_invalid, list_schemas):
     """
     Manage your schemas
     \f
@@ -137,14 +131,14 @@ def schema(check, generate_invalid, list, schema):
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
     # ---------------------------------------------------------------------
-    sm = SchemaManager(config=config.SETTINGS)
+    smgr = SchemaManager(config=config.SETTINGS)
 
-    if not sm.schemas:
+    if not smgr.schemas:
         error("No schemas were loaded")
         sys.exit(1)
 
-    if list:
-        sm.print_schemas_list()
+    if list_schemas:
+        smgr.print_schemas_list()
         sys.exit(0)
 
     if generate_invalid:
@@ -152,11 +146,11 @@ def schema(check, generate_invalid, list, schema):
             sys.exit(
                 "Please indicate the name of the schema you'd like to generate the invalid data for using --schema"
             )
-        sm.generate_invalid_tests_expected(schema_id=schema)
+        smgr.generate_invalid_tests_expected(schema_id=schema)
         sys.exit(0)
 
     if check:
-        sm.test_schemas()
+        smgr.test_schemas()
         sys.exit(0)
 
 
@@ -164,10 +158,10 @@ def schema(check, generate_invalid, list, schema):
 @click.option("--inventory", "-i", help="Ansible inventory file.", required=False)
 @click.option("--host", "-h", "limit", help="Limit the execution to a single host.", required=False)
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
-def ansible(inventory, limit, show_pass):
+def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,too-many-locals
     """
-    Validate the hostvar for all hosts within an Ansible inventory. 
-    The hostvar are dynamically rendered based on groups. 
+    Validate the hostvar for all hosts within an Ansible inventory.
+    The hostvar are dynamically rendered based on groups.
 
     For each host, if a variable `jsonschema_mapping` is defined, it will be used
     to determine which schemas should be use to validate each key.
@@ -211,9 +205,9 @@ def ansible(inventory, limit, show_pass):
     # ---------------------------------------------------------------------
     # Load Schema(s) from disk
     # ---------------------------------------------------------------------
-    sm = SchemaManager(config=config.SETTINGS)
+    smgr = SchemaManager(config=config.SETTINGS)
 
-    if not sm.schemas:
+    if not smgr.schemas:
         error("No schemas were loaded")
         sys.exit(1)
 
@@ -247,12 +241,12 @@ def ansible(inventory, limit, show_pass):
         error_exists = False
         for key, value in hostvar.items():
             if mapping and key in mapping.keys():
-                applicable_schemas = {schema_id: sm.schemas[schema_id] for schema_id in mapping[key]}
+                applicable_schemas = {schema_id: smgr.schemas[schema_id] for schema_id in mapping[key]}
             else:
-                applicable_schemas = sm.schemas
+                applicable_schemas = smgr.schemas
 
-            for schema_id, schema in applicable_schemas.items():
-                for result in schema.validate({key: value}):
+            for _, schema_obj in applicable_schemas.items():
+                for result in schema_obj.validate({key: value}):
 
                     result.instance_type = "VAR"
                     result.instance_name = key
@@ -267,3 +261,5 @@ def ansible(inventory, limit, show_pass):
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
+    else:
+        sys.exit(1)

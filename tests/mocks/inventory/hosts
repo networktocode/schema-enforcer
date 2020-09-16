@@ -1,0 +1,17 @@
+[ios]
+host3
+
+[eos]
+host4
+
+[na:children]
+nyc
+
+[emea:children]
+lon
+
+[nyc]
+host3
+
+[lon]
+host4

@@ -1,3 +1,4 @@
+"""InstanceFile and InstanceFileManager."""
 import os
 import re
 import itertools
@@ -7,7 +8,7 @@ from jsonschema_testing.utils import find_files, load_file
 SCHEMA_TAG = "jsonschema"
 
 
-class InstanceFileManager:
+class InstanceFileManager:  # pylint: disable=too-few-public-methods
     """InstanceFileManager."""
 
     def __init__(self, config):
@@ -71,9 +72,9 @@ class InstanceFile:
 
     def _find_matches_inline(self, content=None):
         """Find addition matches with SchemaID inside the file itself.
-        
+
         Looking for a line with # jsonschema: schema_id,schema_id
-        
+
         Args:
             content (string, optional): Content of the file to analyze. Default to None
 
@@ -87,9 +88,9 @@ class InstanceFile:
 
         if SCHEMA_TAG in content:
             line_regexp = r"^#.*{0}:\s*(.*)$".format(SCHEMA_TAG)
-            m = re.match(line_regexp, content, re.MULTILINE)
-            if m:
-                matches = [x.strip() for x in m.group(1).split(",")]
+            match = re.match(line_regexp, content, re.MULTILINE)
+            if match:
+                matches = [x.strip() for x in match.group(1).split(",")]
 
         return matches
 
@@ -99,7 +100,7 @@ class InstanceFile:
         Content returned can be either dict or list depending on the content of the file
 
         Returns:
-            dict or list: Content of the instance file 
+            dict or list: Content of the instance file
         """
         return load_file(os.path.join(self.full_path, self.filename))
 

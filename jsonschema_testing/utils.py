@@ -1,96 +1,36 @@
+"""Library of utility functions."""
 import os
 import json
 import glob
 from collections.abc import Mapping, Sequence
+import importlib
 
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
-import jsonref
-from jsonschema import (
+from jsonschema import (  # pylint: disable=no-name-in-module
     RefResolver,
     Draft7Validator,
     draft7_format_checker,
-    ValidationError,
 )
 
-from .ansible_inventory import AnsibleInventory
-import toml
-from pathlib import Path
 from termcolor import colored
-import importlib
-from collections import defaultdict
 
-from click import command, option, Option, UsageError
+
+from click import Option, UsageError
 
 YAML_HANDLER = YAML()
 YAML_HANDLER.indent(sequence=4, offset=2)
 YAML_HANDLER.explicit_start = True
-VALIDATION_ERROR_ATTRS = ["message", "schema_path", "validator", "validator_value"]
-CONFIG_DEFAULTS = {
-    "schema_exclude_filenames": [],
-    "schema_search_directories": ["schema/schemas/"],
-    "schema_file_extensions": [".json", ".yml"],
-    "instance_exclude_filenames": [".yamllint.yml", ".travis.yml"],
-    "instance_search_directories": ["hostvars/"],
-    "instance_file_extensions": [".json", ".yml"],
-    "yaml_schema_path": "schema/yaml/schemas/",
-    "json_schema_path": "schema/json/schemas/",
-    # Define location to place schema definitions after resolving ``$ref``
-    "json_schema_definitions": "schema/json/definitions",
-    "yaml_schema_definitions": "schema/yaml/definitions",
-    "json_full_schema_definitions": "schema/json/full_schemas",
-    # Define network device variables location
-    "device_variables": "hostvars/",
-    # Define path to inventory
-    "inventory_path": "inventory/",
-    "schema_mapping": {},
-}
 
 
 def warn(msg):
+    """Print warning message in yellow."""
     print(colored("WARNING |", "yellow"), msg)
 
 
 def error(msg):
+    """Print a error message in red."""
     print(colored("  ERROR |", "red"), msg)
-
-
-def load_config(tool_name="jsonschema_testing", defaults={}):
-    """
-    Loads configuration files and merges values based on precedence.
-
-    Loads configuration from pyprojects.toml under the specified tool.{toolname} section.
-
-    Retuns:
-        dict: The values from the cfg files.
-    """
-    # TODO Make it so the script runs regardless of whether a config file is defined by using sensible defaults
-    # TODO should we search parent folders for pyproject.toml ?
-
-    config = defaultdict()
-    config.update(CONFIG_DEFAULTS)
-    config.update(defaults)
-
-    try:
-        config_string = Path("pyproject.toml").read_text()
-        tomlcfg = toml.loads(config_string)
-        config.update(tomlcfg["tool"][tool_name])
-    except KeyError:
-        warn(f"[tool.{tool_name}] section is not defined in pyproject.toml,")
-        warn(f"Please see {tool_name}/example/ folder for sample of this section")
-        warn(f"Using built-in defaults for [tool.{tool_name}]")
-
-    except (FileNotFoundError, UnboundLocalError):
-        warn(f"Could not find pyproject.toml in the current working directory.")
-        warn(f"Script is being executed from CWD: {os.getcwd()}")
-        warn(f"Using built-in defaults for [tool.{tool_name}]")
-
-    if not len(config["schema_mapping"]):
-        warn(
-            f"[tool.{tool_name}.schema_mapping] is not defined, instances must be tagged to apply schemas to instances"
-        )
-
-    return config
 
 
 def get_path_and_filename(filepath):
@@ -111,7 +51,7 @@ def get_path_and_filename(filepath):
         'ntp'
         >>>
     """
-    file, extension = os.path.splitext(filepath)
+    file, _ = os.path.splitext(filepath)
     return os.path.split(file)
 
 
@@ -225,8 +165,8 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
         >>>
     """
     base_uri = f"file:{schema_root_dir}/".replace("\\", "/")
-    with open(os.path.join(schema_root_dir, schema_filepath), encoding="utf-8") as fh:
-        schema_definition = json.load(fh)
+    with open(os.path.join(schema_root_dir, schema_filepath), encoding="utf-8") as fileh:
+        schema_definition = json.load(fileh)
 
     # Notes: The Draft7Validator will use the base_uri to resolve any relative references within the loaded schema_defnition
     # these references must match the full filenames currently, unless we modify the RefResolver to handle other cases.
@@ -259,8 +199,8 @@ def dump_data_to_yaml(data, yaml_path):
         >>>
     """
     data_formatted = ensure_strings_have_quotes_mapping(data)
-    with open(yaml_path, "w", encoding="utf-8") as fh:
-        YAML_HANDLER.dump(data_formatted, fh)
+    with open(yaml_path, "w", encoding="utf-8") as fileh:
+        YAML_HANDLER.dump(data_formatted, fileh)
 
 
 def dump_data_to_json(data, json_path):
@@ -283,112 +223,18 @@ def dump_data_to_json(data, json_path):
         ["dns.json", "ntp.json", "snmp.json"]
         >>>
     """
-    with open(json_path, "w", encoding="utf-8") as fh:
-        json.dump(data, fh, indent=4)
-        fh.write("\n")
-
-
-def fix_references(data, old_file_ext, new_file_ext, _recursive=False, **kwargs):
-    """
-    Updates any relative $ref so that they point to the new_file_ext for local file resolution
-
-    """
-    try:
-        if not isinstance(data["$ref"], str):
-            raise TypeError
-    except (TypeError, LookupError):
-        pass
-    else:
-        if "://" not in data["$ref"]:
-            data["$ref"] = data["$ref"].replace(old_file_ext, new_file_ext)
-            # re.sub(f"%s{old_file_ext}", new_file_ext, data["$ref"])  # regex needs to handle #fragmenets
-        return data
-
-    # Recurse through the data and replace any relative $ref file extensions
-    if isinstance(data, Mapping):
-        data = type(data)((k, fix_references(v, old_file_ext, new_file_ext, _recursive=True)) for k, v in data.items())
-    elif isinstance(data, Sequence) and not isinstance(data, str):
-        data = type(data)(fix_references(v, old_file_ext, new_file_ext) for i, v in enumerate(data))
-
-    return data
-
-
-def convert_yaml_to_json(yaml_path, json_path, silent=False):
-    """
-    Reads YAML files and writes them to JSON files.
-
-    Args:
-        yaml_path (str): The root directory containing YAML files to convert to JSON.
-        json_path (str): The root directory to build JSON files from YAML files in
-                         ``yaml_path``.
-
-    Returns:
-        None: JSON files are written with data from YAML files.
-
-    Example:
-        >>> os.listdir("schema/")
-        ['yaml']
-        >>> convert_yaml_to_json("schema/yaml", "schema/json")
-        >>> os.listdir("schema/")
-        ['json', 'yaml']
-        >>> os.listdir("schema/json/schema")
-        ['ntp.json', 'snmp.json']
-        >>>
-    """
-    yaml_json_pairs = get_conversion_filepaths(yaml_path, "yml", json_path, "json")
-    for yaml_file, json_file in yaml_json_pairs:
-        with open(yaml_file, encoding="utf-8") as fh:
-            yaml_data = YAML_HANDLER.load(fh)
-
-        yaml_data = fix_references(data=yaml_data, old_file_ext=".yml", new_file_ext=".json")
-        if not silent:
-            print(f"Converting {yaml_file} -> {json_file}")
-        dump_data_to_json(yaml_data, json_file)
-
-
-def convert_json_to_yaml(json_path, yaml_path, silent=False):
-    """
-    Reads JSON files and writes them to YAML files.
-
-    Args:
-        json_path (str): The root directory containing JSON files to convert to YAML.
-        yaml_path (str): The root directory to build YAML files from JSON files in
-                         ``json_path``.
-
-    Returns:
-        None: YAML files are written with data from JSON files.
-
-    Example:
-        >>> os.listdir("schema/")
-        ['json']
-        >>> convert_json_to_yaml("schema/json", "schema/yaml")
-        >>> os.listdir("schema/")
-        ['json', 'yaml']
-        >>> os.listdir("schema/yaml/schema")
-        ['ntp.yml', 'snmp.yml']
-        >>>
-    """
-    json_yaml_pairs = get_conversion_filepaths(json_path, "json", yaml_path, "yml")
-    for json_file, yaml_file in json_yaml_pairs:
-        with open(json_file, encoding="utf-8") as fh:
-            json_data = json.load(fh)
-
-        json_data = fix_references(data=json_data, old_file_ext=".json", new_file_ext=".yml")
-        if not silent:
-            print(f"Converting {json_file} -> {yaml_file}")
-        dump_data_to_yaml(json_data, yaml_file)
+    with open(json_path, "w", encoding="utf-8") as fileh:
+        json.dump(data, fileh, indent=4)
+        fileh.write("\n")
 
 
 def get_schema_properties(schema_files):
     """
     Maps schema filenames to top-level properties.
-
     Args:
         schema_files (iterable): The list of schema definition files.
-
     Returns:
         dict: Schema filenames are the keys, and the values are list of property names.
-
     Example:
         >>> schema_files = [
         ...     'schema/json/schemas/ntp.json', 'schema/json/schemas/snmp.json'
@@ -403,10 +249,10 @@ def get_schema_properties(schema_files):
     """
     schema_property_map = {}
     for schema_file in schema_files:
-        with open(schema_file, encoding="utf-8") as fh:
-            schema = json.load(fh)
+        with open(schema_file, encoding="utf-8") as fileh:
+            schema = json.load(fileh)
 
-        path, filename = get_path_and_filename(schema_file)
+        _, filename = get_path_and_filename(schema_file)
         schema_property_map[filename] = list(schema["properties"].keys())
 
     return schema_property_map
@@ -415,15 +261,12 @@ def get_schema_properties(schema_files):
 def dump_schema_vars(output_dir, schema_properties, variables):
     """
     Writes variable data to file per schema in schema_properties.
-
     Args:
         output_dir (str): The directory to write variable files to.
         schema_properties (dict): The mapping of schema files to top-level properties.
         variables (dict): The variables per inventory source.
-
     Returns:
         None: Files are written for each schema definition.
-
     Example:
         >>> output_dir = "inventory/hostvars/host1"
         >>> schema_files = glob.glob("schema/json/schemas/*.json")
@@ -452,7 +295,9 @@ def dump_schema_vars(output_dir, schema_properties, variables):
             dump_data_to_yaml(schema_data, yaml_file)
 
 
-def find_files(file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False):
+def find_files(
+    file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False
+):  # pylint: disable=dangerous-default-value
     """
     Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames.
 
@@ -467,14 +312,14 @@ def find_files(file_extensions, search_directories, excluded_filenames, excluded
 
     def is_part_of_excluded_dirs(current_dir):
         """Check if the current_dir is part of one of excluded_directories.
-        
+
         To simplify the matching all dirs are converted to absolute path
 
         Args:
             current_dir (str): Relative or Absolute path to a directory
 
         Returns:
-            bool: 
+            bool:
                 True if the current_directory is part of the list of excluded directories
                 False otherwise
         """
@@ -491,11 +336,11 @@ def find_files(file_extensions, search_directories, excluded_filenames, excluded
         search_directories = list(search_directories)
 
     filenames = []
-    for search_directory in search_directories:
+    for search_directory in search_directories:  # pylint: disable=too-many-nested-blocks
         # if the search_directory is a simple name without a / we try to find it as a python package looking in the {pkg}/schemas/ dir
         if "/" not in search_directory:
             try:
-                dir = os.path.join(
+                directory = os.path.join(
                     os.path.dirname(importlib.machinery.PathFinder().find_module(search_directory).get_filename()),
                     "schemas",
                 )
@@ -503,7 +348,7 @@ def find_files(file_extensions, search_directories, excluded_filenames, excluded
                 error(f"Failed to find python package `{search_directory}' for loading {search_directory}/schemas/")
                 continue
 
-            search_directory = dir
+            search_directory = directory
 
         for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
 
@@ -541,8 +386,8 @@ def load_file(filename, file_type=None):
         filename = filename.replace("file://", "")
 
     handler = YAML_HANDLER if file_type == "yaml" else json
-    with open(filename, "r") as f:
-        file_data = handler.load(f)
+    with open(filename, "r") as fileh:
+        file_data = handler.load(fileh)
 
     return file_data
 
@@ -559,7 +404,7 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
 
     # Find all of the matching files and attempt to load the data
     for filename in find_files(
-        file_extension=file_extensions, search_directories=search_directories, excluded_filenames=excluded_filenames
+        file_extensions=file_extensions, search_directories=search_directories, excluded_filenames=excluded_filenames
     ):
         file_data = load_file(filename, file_type)
         key = file_data.get(data_key, filename)
@@ -568,10 +413,10 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
     return data
 
 
-def find_and_load_file(filename, formats=["yml", "yaml", "json"]):
+def find_and_load_file(filename, formats=["yml", "yaml", "json"]):  # pylint: disable=dangerous-default-value
     """
     Search a file based on multiple extensions and load its content if found.
-    
+
     Args:
         filename (str): Full filename of the file to search and load, without the extension.
         formats (List[str]): List of formats to search.
@@ -593,30 +438,45 @@ def find_and_load_file(filename, formats=["yml", "yaml", "json"]):
 
 class MutuallyExclusiveOption(Option):
     """Add support for Mutually Exclusive option in Click.
-    
-    @command(help="Run the command.")
-    @option('--jar-file', cls=MutuallyExclusiveOption,
-            help="The jar file the topology lives in.",
-            mutually_exclusive=["other_arg"])
-    @option('--other-arg',
-            cls=MutuallyExclusiveOption,
-            help="The jar file the topology lives in.",
-            mutually_exclusive=["jar_file"])
-    def cli(jar_file, other_arg):
-        print "Running cli."
-        print "jar-file: {}".format(jar_file)
-        print "other-arg: {}".format(other_arg)
+
+    Examples:
+        @command(help="Run the command.")
+        @option('--jar-file', cls=MutuallyExclusiveOption,
+                help="The jar file the topology lives in.",
+                mutually_exclusive=["other_arg"])
+        @option('--other-arg',
+                cls=MutuallyExclusiveOption,
+                help="The jar file the topology lives in.",
+                mutually_exclusive=["jar_file"])
+        def cli(jar_file, other_arg):
+            print "Running cli."
+            print "jar-file: {}".format(jar_file)
+            print "other-arg: {}".format(other_arg)
     """
 
     def __init__(self, *args, **kwargs):
         self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
-        help = kwargs.get("help", "")
+        help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
         if self.mutually_exclusive:
             ex_str = ", ".join(self.mutually_exclusive)
             kwargs["help"] = help + (" NOTE: This argument is mutually exclusive with " " arguments: [" + ex_str + "].")
         super().__init__(*args, **kwargs)
 
     def handle_parse_result(self, ctx, opts, args):
+        """Validate that two mutually exclusive arguments are not provided together.
+
+        Args:
+            ctx : context
+            opts : options
+            args : arguments
+
+        Raises:
+            UsageError: if two mutually exclusive arguments are provided
+
+        Returns:
+            ctx, opts, args
+        """
+
         if self.mutually_exclusive.intersection(opts) and self.name in opts:
             raise UsageError(
                 "Illegal usage: `{}` is mutually exclusive with "

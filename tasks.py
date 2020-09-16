@@ -4,7 +4,7 @@ from invoke import task
 
 
 # Can be set to a separate Python version to be used for launching or building container
-PYTHON_VER = os.getenv("PYTHON_VER", "3.6")
+PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
 # Name of the docker image/container
 NAME = os.getenv("IMAGE_NAME", "jsonschema-testing")
 # Gather current working directory for Docker commands
@@ -30,13 +30,13 @@ def build_test_container(context, name=NAME, python_ver=PYTHON_VER):
 
 @task
 def build_test_containers(context):
-    """This will build two containers using Python 3.6 and 3.7.
+    """This will build two containers using Python 3.7.
 
     Args:
         context (obj): Used to run specific commands
     """
-    build_test_container(context, python_ver="3.6")
     build_test_container(context, python_ver="3.7")
+    build_test_container(context, python_ver="3.8")
 
 
 @task
@@ -74,18 +74,18 @@ def _clean_image(context, name=NAME, python_ver=PYTHON_VER):
 
 @task
 def clean_images(context):
-    """This will remove the Python 3.6 and 3.7 images.
+    """This will remove the Python 3.7 and 3.8 images.
 
     Args:
         context (obj): Used to run specific commands
     """
-    _clean_image(context, NAME, "3.6")
     _clean_image(context, NAME, "3.7")
+    _clean_image(context, NAME, "3.8")
 
 
 @task
 def rebuild_docker_images(context):
-    """This will clean the images for both Python 3.6 and 3.7 and then rebuild containers without using cache.
+    """This will clean the images for both Python 3.7 and 3.8 and then rebuild containers without using cache.
 
     Args:
         context (obj): Used to run specific commands
@@ -152,7 +152,7 @@ def pylint(context, name=NAME, python_ver=PYTHON_VER):
     # pty is set to true to properly run the docker commands due to the invocation process of docker
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
-    context.run(f"{docker} sh -c \"find . -name '*.py' | xargs pylint\"", pty=True)
+    context.run(f"{docker} sh -c \"find jsonschema_testing -name '*.py' | xargs pylint\"", pty=True)
 
 
 @task

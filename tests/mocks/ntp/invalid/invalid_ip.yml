@@ -1,0 +1,6 @@
+---
+message: "'10.1.1.1000' is not a 'ipv4'"
+schema_path: "deque(['properties', 'ntp_servers', 'items', 'properties', 'address',\
+  \ 'format'])"
+validator: "format"
+validator_value: "ipv4"
