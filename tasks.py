@@ -21,9 +21,7 @@ def build_test_container(context, name=NAME, python_ver=PYTHON_VER):
         python_ver (str): Will use the Python version docker image to build from
     """
     print(f"Building container {name}-{python_ver}")
-    result = context.run(
-        f"docker build --tag {name}-{python_ver} --build-arg PYTHON={python_ver} -f Dockerfile .", hide=True
-    )
+    result = context.run(f"docker build --tag {name}-{python_ver} --build-arg PYTHON={python_ver} -f Dockerfile .")
     if result.exited != 0:
         print(f"Failed to build container {name}-{python_ver}\nError: {result.stderr}")
 
@@ -107,7 +105,7 @@ def pytest(context, name=NAME, python_ver=PYTHON_VER):
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     # Install python module
     docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
-    context.run(f"{docker} /bin/bash -c 'poetry install && pytest -vv'", pty=True)
+    context.run(f"{docker} /bin/bash -c 'coverage run -m pytest -vv && coverage report -m'", pty=True)
 
 
 @task
@@ -152,7 +150,10 @@ def pylint(context, name=NAME, python_ver=PYTHON_VER):
     # pty is set to true to properly run the docker commands due to the invocation process of docker
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
-    context.run(f"{docker} sh -c \"find jsonschema_testing -name '*.py' | xargs pylint\"", pty=True)
+    context.run(
+        f"{docker} sh -c \"find jsonschema_testing -name '*.py' | xargs pylint && find tests -name '*.py' | xargs pylint\"",
+        pty=True,
+    )
 
 
 @task
@@ -236,5 +237,4 @@ def tests(context, name=NAME, python_ver=PYTHON_VER):
     pydocstyle(context, name, python_ver)
     print("Running bandit...")
     bandit(context, name, python_ver)
-
     print("All tests have passed!")

@@ -1,5 +1,4 @@
 """settings definition for the config file."""
-import sys
 import os
 import os.path
 from pathlib import Path
@@ -7,6 +6,8 @@ from typing import Dict, List, Optional
 
 import toml
 from pydantic import BaseSettings, ValidationError
+
+from jsonschema_testing.exceptions import InvalidConfigAttribute
 
 SETTINGS = None
 
@@ -74,10 +75,10 @@ def load(config_file_name="pyproject.toml", config_data=None):
             try:
                 SETTINGS = Settings(**config_tmp["tool"]["jsonschema_testing"])
             except ValidationError as exc:
-                print(f"Configuration not valid, found {len(exc.errors())} error(s)")
+                error_string = f"Configuration not valid, found {len(exc.errors())} error(s)"
                 for error in exc.errors():
-                    print(f"  {'/'.join(error['loc'])} | {error['msg']} ({error['type']})")
-                sys.exit(1)
+                    error_string += f"  {'/'.join(error['loc'])} | {error['msg']} ({error['type']})"
+                raise InvalidConfigAttribute(error_string)  # pylint: disable=raise-missing-from
             return
 
     SETTINGS = Settings()

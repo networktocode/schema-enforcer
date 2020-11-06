@@ -1,0 +1,4 @@
+[tool.jsonschema_testing]
+
+main_directory = "schema1"
+definition_directory = "definitions1"
