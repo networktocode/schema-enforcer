@@ -5,50 +5,241 @@ This repository provides a framework for building and testing [JSONSchema](https
 
 ## Install
 
+Poetry, a tool used for python package, venv, and python environment management, is used to manage the jsonschema_testing library in this repo. In the root of the repository, a pyproject.toml file exists from which jsonschema_testing can be installed. To do so, first download and install python/python poetry ([instructuions here](https://python-poetry.org/docs/#installation)), then run the following commands from the root of this repository:
 
+```cli
+poetry install
+poetry shell
+```
+
+Once the jsonschema_testing tool has been installed, the `test-schema` command can be used to validate anisble hostvars for adherence to schema, manage schemas, and run schema validations of YAML/JSON instance files against defined schema.
+
+```cli
+Usage: test-schema [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  ansible        Validate the hostvar for all hosts within an Ansible...
+  schema         Manage your schemas
+  validate       Validates instance files against defined schema
+```
 
 ## Customizing Project Config
 
-The CLI tool uses a configuration section in the pyproject.toml file to configure settings.  There is an example in `examples/pyproject.toml`, which works with the provided examples.  The paths are relative in this file, so the example works by changing your working directory to `examples/`.
+The CLI tool uses a configuration section beginning with `tool.jsonschema_testing` in a `pyproject.toml` file to configure settings. There are examples of the configuration file in `examples/example1/pyproject.toml` and `examples/example2/pyproject.toml` folders, which work with the files inside of the `examples/example1/` and `examples/example2/` directories/subdirectories (respectively).
 
-### Variables
+```shell
+bash$ cd examples/example1
+bash$ tree -L 2
+.
+├── hostvars
+│   ├── chi-beijing-rt1
+│   ├── eng-london-rt1
+│   ├── fail-tests
+│   ├── ger-berlin-rt1
+│   ├── mex-mxc-rt1
+│   ├── usa-lax-rt1
+│   └── usa-nyc-rt1
+├── inventory
+│   ├── group_vars
+│   ├── host_vars
+│   └── inventory
+├── pyproject.toml
+└── schema
+    ├── definitions
+    ├── schemas
+    └── tests
+```
 
-The below examples assume the following `pyproject.toml` file.
+Here is output from the `examples/example1/pyproject.toml` which serves as an example.
+
+```toml
+[tool.jsonschema_testing]
+schema_file_exclude_filenames = []
+
+definition_directory = "definitions"
+schema_directory = "schemas"
+
+instance_file_exclude_filenames = ['.yamllint.yml', '.travis.yml']
+# instance_search_directories = ["hostvars/"]
+
+[tool.jsonschema_testing.schema_mapping]
+# Map instance filename to schema id which should be used to check the instance data contained in the file
+'dns.yml' = ['schemas/dns_servers']
+'syslog.yml' = ["schemas/syslog_servers"]
+```
+
+> Note: In the root of this project is a pyproject.toml file without a `[tool.jsonschema_testing]` configuration block. This is used for the jsonschema_testing tools package management and not for configuration of the jsonschema_testing tool. If you run the tool from the root of this repository, the tool will fail because there are no `tool.jsonschema_testing` blocks which define how the tool should behave, and the default configuration settings include a directory structure that does not exist starting at the root of the project but rather from the base path of the examples/example1 and/or examples/example2 folder(s).
+
+### Configuration Settings
+
+The following parameters can be specified within the pyproject.toml file used to configure the jsonschema_testing tool. The below text snippet lists the default for each of these configuration parameters. If a pyproject.toml file defines a subset of the available parameters, this susbset defined will override the defaults. Any parameter not defined in the pyproject.toml file will fall back to it's default value (as listed below).
+
+```toml
+[tools.jsonschema_testing]
+
+# Main Directory Names
+main_directory = "schema"
+definition_directory = "definitions"
+schema_directory = "schemas"
+test_directory = "tests"
+
+# Settings specific to the schema files
+schema_file_extensions [".json", ".yaml", ".yml"]
+schema_file_exclude_filenames = []
+
+# settings specific to search and identify all instance file to validate
+instance_search_directories = ["./"]
+instance_file_extensions = [".json", ".yaml", ".yml"]
+instance_file_exclude_filenames = [".yamllint.yml", ".travis.yml"]
+
+ansible_inventory = None
+
+# Mapping of schema instance file name to a list of schemas which should be used to validate data in the instance file
+[tools.jsonschema_testing.schema_mapping]
+```
+
+## Using the tool
+
+Once the tool has been installed and configuration settings have been defined (or not if you're using the defaults), you are ready to get started using the tool! Three main commands can be used to execute the tool, `ansible`, `schema`, and `validate`. In addition to these commands, the `--help` flag can be passed in to show a list of available commands/arguments and a description of their purpose
+
+```cli
+bash$ test-schema --help
+Usage: test-schema [OPTIONS] COMMAND [ARGS]...
+
+  Container for grouping other click commands.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  ansible   Validate the hostvar for all hosts within an Ansible inventory.
+  schema    Manage your schemas.
+  validate  Validates instance files against defined schema.
+```
+
+The `--help` flag can be passed in after commands are specified to display arguments available to the commands. e.g.
+
+```cli
+test-schema validate --help                                
+Usage: test-schema validate [OPTIONS]
+
+  Validates instance files against defined schema.
+
+Options:
+  --show-checks  Shows the schemas to be checked for each instance file
+                 [default: False]
+
+  --strict       Forces a stricter schema check that warns about unexpected
+                 additional properties  [default: False]
+
+  --show-pass    Shows validation checks that passed  [default: False]
+  --help         Show this message and exit.
+```
+
+### The `validate` command
+
+The `validate` command is used to check instace files for adherence to json schema definitions. Inside of examples/example1 exists a basic hierarchy of directories. With no flags passed in, this tool will display a line per each property definition that **FAILs** schema validation, along with contextual information regarding the error message (e.g. why the property failed validation), the file in which the property failing validation is defined, and the property that is failing validation. If all checks pass, it will inform the tool user that all tests have passed.
+
+In addition to printing these messages, the tool *intentionally exits with an error code of 1*. This is done so that the tool can be used in a pipeline or a script and fail the pipeline/script so that further execution is not performed if schema validations do not pass. If some tool is consuming YAML data, for instance, you would want to make sure that YAML data is schema valid before passing it into the tool to ensure downstream failures because data does not adhere to schema do not occur.
+
+If multiple schema validation errors occur in the same file, both errors will be printed to stdout on their own line. This was done in the spirit of a tool like pylint, which informs you of all errors for a given file so that you can correct them before re-running the tool.
+
+```cli
+bash$ cd examples/example1 && test-schema validate
+FAIL | [ERROR] 123 is not of type 'string' [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] ntp_servers:1:vrf
+FAIL | [ERROR] Additional properties are not allowed ('test_extra_property' was unexpected) [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY]
+```
+
+The default behaviour of the `validate` command can be modified by passing in one of a few flags.
+
+#### The `--show-checks` flag
+
+The `--show-checks` flag is used to show which instance files will be validated against which schema validations.
+
+```cli
+bash$ cd examples/example1 && test-schema validate --show-checks
+Instance File                                     Schema
+--------------------------------------------------------------------------------
+./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']
+./hostvars/chi-beijing-rt1/syslog.yml              ['schemas/syslog_servers']
+./hostvars/eng-london-rt1/dns.yml                  ['schemas/dns_servers']
+./hostvars/eng-london-rt1/ntp.yml                  ['schemas/ntp']
+./hostvars/fail-tests/dns.yml                      ['schemas/dns_servers']
+./hostvars/fail-tests/ntp.yml                      ['schemas/ntp']
+./hostvars/ger-berlin-rt1/dns.yml                  ['schemas/dns_servers']
+./hostvars/mex-mxc-rt1/dns.yml                     ['schemas/dns_servers']
+./hostvars/mex-mxc-rt1/syslog.yml                  ['schemas/syslog_servers']
+./hostvars/usa-lax-rt1/dns.yml                     ['schemas/dns_servers']
+./hostvars/usa-lax-rt1/syslog.yml                  ['schemas/syslog_servers']
+./hostvars/usa-nyc-rt1/dns.yml                     ['schemas/dns_servers']
+./hostvars/usa-nyc-rt1/syslog.yml                  ['schemas/syslog_servers']
+./inventory/group_vars/all.yml                     []
+./inventory/group_vars/apac.yml                    []
+./inventory/group_vars/emea.yml                    []
+./inventory/group_vars/lax.yml                     []
+./inventory/group_vars/na.yml                      []
+./inventory/group_vars/nyc.yml                     []
+```
+
+> The instance file can be mapped to schema definitions in one of a few ways. By default the top level property in an instance file is mapped to the top level property in a schema definition. File names can also be mapped to schema definitions by using a `[tool.jsonschema_testing.schema_mapping]` configuration block in a pyproject.toml file, or a decorator at the type of a file in the form of `# jsonschema_testing: <schema_id>` can be used. See the [README.md in examples/example2](https://github.com/networktocode-llc/jsonschema_testing/tree/master/examplesexamples/example2) for more information on the configuration options that are available as well as detailed examples.
+
+#### The `--show-pass` flag
+
+By default, only files which fail schema validation are printed to stdout. If you would like to see files which pass schema validation as well as those that fail, you can pass in the `--show-pass` flag.
+
+```cli
+bash$ cd examples/example1 && test-schema validate --show-pass                           
+PASS [FILE] ./hostvars/eng-london-rt1/ntp.yml
+PASS [FILE] ./hostvars/eng-london-rt1/dns.yml
+PASS [FILE] ./hostvars/chi-beijing-rt1/syslog.yml
+PASS [FILE] ./hostvars/chi-beijing-rt1/dns.yml
+PASS [FILE] ./hostvars/usa-lax-rt1/syslog.yml
+PASS [FILE] ./hostvars/usa-lax-rt1/dns.yml
+PASS [FILE] ./hostvars/ger-berlin-rt1/dns.yml
+PASS [FILE] ./hostvars/usa-nyc-rt1/syslog.yml
+PASS [FILE] ./hostvars/usa-nyc-rt1/dns.yml
+PASS [FILE] ./hostvars/mex-mxc-rt1/syslog.yml
+PASS [FILE] ./hostvars/mex-mxc-rt1/dns.yml
+FAIL | [ERROR] 123 is not of type 'string' [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] ntp_servers:1:vrf
+FAIL | [ERROR] Additional properties are not allowed ('test_extra_property' was unexpected) [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] 
+PASS [FILE] ./hostvars/fail-tests/dns.yml
+```
+
+#### The `--strict` flag
+
+By default, schema validations are done in a "non-strict" manner. In effect, this means that extra properties are allowed at every level of a schema definition unless the `additionalProperties` key is explicitly set to false for the JSONSchema property. Running the validate command with the `--strict` flag ensures that, if not explicitly set to allowed, additionalProperties are disallowed and instance files with additional properties will fail schema validation.
+
+```cli
+bash$ cd examples/example1 && test-schema validate --strict   
+FAIL | [ERROR] 123 is not of type 'string' [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] ntp_servers:1:vrf
+FAIL | [ERROR] Additional properties are not allowed ('test_extra_item_property' was unexpected) [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] ntp_servers:1
+FAIL | [ERROR] Additional properties are not allowed ('test_extra_property' was unexpected) [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] 
+FAIL | [ERROR] Additional properties are not allowed ('test_extra_property' was unexpected) [FILE] ./hostvars/fail-tests/dns.yml [PROPERTY] dns_servers:1
+```
+
+> Note: The schema definition `additionalProperties` attribute is part of JSONSchema standard definitions. More information on how to construct these definitions can be found [here](https://json-schema.org/understanding-json-schema/reference/object.html)
+
+
+<!-- The below examples assume the following `pyproject.toml` file.
 
 ```yaml
 [tool.jsonschema_testing]
 schema_file_extension = ".json"
-schema_file_type = "json"
 
 instance_file_extension = ".yml"
-instance_file_type = "yaml"
 
-schema_exclude_filenames = []
-
-schema_search_directories = ["schema/json/full_schemas/", "schema/lib", "ntc_schemas_core"]  # ntc_schemas_.. (without /) will be found as a python package
-instance_exclude_filenames = ['.yamllint.yml', '.travis.yml']
-
-instance_search_directories = ["hostvars/"]
-
-yaml_schema_path = "schema/yaml/full_schemas/"
-json_schema_path = "schema/json/full_schemas/"
-
-# Define location to place schema definitions after resolving ``$ref``
-json_full_schema_definitions = "examples/schema/json/full_schemas"
-
-# Define network device variables location
-device_variables = "examples/hostvars"
-
-# Define path to inventory
-inventory_path = "examples/inventory"
+instance_search_directories = ["./"]
 
 [tool.jsonschema_testing.schema_mapping]
 # Map instance filename to schema filename
 'dns.yml' = ['schemas/dns_servers', 'http://networktocode.com/schemas/core/base']
 'syslog.yml' = ["schemas/syslog_servers"]
-```
+``` -->
 
-#### json_schema_path
+<!-- #### json_schema_path
 
 Description
 ***********
@@ -203,8 +394,8 @@ The above environment has the following differences:
 Converting Schema between formats
 ************
 
-The CLI command `test-schema convert-yaml-to-json` or `test-schema convert-json-to-yaml` can be used to perform the conversion from your desired source format to the destination format.
-
+The CLI command `test-schema convert-yaml-to-json` or `test-schema convert-json-to-yaml` can be used to perform the conversion from your desired source format to the destination format. -->
+<!-- 
 ### Resolving JSON Refs
 
 The JSON Reference specification provides a mechanism for JSON Objects to incorporate reusable fragments defined outside of its own structure. This is done using the `$ref` key, and a value defining the URI to reach the resource definition.
@@ -308,8 +499,8 @@ The above environment has the following References:
 
 * `schemas/ntp.json` has ntp_servers which references `"../definitions/arrays/ip.json#ipv4_hosts`
 * `definitions/arrays/ip.json#ipv4_hosts` references `../objects/ip.json#ipv4_host` for the arrays items
-* `definitions/objects/ip.json#ipv4_host` references both `ipv4_address` and `ipv4_mask` in `../properties/ip.json`
-
+* `definitions/objects/ip.json#ipv4_host` references both `ipv4_address` and `ipv4_mask` in `../properties/ip.json` -->
+<!-- 
 ### Using test-schema command-line tool
 
 To use the `test-schema` script, the pyproject.toml file must have a tool.jsonschema_testing section that defines some of the required setup variables.  An example of this is in the example/ folder, and this is from where you can also directly run the `test-schema` cli for testing and development purposes.
@@ -752,4 +943,4 @@ collected 3 items
 
 tests/test_schema_validation.py ...                                       [100%]
 (.venv) $
-```
+``` -->

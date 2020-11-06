@@ -8,8 +8,6 @@ instance_file_exclude_filenames = ['.yamllint.yml', '.travis.yml']
 # instance_search_directories = ["hostvars/"]
 
 [tool.jsonschema_testing.schema_mapping]
-# Map instance filename to schema filename
-#'dns.yml' = ['schemas/dns_servers', 'http://networktocode.com/schemas/core/dns']
+# Map instance filename to schema id which should be used to check the instance data contained in the file
 'dns.yml' = ['schemas/dns_servers']
-# testing tag.. 'ntp.yml' = ["schemas/ntp", "missing"]
 'syslog.yml' = ["schemas/syslog_servers"]
