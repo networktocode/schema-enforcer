@@ -5,7 +5,7 @@ import pytest
 from jsonschema_testing import config
 from jsonschema_testing.exceptions import InvalidConfigAttribute
 
-FIXTURES_DIR = os.path.dirname(os.path.realpath(__file__)) + "/fixtures/test_config"
+FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_config")
 
 
 class TestConfig:
@@ -121,5 +121,5 @@ class TestConfig:
 
         assert (
             str(exc.value)
-            == "Configuration not valid, found 1 error(s)  happy_variable | extra fields not permitted (value_error.extra)"  # noqa: W503
+            == "Configuration not valid, found 1 error(s)  happy_variable | extra fields not permitted (value_error.extra)"
         )

@@ -151,8 +151,7 @@ def pylint(context, name=NAME, python_ver=PYTHON_VER):
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
     context.run(
-        f"{docker} sh -c \"find jsonschema_testing -name '*.py' | xargs pylint && find tests -name '*.py' | xargs pylint\"",
-        pty=True,
+        f"{docker} sh -c \"find jsonschema_testing tests -name '*.py' | xargs pylint\"", pty=True,
     )
 
 

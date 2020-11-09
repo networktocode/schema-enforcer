@@ -18,7 +18,7 @@ FIXTURES_DIR = os.path.dirname(os.path.realpath(__file__)) + "/fixtures/test_ins
 @pytest.fixture
 def ifm():
     """
-    Instance File Manager Instantiated Class fixture for use in tests
+    Instantiate an InstanceFileManager Class for use in tests.
 
     Returns:
         InstanceFileManager: Instantiated InstanceFileManager class
@@ -33,7 +33,8 @@ def ifm():
 @pytest.fixture
 def if_w_extended_matches():
     """
-    InstanceFile class without matches passed in
+    InstanceFile class with extended matches defined as a `# jsonschema_testing:` decorator in the
+    instance file.
     """
     os.chdir(FIXTURES_DIR)
     config.load()
@@ -45,8 +46,7 @@ def if_w_extended_matches():
 @pytest.fixture
 def if_w_matches():
     """
-    InstanceFile class without matches passed in, but with extended matches denoted in comment string
-    at top of instance file
+    InstanceFile class with matches passed in
     """
     os.chdir(FIXTURES_DIR)
     config.load()
@@ -58,7 +58,8 @@ def if_w_matches():
 @pytest.fixture
 def if_wo_matches():
     """
-    InstanceFile class without matches passed in and without extended matches
+    InstanceFile class without matches passed in and without extended matches denoted in a `# jsonschema_testing`
+    decorator in the instance file.
     """
     os.chdir(FIXTURES_DIR)
     config.load()
@@ -70,7 +71,10 @@ def if_wo_matches():
 @pytest.fixture
 def schema_manager():
     """
-    SchemaManager class
+    Instantiated SchemaManager class
+
+    Returns:
+        SchemaManager
     """
     os.chdir(FIXTURES_DIR)
     config.load()
@@ -94,15 +98,18 @@ class TestInstanceFileManager:
         """
         Tests print_instances_schema_mapping func
         """
+        print_string = (
+            "Instance File                                     Schema\n"
+            "--------------------------------------------------------------------------------\n"
+            "./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']\n"
+            "./hostvars/chi-beijing-rt1/syslog.yml              []\n"
+            "./hostvars/eng-london-rt1/dns.yaml                 []\n"
+            "./hostvars/eng-london-rt1/ntp.yaml                 ['schemas/ntp']\n"
+        )
         ifm.print_instances_schema_mapping()
         captured = capsys.readouterr()
         captured_stdout = captured[0]
-        assert "Instance File                                     Schema\n" in captured_stdout
-        assert "--------------------------------------------------------------------------------\n" in captured_stdout
-        assert "./hostvars/eng-london-rt1/dns.yaml                 []\n" in captured_stdout
-        assert "./hostvars/eng-london-rt1/ntp.yaml                 ['schemas/ntp']\n" in captured_stdout
-        assert "./hostvars/chi-beijing-rt1/syslog.yml              []\n" in captured_stdout
-        assert "./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']\n" in captured_stdout
+        assert captured_stdout == print_string
 
 
 class TestInstanceFile:

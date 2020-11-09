@@ -78,7 +78,7 @@ def load(config_file_name="pyproject.toml", config_data=None):
                 error_string = f"Configuration not valid, found {len(exc.errors())} error(s)"
                 for error in exc.errors():
                     error_string += f"  {'/'.join(error['loc'])} | {error['msg']} ({error['type']})"
-                raise InvalidConfigAttribute(error_string)  # pylint: disable=raise-missing-from
+                raise InvalidConfigAttribute(error_string) from exc
             return
 
     SETTINGS = Settings()
