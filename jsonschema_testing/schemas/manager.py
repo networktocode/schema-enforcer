@@ -10,7 +10,7 @@ from jsonschema_testing.schemas.jsonschema import JsonSchema
 
 
 class SchemaManager:
-    """THe SchemaManager class is designed to load and organaized all the schemas."""
+    """The SchemaManager class is designed to load and organaized all the schemas."""
 
     def __init__(self, config):
         """Initialize the SchemaManager and search for all schema files in the schema_directories.
