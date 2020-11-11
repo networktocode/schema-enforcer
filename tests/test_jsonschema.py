@@ -11,35 +11,33 @@ FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtur
 LOADED_SCHEMA_DATA = load_file(os.path.join(FIXTURES_DIR, "schema", "schemas", "dns.yml"))
 LOADED_INSTANCE_DATA = load_file(os.path.join(FIXTURES_DIR, "hostvars", "chi-beijing-rt1", "dns.yml"))
 
+
 @pytest.fixture
 def schema_instance():
     schema_instance = JsonSchema(
-        schema=LOADED_SCHEMA_DATA,
-        filename='dns.yml',
-        root=os.path.join(FIXTURES_DIR, "schema", "schemas"),
+        schema=LOADED_SCHEMA_DATA, filename="dns.yml", root=os.path.join(FIXTURES_DIR, "schema", "schemas"),
     )
     return schema_instance
 
+
 @pytest.fixture
 def valid_instance_data():
-    return load_file(
-        os.path.join(FIXTURES_DIR, "hostvars", "chi-beijing-rt1", "dns.yml")
-    )
+    return load_file(os.path.join(FIXTURES_DIR, "hostvars", "chi-beijing-rt1", "dns.yml"))
+
 
 @pytest.fixture
 def invalid_instance_data():
-    return load_file(
-        os.path.join(FIXTURES_DIR, "hostvars", "can-vancouver-rt1", "dns.yml")
-    )
+    return load_file(os.path.join(FIXTURES_DIR, "hostvars", "can-vancouver-rt1", "dns.yml"))
+
 
 @pytest.fixture
 def strict_invalid_instance_data():
-    return load_file(
-        os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1", "dns.yml")
-    )
+    return load_file(os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1", "dns.yml"))
+
 
 class TestJsonSchema:
     """Tests methods relating to jsonschema_testing.schemas.jsonschema.JsonSchema Class"""
+
     @staticmethod
     def test_init(schema_instance):
         """Tests __init__() magic method of JsonSchema class.
@@ -47,7 +45,7 @@ class TestJsonSchema:
         Args:
             schema_instance (JsonSchema): Instance of JsonSchema class
         """
-        assert schema_instance.filename == 'dns.yml'
+        assert schema_instance.filename == "dns.yml"
         assert schema_instance.root == os.path.join(FIXTURES_DIR, "schema", "schemas")
         assert schema_instance.data == LOADED_SCHEMA_DATA
         assert schema_instance.id == LOADED_SCHEMA_DATA.get("$id")  # pylint: disable=invalid-name
@@ -79,14 +77,21 @@ class TestJsonSchema:
         assert validation_results[0].schema_id == LOADED_SCHEMA_DATA.get("$id")
         assert validation_results[0].result == RESULT_FAIL
         assert validation_results[0].message == "True is not of type 'string'"
-        assert validation_results[0].absolute_path == ['dns_servers', '0', 'address']
+        assert validation_results[0].absolute_path == ["dns_servers", "0", "address"]
 
-        validation_results = [result for result in schema_instance.validate(data=strict_invalid_instance_data, strict=False)]
+        validation_results = [
+            result for result in schema_instance.validate(data=strict_invalid_instance_data, strict=False)
+        ]
         assert validation_results[0].result == RESULT_PASS
 
-        validation_results = [result for result in schema_instance.validate(data=strict_invalid_instance_data, strict=True)]
+        validation_results = [
+            result for result in schema_instance.validate(data=strict_invalid_instance_data, strict=True)
+        ]
         assert validation_results[0].result == RESULT_FAIL
-        assert validation_results[0].message == "Additional properties are not allowed ('fun_extr_attribute' was unexpected)"
+        assert (
+            validation_results[0].message
+            == "Additional properties are not allowed ('fun_extr_attribute' was unexpected)"
+        )
 
     @staticmethod
     def test_validate_to_dict(schema_instance, valid_instance_data):
@@ -112,6 +117,5 @@ class TestJsonSchema:
     @staticmethod
     def test_check_if_valid():
         pass
-
 
     # def test_get_id():

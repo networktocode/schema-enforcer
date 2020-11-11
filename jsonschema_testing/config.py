@@ -1,13 +1,12 @@
-"""settings definition for the config file."""
+"""Tests config Settings class"""
 import os
 import os.path
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import toml
 from pydantic import BaseSettings, ValidationError
-
-from jsonschema_testing.exceptions import InvalidConfigAttribute
 
 SETTINGS = None
 
@@ -52,11 +51,15 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
 
 
 def load(config_file_name="pyproject.toml", config_data=None):
-    """
-    Load a configuration file in pyproject.toml format that contains the settings.
+    """Load a configuration file in pyproject.toml format that contains the settings, or a dictionary
+    of those settings passed in as "config_data"
 
     The settings for this app are expected to be in [tool.json_schema_testing] in TOML
     if nothing is found in the config file or if the config file do not exist, the default values will be used.
+
+    config_data can be passed in to override the config_file_name. If this is done, a combination of the data
+    specified and the defaults for parameters not specified will be used, and settings in the config file will
+    be ignored
 
     Args:
         config_file_name (str, optional): Name of the configuration file to load. Defaults to "pyproject.toml".
@@ -72,13 +75,26 @@ def load(config_file_name="pyproject.toml", config_data=None):
         config_tmp = toml.loads(config_string)
 
         if "tool" in config_tmp and "jsonschema_testing" in config_tmp.get("tool", {}):
-            try:
-                SETTINGS = Settings(**config_tmp["tool"]["jsonschema_testing"])
-            except ValidationError as exc:
-                error_string = f"Configuration not valid, found {len(exc.errors())} error(s)"
-                for error in exc.errors():
-                    error_string += f"  {'/'.join(error['loc'])} | {error['msg']} ({error['type']})"
-                raise InvalidConfigAttribute(error_string) from exc
+            SETTINGS = Settings(**config_tmp["tool"]["jsonschema_testing"])
             return
 
     SETTINGS = Settings()
+
+
+def load_and_exit(config_file_name="pyproject.toml", config_data=None):
+    """
+    Calls load, but wraps it in a try except block to handle a ValidationErorr which is
+    raised when settings are specified but invalid. In such cases, a message is printed
+    to the screen indicating the settings which don't pass validation.
+
+    Args:
+        config_file_name (str, optional): [description]. Defaults to "pyproject.toml".
+        config_data (dict, optional): [description]. Defaults to None.
+    """
+    try:
+        load(config_file_name=config_file_name, config_data=config_data)
+    except ValidationError as err:
+        print(f"Configuration not valid, found {len(err.errors())} error(s)")
+        for error in err.errors():
+            print(f"  {'/'.join(error['loc'])} | {error['msg']} ({error['type']})")
+        sys.exit(1)

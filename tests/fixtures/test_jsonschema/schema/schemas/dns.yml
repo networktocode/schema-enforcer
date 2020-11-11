@@ -17,7 +17,7 @@ properties:
         vrf:
           type: "string"
         required:
-        - "address"
+          - "address"
     uniqueItems: true
 required:
   - "dns_servers"
