@@ -12,7 +12,15 @@ from jsonschema_testing.instances.file import InstanceFileManager, InstanceFile
 from jsonschema_testing import config
 from jsonschema_testing.validation import ValidationResult
 
-FIXTURES_DIR = os.path.dirname(os.path.realpath(__file__)) + "/fixtures/test_instances"
+FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_instances")
+
+CONFIG_DATA = {
+    "main_directory": os.path.join(FIXTURES_DIR, "schema"),
+    # "definitions_directory":
+    # "schema_directory":
+    "instance_search_directories": [os.path.join(FIXTURES_DIR, "hostvars")],
+    "schema_mapping": {"dns.yml": ["schemas/dns_servers"]},
+}
 
 
 @pytest.fixture
@@ -23,8 +31,8 @@ def ifm():
     Returns:
         InstanceFileManager: Instantiated InstanceFileManager class
     """
-    os.chdir(FIXTURES_DIR)
-    config.load()
+    # os.chdir(FIXTURES_DIR)
+    config.load(config_data=CONFIG_DATA)
     instance_file_manager = InstanceFileManager(config.SETTINGS)
 
     return instance_file_manager
@@ -36,9 +44,8 @@ def if_w_extended_matches():
     InstanceFile class with extended matches defined as a `# jsonschema_testing:` decorator in the
     instance file.
     """
-    os.chdir(FIXTURES_DIR)
-    config.load()
-    if_instance = InstanceFile(root="./hostvars/eng-london-rt1", filename="ntp.yaml")
+    config.load(config_data=CONFIG_DATA)
+    if_instance = InstanceFile(root=os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1"), filename="ntp.yaml")
 
     return if_instance
 
@@ -48,9 +55,12 @@ def if_w_matches():
     """
     InstanceFile class with matches passed in
     """
-    os.chdir(FIXTURES_DIR)
-    config.load()
-    if_instance = InstanceFile(root="./hostvars/eng-london-rt1", filename="dns.yaml", matches=["schemas/dns_servers"])
+    config.load(config_data=CONFIG_DATA)
+    if_instance = InstanceFile(
+        root=os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1"),
+        filename="dns.yaml",
+        matches=["schemas/dns_servers"],
+    )
 
     return if_instance
 
@@ -61,9 +71,8 @@ def if_wo_matches():
     InstanceFile class without matches passed in and without extended matches denoted in a `# jsonschema_testing`
     decorator in the instance file.
     """
-    os.chdir(FIXTURES_DIR)
-    config.load()
-    if_instance = InstanceFile(root="./hostvars/chi-beijing-rt1", filename="syslog.yml")
+    config.load(config_data=CONFIG_DATA)
+    if_instance = InstanceFile(root=os.path.join(FIXTURES_DIR, "hostvars", "chi-beijing-rt1"), filename="syslog.yml")
 
     return if_instance
 
@@ -76,8 +85,7 @@ def schema_manager():
     Returns:
         SchemaManager
     """
-    os.chdir(FIXTURES_DIR)
-    config.load()
+    config.load(config_data=CONFIG_DATA)
     schema_manager = SchemaManager(config=config.SETTINGS)
 
     return schema_manager
@@ -101,10 +109,10 @@ class TestInstanceFileManager:
         print_string = (
             "Instance File                                     Schema\n"
             "--------------------------------------------------------------------------------\n"
-            "./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']\n"
-            "./hostvars/chi-beijing-rt1/syslog.yml              []\n"
-            "./hostvars/eng-london-rt1/dns.yaml                 []\n"
-            "./hostvars/eng-london-rt1/ntp.yaml                 ['schemas/ntp']\n"
+            "/local/tests/fixtures/test_instances/hostvars/chi-beijing-rt1/dns.yml ['schemas/dns_servers']\n"
+            "/local/tests/fixtures/test_instances/hostvars/chi-beijing-rt1/syslog.yml []\n"
+            "/local/tests/fixtures/test_instances/hostvars/eng-london-rt1/dns.yaml []\n"
+            "/local/tests/fixtures/test_instances/hostvars/eng-london-rt1/ntp.yaml ['schemas/ntp']\n"
         )
         ifm.print_instances_schema_mapping()
         captured = capsys.readouterr()
@@ -127,17 +135,17 @@ class TestInstanceFile:
         """
         assert if_wo_matches.matches == []
         assert not if_wo_matches.data
-        assert if_wo_matches.path == "./hostvars/chi-beijing-rt1"
+        assert if_wo_matches.path == os.path.join(FIXTURES_DIR, "hostvars", "chi-beijing-rt1")
         assert if_wo_matches.filename == "syslog.yml"
 
         assert if_w_matches.matches == ["schemas/dns_servers"]
         assert not if_w_matches.data
-        assert if_w_matches.path == "./hostvars/eng-london-rt1"
+        assert if_w_matches.path == os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1")
         assert if_w_matches.filename == "dns.yaml"
 
         assert if_w_extended_matches.matches == ["schemas/ntp"]
         assert not if_w_extended_matches.data
-        assert if_w_extended_matches.path == "./hostvars/eng-london-rt1"
+        assert if_w_extended_matches.path == os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1")
         assert if_w_extended_matches.filename == "ntp.yaml"
 
     @staticmethod
