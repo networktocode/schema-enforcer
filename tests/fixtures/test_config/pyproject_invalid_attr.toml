@@ -1,0 +1,3 @@
+[tool.jsonschema_testing]
+
+happy_variable = "fun_variable"

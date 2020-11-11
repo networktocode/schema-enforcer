@@ -27,6 +27,7 @@ yamllint = "^1.20.0"
 bandit = "^1.6.2"
 invoke = "^1.4.1"
 flake8 = "^3.8.3"
+coverage = "^5.3"
 
 [tool.poetry.scripts]
 test-schema = "jsonschema_testing.cli:main"

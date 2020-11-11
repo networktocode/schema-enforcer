@@ -65,7 +65,6 @@ class AnsibleInventory:
         Returns:
             dict: clean hostvar
         """
-
         keys_cleanup = [
             "inventory_file",
             "inventory_dir",

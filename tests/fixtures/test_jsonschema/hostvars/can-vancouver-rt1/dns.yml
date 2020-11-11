@@ -1,0 +1,4 @@
+---
+dns_servers:
+  - address: true
+  - address: "10.7.7.7"
