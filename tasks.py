@@ -105,7 +105,7 @@ def pytest(context, name=NAME, python_ver=PYTHON_VER):
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     # Install python module
     docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
-    context.run(f"{docker} /bin/bash -c 'coverage run -m pytest -vv && coverage report -m'", pty=True)
+    context.run(f"{docker} /bin/bash -c 'coverage run -m pytest -vv && coverage report -im'", pty=True)
 
 
 @task
@@ -151,7 +151,7 @@ def pylint(context, name=NAME, python_ver=PYTHON_VER):
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
     context.run(
-        f"{docker} sh -c \"find jsonschema_testing tests -name '*.py' | xargs pylint\"", pty=True,
+        f"{docker} sh -c \"find jsonschema_testing -name '*.py' | xargs pylint\"", pty=True,
     )
 
 
