@@ -16,7 +16,7 @@ class JsonSchema:
     schematype = "jsonchema"
 
     def __init__(self, schema, filename, root):
-        """Initilized a new JsonSchema from a dict
+        """Initilized a new JsonSchema from a dict.
 
         Args:
             schema (dict): Data representing the schema, must be jsonschema valid
@@ -40,6 +40,7 @@ class JsonSchema:
         Args:
             data (dict, list): Data to validate against the schema
             strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
+
         Returns:
             Iterator: Iterator of ValidationResult
         """
@@ -67,6 +68,7 @@ class JsonSchema:
         Args:
             data (dict, list): Data to validate against the schema
             strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
+
         Returns:
             list of dictionnary
         """

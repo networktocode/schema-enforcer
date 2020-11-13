@@ -34,8 +34,7 @@ def error(msg):
 
 
 def get_path_and_filename(filepath):
-    """
-    Splits ``filepath`` into the directory path and filename w/o extesion.
+    """Splits ``filepath`` into the directory path and filename w/o extesion.
 
     Args:
         filepath (str): The path to a file.
@@ -56,8 +55,7 @@ def get_path_and_filename(filepath):
 
 
 def ensure_strings_have_quotes_sequence(sequence_object):
-    """
-    Ensures Sequence objects have quotes on string entries.
+    """Ensures Sequence objects have quotes on string entries.
 
     Args:
         sequence_object (iter): A python iterable object to ensure strings have quotes.
@@ -82,8 +80,7 @@ def ensure_strings_have_quotes_sequence(sequence_object):
 
 
 def ensure_strings_have_quotes_mapping(mapping_object):
-    """
-    Recursively ensures Mapping objects have quotes on string values.
+    """Recursively ensures Mapping objects have quotes on string values.
 
     Args:
         mapping_object (dict): A python dictionary to ensure strings have quotes.
@@ -102,8 +99,7 @@ def ensure_strings_have_quotes_mapping(mapping_object):
 
 
 def get_conversion_filepaths(original_path, original_extension, conversion_path, conversion_extension):
-    """
-    Finds files matching a glob pattern and derives path to conversion file.
+    """Finds files matching a glob pattern and derives path to conversion file.
 
     Args:
         original_path (str): The path to look for files to convert.
@@ -146,8 +142,7 @@ def get_conversion_filepaths(original_path, original_extension, conversion_path,
 
 
 def load_schema_from_json_file(schema_root_dir, schema_filepath):
-    """
-    Loads a jsonschema defintion file into a Validator instance.
+    """Loads a jsonschema defintion file into a Validator instance.
 
     Args:
         schema_root_dir (str): The full path to root directory of schema files.
@@ -179,8 +174,7 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
 
 
 def dump_data_to_yaml(data, yaml_path):
-    """
-    Dumps data to a YAML file with special formatting.
+    """Dumps data to a YAML file with special formatting.
 
     Args:
         data (dict): The data to write to a YAML file.
@@ -204,8 +198,7 @@ def dump_data_to_yaml(data, yaml_path):
 
 
 def dump_data_to_json(data, json_path):
-    """
-    Dumps data to a JSON file with special formatting.
+    """Dumps data to a JSON file with special formatting.
 
     Args:
         data (dict): The data to write to a JSON file.
@@ -229,12 +222,14 @@ def dump_data_to_json(data, json_path):
 
 
 def get_schema_properties(schema_files):
-    """
-    Maps schema filenames to top-level properties.
+    """Maps schema filenames to top-level properties.
+
     Args:
         schema_files (iterable): The list of schema definition files.
+
     Returns:
         dict: Schema filenames are the keys, and the values are list of property names.
+
     Example:
         >>> schema_files = [
         ...     'schema/json/schemas/ntp.json', 'schema/json/schemas/snmp.json'
@@ -259,14 +254,16 @@ def get_schema_properties(schema_files):
 
 
 def dump_schema_vars(output_dir, schema_properties, variables):
-    """
-    Writes variable data to file per schema in schema_properties.
+    """Writes variable data to file per schema in schema_properties.
+
     Args:
         output_dir (str): The directory to write variable files to.
         schema_properties (dict): The mapping of schema files to top-level properties.
         variables (dict): The variables per inventory source.
+
     Returns:
         None: Files are written for each schema definition.
+
     Example:
         >>> output_dir = "inventory/hostvars/host1"
         >>> schema_files = glob.glob("schema/json/schemas/*.json")
@@ -298,13 +295,13 @@ def dump_schema_vars(output_dir, schema_properties, variables):
 def find_files(
     file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False
 ):  # pylint: disable=dangerous-default-value
-    """
-    Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames.
+    """Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames.
 
     Args:
         file_extensions (list, str): The extensions to look for when finding schema files.
         search_directories (list, str): The list of directories or python package names to search for schema files.
         excluded_filenames (list, str): Specify any files that should be excluded from importing as schemas (exact matches).
+        excluded_directories (list): Specify a list of directories that should be excluded from search.
         return_dir (bool): Default False, When Tru, Return each file as a tuple with the dir and the file name
     Returns:
         list: Each element of the list will be a Tuple if return_dir is True otherwise it will be a string
@@ -323,7 +320,6 @@ def find_files(
                 True if the current_directory is part of the list of excluded directories
                 False otherwise
         """
-
         for directory in excluded_directories:
             abs_current = os.path.abspath(current_dir)
             abs_excluded = os.path.abspath(directory)
@@ -369,8 +365,7 @@ def find_files(
 
 
 def load_file(filename, file_type=None):
-    """
-    Loads the specified file, using json or yaml loaders based on file_type or extension.
+    """Loads the specified file, using json or yaml loaders based on file_type or extension.
 
     Files with json extension are loaded with json, otherwise yaml is assumed.
 
@@ -393,12 +388,10 @@ def load_file(filename, file_type=None):
 
 
 def load_data(file_extensions, search_directories, excluded_filenames, file_type=None, data_key=None):
-    """
-    Walk a directory and load all files matching file_extension except the excluded_filenames
+    """Walk a directory and load all files matching file_extension except the excluded_filenames.
 
-    If file_type is not specified, yaml is assumed unless file_extension matches json
-
-    Dictionary returned is based on the filename, unless a data_key is specified
+    If file_type is not specified, yaml is assumed unless file_extension matches json.
+    Dictionary returned is based on the filename, unless a data_key is specified.
     """
     data = {}
 
@@ -414,8 +407,7 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
 
 
 def find_and_load_file(filename, formats=["yml", "yaml", "json"]):  # pylint: disable=dangerous-default-value
-    """
-    Search a file based on multiple extensions and load its content if found.
+    """Search a file based on multiple extensions and load its content if found.
 
     Args:
         filename (str): Full filename of the file to search and load, without the extension.
@@ -455,6 +447,7 @@ class MutuallyExclusiveOption(Option):
     """
 
     def __init__(self, *args, **kwargs):
+        """Initializes MutuallyExclusiveOption class."""
         self.mutually_exclusive = set(kwargs.pop("mutually_exclusive", []))
         help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
         if self.mutually_exclusive:
@@ -476,7 +469,6 @@ class MutuallyExclusiveOption(Option):
         Returns:
             ctx, opts, args
         """
-
         if self.mutually_exclusive.intersection(opts) and self.name in opts:
             raise UsageError(
                 "Illegal usage: `{}` is mutually exclusive with "

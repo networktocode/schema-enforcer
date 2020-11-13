@@ -8,8 +8,10 @@ RESULT_FAIL = "FAIL"
 
 
 class ValidationResult(BaseModel):
-    """The ValidationResult object is meant to store the result of a given test.
-    along with some contextual information about the test itself.
+    """ValidationResult object.
+
+    This object is meant to store the result of a given test along with some contextual
+    information about the test itself.
     """
 
     result: str

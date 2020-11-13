@@ -14,3 +14,4 @@ script:
   - "invoke yamllint -p $TRAVIS_PYTHON_VERSION"
   - "invoke pylint -p $TRAVIS_PYTHON_VERSION"
   - "invoke pytest -p $TRAVIS_PYTHON_VERSION"
+  - "invoke pydocstyle -p $TRAVIS_PYTHON_VERSION"

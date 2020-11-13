@@ -1,4 +1,4 @@
-"""Tests config Settings class"""
+"""Tests config Settings class."""
 import os
 import os.path
 import sys
@@ -12,8 +12,8 @@ SETTINGS = None
 
 
 class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
-    """
-    Main Settings Class for the project.
+    """Main Settings Class for the project.
+
     The type of each setting is defined using Python annotations
     and is validated when a config file is loaded with Pydantic.
 
@@ -51,8 +51,10 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
 
 
 def load(config_file_name="pyproject.toml", config_data=None):
-    """Load a configuration file in pyproject.toml format that contains the settings, or a dictionary
-    of those settings passed in as "config_data"
+    """Load configuration.
+
+    Configuration is loaded from a file in pyproject.toml format that contains the settings,
+    or from a dictionary of those settings passed in as "config_data"
 
     The settings for this app are expected to be in [tool.json_schema_testing] in TOML
     if nothing is found in the config file or if the config file do not exist, the default values will be used.
@@ -82,10 +84,10 @@ def load(config_file_name="pyproject.toml", config_data=None):
 
 
 def load_and_exit(config_file_name="pyproject.toml", config_data=None):
-    """
-    Calls load, but wraps it in a try except block to handle a ValidationErorr which is
-    raised when settings are specified but invalid. In such cases, a message is printed
-    to the screen indicating the settings which don't pass validation.
+    """Calls load, but wraps it in a try except block.
+
+    This is done to handle a ValidationErorr which is raised when settings are specified but invalid.
+    In such cases, a message is printed to the screen indicating the settings which don't pass validation.
 
     Args:
         config_file_name (str, optional): [description]. Defaults to "pyproject.toml".
