@@ -13,6 +13,7 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
 
     def __init__(self, config):
         """Initialize the interface File manager.
+
         The file manager will locate all potential instance files in the search directories
         """
         self.instances = []
@@ -51,7 +52,7 @@ class InstanceFile:
     """Class to manage an instance file."""
 
     def __init__(self, root, filename, matches=None):
-        """[summary]
+        """Initializes InstanceFile object.
 
         Args:
             root (string): Location of the file on the filesystem

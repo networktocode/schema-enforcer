@@ -14,7 +14,11 @@ from jsonschema_testing.utils import error
 
 @click.group()
 def main():  # pylint: disable=missing-function-docstring
-    pass
+    """Main function.
+
+    The click.group() decorator makes it so this function is called
+    to strap other click commands defined with the main.command() decorator together
+    """
 
 
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
@@ -34,8 +38,8 @@ def main():  # pylint: disable=missing-function-docstring
 )
 @main.command()
 def validate(show_pass, show_checks, strict):
-    """
-    Validates instance files against defined schema
+    r"""Validates instance files against defined schema.
+
     \f
 
     Args:
@@ -116,15 +120,14 @@ def validate(show_pass, show_checks, strict):
 @click.option("--schema", help="The name of a schema.")
 @main.command()
 def schema(check, generate_invalid, list_schemas):
-    """
-    Manage your schemas
+    r"""Manage your schemas.
+
     \f
 
     Args:
         check (bool): Validates that all schemas are valid (spec and unit tests)
         generate_invalid (bool): Generates expected invalid data from a given schema
-        list (bool): List all available schemas
-        schema (str): The name of a schema.
+        list_schemas (bool): List all available schemas
     """
     config.load()
 
@@ -159,10 +162,9 @@ def schema(check, generate_invalid, list_schemas):
 @click.option("--host", "-h", "limit", help="Limit the execution to a single host.", required=False)
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
 def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,too-many-locals
-    """
-    Validate the hostvar for all hosts within an Ansible inventory.
-    The hostvar are dynamically rendered based on groups.
+    r"""Validate the hostvar for all hosts within an Ansible inventory.
 
+    The hostvar are dynamically rendered based on groups.
     For each host, if a variable `jsonschema_mapping` is defined, it will be used
     to determine which schemas should be use to validate each key.
     \f

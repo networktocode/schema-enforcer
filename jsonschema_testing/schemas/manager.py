@@ -10,14 +10,13 @@ from jsonschema_testing.schemas.jsonschema import JsonSchema
 
 
 class SchemaManager:
-    """THe SchemaManager class is designed to load and organaized all the schemas."""
+    """The SchemaManager class is designed to load and organaized all the schemas."""
 
     def __init__(self, config):
         """Initialize the SchemaManager and search for all schema files in the schema_directories.
 
         Args:
-            schema_directories (list, str): The list of directories or python package names to search for schema files.
-            excluded_filenames (list, str): Specify any files that should be excluded from importing as schemas (exact matches).
+            config (Config): Instance of Config object returned by jsonschema_testing.config.load() method
         """
         self.schemas = {}
         self.config = config
@@ -39,7 +38,7 @@ class SchemaManager:
             self.schemas[schema.get_id()] = schema
 
     def create_schema_from_file(self, root, filename):  # pylint: disable=no-self-use
-        """Create a new JsonSchema object for a given file
+        """Create a new JsonSchema object for a given file.
 
         Load the content from disk and resolve all JSONRef within the schema file
 
@@ -59,7 +58,7 @@ class SchemaManager:
         return JsonSchema(schema=schema_full, filename=filename, root=root)
 
     def iter_schemas(self):
-        """Return an iterator of all schemas in the SchemaManager
+        """Return an iterator of all schemas in the SchemaManager.
 
         Returns:
             Iterator: Iterator of all schemas in K,v format (key, value)
@@ -71,7 +70,6 @@ class SchemaManager:
 
         To avoid very long location string, dynamically replace the current dir with a dot
         """
-
         current_dir = os.getcwd()
         columns = "{:20}{:12}{:30} {:20}"
         print(columns.format("Name", "Type", "Location", "Filename"))
@@ -106,8 +104,7 @@ class SchemaManager:
             print(colored("ALL SCHEMAS ARE VALID", "green"))
 
     def test_schema_valid(self, schema_id, strict=False):
-        """
-        Execute all valid tests for a given schema.
+        """Execute all valid tests for a given schema.
 
         Args:
             schema_id (str): unique identifier of a schema
@@ -115,7 +112,6 @@ class SchemaManager:
         Returns:
             list of ValidationResult
         """
-
         schema = self.schemas[schema_id]
 
         # TODO Check if top dir is present
@@ -148,8 +144,7 @@ class SchemaManager:
         return results
 
     def test_schema_invalid(self, schema_id):  # pylint: disable=too-many-locals
-        """
-        Execute all invalid tests for a given schema.
+        """Execute all invalid tests for a given schema.
 
         Args:
             schema_id (str): unique identifier of a schema
@@ -157,7 +152,6 @@ class SchemaManager:
         Returns:
             list of ValidationResult
         """
-
         schema = self.schemas[schema_id]
 
         root = os.path.abspath(os.getcwd())
@@ -199,13 +193,11 @@ class SchemaManager:
         return results  # [ ValidationResult(**result) for result in results ]
 
     def generate_invalid_tests_expected(self, schema_id):
-        """
-        Generate the expected invalid tests for a given Schema.
+        """Generate the expected invalid tests for a given Schema.
 
         Args:
             schema_id (str): unique identifier of a schema
         """
-
         # TODO check if schema is present
         schema = self.schemas[schema_id]
 

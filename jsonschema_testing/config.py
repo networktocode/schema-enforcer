@@ -12,8 +12,8 @@ SETTINGS = None
 
 
 class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
-    """
-    Main Settings Class for the project.
+    """Main Settings Class for the project.
+
     The type of each setting is defined using Python annotations
     and is validated when a config file is loaded with Pydantic.
 
@@ -51,8 +51,7 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
 
 
 def load(config_file_name="pyproject.toml", config_data=None):
-    """
-    Load a configuration file in pyproject.toml format that contains the settings.
+    """Load a configuration file in pyproject.toml format that contains the settings.
 
     The settings for this app are expected to be in [tool.json_schema_testing] in TOML
     if nothing is found in the config file or if the config file do not exist, the default values will be used.
