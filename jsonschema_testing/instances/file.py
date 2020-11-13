@@ -43,9 +43,11 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
         """Print in CLI the matches for all instance files."""
         print("Instance File                                     Schema")
         print("-" * 80)
+        print_strings = []
         for instance in self.instances:
             filepath = f"{instance.path}/{instance.filename}"
-            print(f"{filepath:50} {instance.matches}")
+            print_strings.append(f"{filepath:50} {instance.matches}")
+        print("\n".join(sorted(print_strings)))
 
 
 class InstanceFile:

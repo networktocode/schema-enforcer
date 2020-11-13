@@ -123,7 +123,7 @@ class JsonSchema:
         return self.strict_validator
 
     def check_if_valid(self):
-        """Check if the schema itself is valid against JasonSchema draft7.
+        """Check if the schema itself is valid against JsonSchema draft7.
 
         Returns:
             List[ValidationResult]

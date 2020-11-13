@@ -13,12 +13,8 @@ from jsonschema_testing.utils import error
 
 
 @click.group()
-def main():  # pylint: disable=missing-function-docstring
-    """Main function.
-
-    The click.group() decorator makes it so this function is called
-    to strap other click commands defined with the main.command() decorator together
-    """
+def main():
+    """Container for grouping other click commands."""
 
 
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
