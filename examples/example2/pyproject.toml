@@ -1,0 +1,5 @@
+[tool.jsonschema_testing.schema_mapping]
+# Map instance filename to schema filename
+'dns_v1.yml' = ['schemas/dns_servers']
+'dns_v2.yml' = ['schemas/dns_servers_v2']
+'syslog.yml' = ["schemas/syslog_servers"]
