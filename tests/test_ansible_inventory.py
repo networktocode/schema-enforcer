@@ -72,3 +72,16 @@ def test_get_host_vars(ansible_inv):
     ]
     actual = {key: host3_vars[key] for key in interesting_keys}
     assert actual == expected
+
+
+def test_get_clean_host_vars(ansible_inv):
+    expected = {
+        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"},],
+        "os_dns": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
+        "region_dns": [{"address": "10.1.1.1", "vrf": "mgmt"}, {"address": "10.2.2.2"}],
+        "ntp_servers": [{"address": "10.3.3.3"}],
+    }
+    host3 = ansible_inv.inv_mgr.get_host("host3")
+    host3_cleaned_vars = ansible_inv.get_clean_host_vars(host3)
+    host3_cleaned_vars.pop("ansible_config_file")
+    assert expected == host3_cleaned_vars
