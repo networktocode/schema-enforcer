@@ -29,9 +29,6 @@ instance_file_extensions = [".json", ".yaml", ".yml"]
 instance_file_exclude_filenames = [".yamllint.yml", ".travis.yml"]
 
 ansible_inventory = None
-
-# Mapping of schema instance file name to a list of schemas which should be used to validate data in the instance file
-[tools.schema_enforcer.schema_mapping]
 ```
 
 ### Overriding the Default Configuration
