@@ -60,7 +60,7 @@ class AnsibleInventory:
         """Return clean hostvars for a given host, cleaned up of all keys inserted by Templar.
 
         Args:
-            host (str): hostname
+            host (ansible.inventory.host.Host): The host to retrieve variable data.
 
         Returns:
             dict: clean hostvar
