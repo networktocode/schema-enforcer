@@ -1,26 +1,26 @@
 # The `validate` command
 
-The `validate` command is used to check structured data files for adherence to json schema definitions. Inside of examples/example1 exists a basic hierarchy of directories. With no flags passed in, this tool will display a line per each property definition that **FAILs** schema validation, along with contextual information regarding the error message (e.g. why the property failed validation), the file in which the property failing validation is defined, and the property that is failing validation. If all checks pass, it will inform the tool user that all tests have passed.
-
-In addition to printing these messages, the tool *intentionally exits with an error code of 1*. This is done so that the tool can be used in a pipeline or a script and fail the pipeline/script so that further execution is not performed if schema validations do not pass. If some tool is consuming YAML data, for instance, you would want to make sure that YAML data is schema valid before passing it into the tool to ensure downstream failures because data does not adhere to schema do not occur.
-
-If multiple schema validation errors occur in the same file, both errors will be printed to stdout on their own line. This was done in the spirit of a tool like pylint, which informs you of all errors for a given file so that you can correct them before re-running the tool.
+The `schema-enforcer validate` command is used to check structured data files for adherence to schema definitions. Inside of examples/example3 exists a basic hierarchy of directories. With no flags passed in, this tool will display a line per each property definition that **failss** schema validation along with contextual information elucidating why a given portion of the structured data failed schema validation, the file in which the structured data failing validation is defined, and the portion of structured data that is failing validation. If all checks pass, `schema-enforcer` will inform the user that all tests have passed.
 
 ```cli
-bash$ cd examples/example1 && test-schema validate
+bash$ cd examples/example3 && schema-enforcer validate
 FAIL | [ERROR] 123 is not of type 'string' [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] ntp_servers:1:vrf
 FAIL | [ERROR] Additional properties are not allowed ('test_extra_property' was unexpected) [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY]
 ```
 
-The default behaviour of the `validate` command can be modified by passing in one of a few flags.
+In addition to printing these messages, `schema-enforcer` *intentionally exits with an error code of 1*. This is done so that the tool can be used in a pipeline or a script and fail the pipeline/script so that further execution is not performed if schema validations do not pass. As an example, if some tool is consuming YAML data you may want to make sure that YAML data is schema valid before passing it into the tool to ensure downstream failures do not occur because the data it's consuming is not a valid input.
+
+If multiple schema validation errors occur in the same file, all errors will be printed to stdout on their own line. This was done in the spirit of a tool like pylint, which informs the user of all errors for a given file so that the user can correct them before re-running the tool.
+
+The default behaviour of the `schema-enforcer validate` command can be modified by passing in one of a few flags.
 
 #### The `--show-checks` flag
 
-The `--show-checks` flag is used to show which instance files will be validated against which schema validations.
+The `--show-checks` flag is used to show which structured data files will be validated against which schema definition IDs.
 
 ```cli
-bash$ cd examples/example1 && test-schema validate --show-checks
-Instance File                                     Schema
+bash$ cd examples/example3 && schema-enforcer validate --show-checks
+Structured Data File                               Schema ID
 --------------------------------------------------------------------------------
 ./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']
 ./hostvars/chi-beijing-rt1/syslog.yml              ['schemas/syslog_servers']
@@ -43,14 +43,14 @@ Instance File                                     Schema
 ./inventory/group_vars/nyc.yml                     []
 ```
 
-> The instance file can be mapped to schema definitions in one of a few ways. By default the top level property in an instance file is mapped to the top level property in a schema definition. File names can also be mapped to schema definitions by using a `[tool.jsonschema_testing.schema_mapping]` configuration block in a pyproject.toml file, or a decorator at the type of a file in the form of `# jsonschema_testing: <schema_id>` can be used. See the [README.md in examples/example2](https://github.com/networktocode-llc/jsonschema_testing/tree/master/examplesexamples/example2) for more information on the configuration options that are available as well as detailed examples.
+> The structured data file can be mapped to schema definitions in one of a few ways. See the [README in docs/mapping_schemas.md](https://github.com/networktocode-llc/jsonschema_testing/tree/master/docs/mapping_schemas.md) for more information. The [README.md in examples/example2](https://github.com/networktocode-llc/jsonschema_testing/tree/master/examples/example2) also contains detailed examples of schema mappings.
 
 #### The `--show-pass` flag
 
-By default, only files which fail schema validation are printed to stdout. If you would like to see files which pass schema validation as well as those that fail, you can pass in the `--show-pass` flag.
+By default, only portinos of data which fail schema validation are printed to stdout. If you would like to see files which pass schema validation as well as those that fail, you can pass the `--show-pass` flag into `schema-enforcer`.
 
 ```cli
-bash$ cd examples/example1 && test-schema validate --show-pass                           
+bash$ cd examples/example3 && schema-enforcer validate --show-pass                      
 PASS [FILE] ./hostvars/eng-london-rt1/ntp.yml
 PASS [FILE] ./hostvars/eng-london-rt1/dns.yml
 PASS [FILE] ./hostvars/chi-beijing-rt1/syslog.yml
@@ -69,10 +69,10 @@ PASS [FILE] ./hostvars/fail-tests/dns.yml
 
 #### The `--strict` flag
 
-By default, schema validations are done in a "non-strict" manner. In effect, this means that extra properties are allowed at every level of a schema definition unless the `additionalProperties` key is explicitly set to false for the JSONSchema property. Running the validate command with the `--strict` flag ensures that, if not explicitly set to allowed, additionalProperties are disallowed and instance files with additional properties will fail schema validation.
+By default, schema validations defined by JSONSchema are done in a "non-strict" manner. In effect, this means that extra properties are allowed at every level of a schema definition unless the `additionalProperties` key is explicitly set to false for the JSONSchema property. Running the validate command with the `--strict` flag ensures that, if not explicitly set to allowed, additionalProperties are disallowed and structued data files with additional properties will fail schema validation.
 
 ```cli
-bash$ cd examples/example1 && test-schema validate --strict   
+bash$ cd examples/example3 && schema-enforcer validate --strict   
 FAIL | [ERROR] 123 is not of type 'string' [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] ntp_servers:1:vrf
 FAIL | [ERROR] Additional properties are not allowed ('test_extra_item_property' was unexpected) [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] ntp_servers:1
 FAIL | [ERROR] Additional properties are not allowed ('test_extra_property' was unexpected) [FILE] ./hostvars/fail-tests/ntp.yml [PROPERTY] 
