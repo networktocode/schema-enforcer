@@ -6,29 +6,6 @@ Various settings can be configured in [TOML format](https://toml.io/en/) by use 
 
 The CLI tool uses a configuration section beginning with `tool.schema_enforcer` in a `pyproject.toml` file to configure settings. There are examples of the configuration file in `examples/example2/pyproject.toml` and `examples/example3/pyproject.toml` folders, which work with the files inside of the `examples/example2/` and `examples/example3/` directories/subdirectories (respectively).
 
-```shell
-bash$ cd examples/example2
-bash$ tree -L 2
-.
-├── hostvars
-│   ├── chi-beijing-rt1
-│   ├── eng-london-rt1
-│   ├── fail-tests
-│   ├── ger-berlin-rt1
-│   ├── mex-mxc-rt1
-│   ├── usa-lax-rt1
-│   └── usa-nyc-rt1
-├── inventory
-│   ├── group_vars
-│   ├── host_vars
-│   └── inventory
-├── pyproject.toml
-└── schema
-    ├── definitions
-    ├── schemas
-    └── tests
-```
-
 ### Default Configuration Settings
 
 The following parameters can be specified within the pyproject.toml file used to configure the `schema enforcer` tool. The below text snippet lists the default for each of these configuration parameters. If a pyproject.toml file defines a subset of the available parameters, this susbset defined will override the defaults. Any parameter not defined in the pyproject.toml file will fall back to it's default value (as listed below).
