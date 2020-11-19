@@ -1,10 +1,13 @@
+# Configuration
+
+Various settings can be configured in [TOML format](https://toml.io/en/) by use of a pyproject.toml file in the folder from which the tool is run. A set of intuitive default configuration values exist. If a pyproject.toml file is defined, it will override the defaults for settings it declares, and leave the defaults in place for settings it does not declare.
 
 ## Customizing Project Config
 
-The CLI tool uses a configuration section beginning with `tool.jsonschema_testing` in a `pyproject.toml` file to configure settings. There are examples of the configuration file in `examples/example1/pyproject.toml` and `examples/example2/pyproject.toml` folders, which work with the files inside of the `examples/example1/` and `examples/example2/` directories/subdirectories (respectively).
+The CLI tool uses a configuration section beginning with `tool.schema_enforcer` in a `pyproject.toml` file to configure settings. There are examples of the configuration file in `examples/example2/pyproject.toml` and `examples/example3/pyproject.toml` folders, which work with the files inside of the `examples/example2/` and `examples/example3/` directories/subdirectories (respectively).
 
 ```shell
-bash$ cd examples/example1
+bash$ cd examples/example2
 bash$ tree -L 2
 .
 ├── hostvars
@@ -26,32 +29,12 @@ bash$ tree -L 2
     └── tests
 ```
 
-Here is output from the `examples/example1/pyproject.toml` which serves as an example.
+### Default Configuration Settings
+
+The following parameters can be specified within the pyproject.toml file used to configure the `schema enforcer` tool. The below text snippet lists the default for each of these configuration parameters. If a pyproject.toml file defines a subset of the available parameters, this susbset defined will override the defaults. Any parameter not defined in the pyproject.toml file will fall back to it's default value (as listed below).
 
 ```toml
-[tool.jsonschema_testing]
-schema_file_exclude_filenames = []
-
-definition_directory = "definitions"
-schema_directory = "schemas"
-
-instance_file_exclude_filenames = ['.yamllint.yml', '.travis.yml']
-# instance_search_directories = ["hostvars/"]
-
-[tool.jsonschema_testing.schema_mapping]
-# Map instance filename to schema id which should be used to check the instance data contained in the file
-'dns.yml' = ['schemas/dns_servers']
-'syslog.yml' = ["schemas/syslog_servers"]
-```
-
-> Note: In the root of this project is a pyproject.toml file without a `[tool.jsonschema_testing]` configuration block. This is used for the jsonschema_testing tools package management and not for configuration of the jsonschema_testing tool. If you run the tool from the root of this repository, the tool will fail because there are no `tool.jsonschema_testing` blocks which define how the tool should behave, and the default configuration settings include a directory structure that does not exist starting at the root of the project but rather from the base path of the examples/example1 and/or examples/example2 folder(s).
-
-### Configuration Settings
-
-The following parameters can be specified within the pyproject.toml file used to configure the jsonschema_testing tool. The below text snippet lists the default for each of these configuration parameters. If a pyproject.toml file defines a subset of the available parameters, this susbset defined will override the defaults. Any parameter not defined in the pyproject.toml file will fall back to it's default value (as listed below).
-
-```toml
-[tools.jsonschema_testing]
+[tools.schema_enforcer]
 
 # Main Directory Names
 main_directory = "schema"
@@ -71,5 +54,21 @@ instance_file_exclude_filenames = [".yamllint.yml", ".travis.yml"]
 ansible_inventory = None
 
 # Mapping of schema instance file name to a list of schemas which should be used to validate data in the instance file
-[tools.jsonschema_testing.schema_mapping]
+[tools.schema_enforcer.schema_mapping]
 ```
+
+### Overriding the Default Configuration
+
+The table below enumerates each individual setting, it's expected type, it's default, and a description.
+
+| Configuration Setting | Type | Default | description |
+|---|---|---|---|
+| main_directory | string | "schema" | The directory in which to start searching for schema and definition files |
+| definition_directory | string | "definitions" | The directory in which to search for schema definition references. These definitions are can be referenced by the schema files in the "schema_directory". This directory should be nested in the "main_directory" |
+| schema_directory | string | "schemas" | The directory in which to search for schemas. This directory should be nested in the "main_directory" |
+| test_directory | string | "tests" | TODO |
+| schema_file_extensions | list | [".json", ".yaml", ".yml"] | The extensions to use when searching for schema definition files |
+| schema_file_exclude_filenames | list | [] | The list of filenames to exclude when searching for schema files in the `schema_directory` directory |
+| instance_search_directories | list | ["./"] The paths at which to start searching for files with structured data in them to validate against defined schemas. This path is relative to the directory in which `schema-enforcer` is executed.
+| instance_file_extensions | list | [".json", ".yaml", ".yml"] | The extensions to use when searching for structured data files |
+| instance_file_exclude_filenames | list | [".yamllint.yml", ".travis.yml"] | The list of filenames to exclude when searching for structured data files |
