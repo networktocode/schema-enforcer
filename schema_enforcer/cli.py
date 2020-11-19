@@ -121,7 +121,7 @@ def validate(show_pass, show_checks, strict):
 )
 @click.option("--schema", help="The name of a schema.")
 @main.command()
-def schema(check, generate_invalid, list_schemas): # noqa: D417
+def schema(check, generate_invalid, list_schemas):  # noqa: D417
     r"""Manage your schemas.
 
     \f
