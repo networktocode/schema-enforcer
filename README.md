@@ -57,7 +57,7 @@ In the above example, `chi-beijing-rt1` is a directory with structured data file
 
 The file `chi-beijing-rt1/dns.yml` defines the DNS servers `chi-beijing.rt1` should use. The data in this file includes a simple hash-type data structure with a key of `dns_servers` and a value of an array. Each element in this array is a hash-type object with a key of `address` and a value which is the string of an IP address.
 
-```cli
+```yaml
 bash$ cat chi-beijing-rt1/dns.yml
 # jsonschema: schemas/dns_servers
 ---
@@ -69,7 +69,7 @@ dns_servers:
 
 The file `schema/schemas/dns.yml` is a schema definition file. It contains a schema definition for ntp servers written in JSONSchema. The data in `chi-beijing-rt1/dns.yml` and `eng-london-rt1/dns.yml` should adhere to the schema defined in this schema definition file.
 
-```cli
+```yaml
 bash$ cat schema/schemas/dns.yml
 ---
 $schema: "http://json-schema.org/draft-07/schema#"
@@ -125,7 +125,8 @@ ALL SCHEMA VALIDATION CHECKS PASSED
 
 To acquire more context regarding what files specifically passed schema validation, the `--show-pass` flag can be passed in.
 
-```
+```cli
+bash$ schema-enforcer validate --show-pass
 PASS [FILE] ./eng-london-rt1/ntp.yml
 PASS [FILE] ./eng-london-rt1/dns.yml
 PASS [FILE] ./chi-beijing-rt1/syslog.yml

@@ -85,7 +85,7 @@ In the event that a configuration section exists in the pyproject.toml file **an
 'ntp.yml' = ['schemas/ntp2']
 ```
 
-```cli
+```yaml
 bash$ cat ntp.yml
 # jsonschema: schemas/ntp
 ---

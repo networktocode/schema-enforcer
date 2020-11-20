@@ -1,6 +1,6 @@
 # The `validate` command
 
-The `schema-enforcer validate` command is used to check structured data files for adherence to schema definitions. Inside of examples/example3 exists a basic hierarchy of directories. With no flags passed in, this tool will display a line per each property definition that **failss** schema validation along with contextual information elucidating why a given portion of the structured data failed schema validation, the file in which the structured data failing validation is defined, and the portion of structured data that is failing validation. If all checks pass, `schema-enforcer` will inform the user that all tests have passed.
+The `schema-enforcer validate` command is used to check structured data files for adherence to schema definitions. Inside of examples/example3 exists a basic hierarchy of directories. With no flags passed in, this tool will display a line per each property definition that **fails** schema validation along with contextual information elucidating why a given portion of the structured data failed schema validation, the file in which the structured data failing validation is defined, and the portion of structured data that is failing validation. If all checks pass, `schema-enforcer` will inform the user that all tests have passed.
 
 ```cli
 bash$ cd examples/example3 && schema-enforcer validate
