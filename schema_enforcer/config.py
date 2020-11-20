@@ -34,9 +34,9 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     schema_file_exclude_filenames: List[str] = []
 
     # settings specific to search and identify all instance file to validate
-    instance_search_directories: List[str] = ["./"]
-    instance_file_extensions: List[str] = [".json", ".yaml", ".yml"]
-    instance_file_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
+    data_file_search_directories: List[str] = ["./"]
+    data_file_extensions: List[str] = [".json", ".yaml", ".yml"]
+    data_file_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
 
     ansible_inventory: Optional[str]
     schema_mapping: Dict = dict()
@@ -76,8 +76,8 @@ def load(config_file_name="pyproject.toml", config_data=None):
         config_string = Path(config_file_name).read_text()
         config_tmp = toml.loads(config_string)
 
-        if "tool" in config_tmp and "jsonschema_testing" in config_tmp.get("tool", {}):
-            SETTINGS = Settings(**config_tmp["tool"]["jsonschema_testing"])
+        if "tool" in config_tmp and "schema_enforcer" in config_tmp.get("tool", {}):
+            SETTINGS = Settings(**config_tmp["tool"]["schema_enforcer"])
             return
 
     SETTINGS = Settings()

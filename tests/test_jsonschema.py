@@ -3,9 +3,9 @@ import os
 
 import pytest
 
-from jsonschema_testing.schemas.jsonschema import JsonSchema
-from jsonschema_testing.validation import RESULT_PASS, RESULT_FAIL
-from jsonschema_testing.utils import load_file
+from schema_enforcer.schemas.jsonschema import JsonSchema
+from schema_enforcer.validation import RESULT_PASS, RESULT_FAIL
+from schema_enforcer.utils import load_file
 
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_jsonschema")
 LOADED_SCHEMA_DATA = load_file(os.path.join(FIXTURES_DIR, "schema", "schemas", "dns.yml"))
@@ -36,7 +36,7 @@ def strict_invalid_instance_data():
 
 
 class TestJsonSchema:
-    """Tests methods relating to jsonschema_testing.schemas.jsonschema.JsonSchema Class"""
+    """Tests methods relating to schema_enforcer.schemas.jsonschema.JsonSchema Class"""
 
     @staticmethod
     def test_init(schema_instance):

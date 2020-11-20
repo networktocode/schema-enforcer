@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "jsonschema_testing"
+name = "schema_enforcer"
 version = "0.1.0"
 description = ""
-authors = ["Phillip Simonds <phillip.simonds@networktocode.com>"]
+authors = ["Network To Code <ntc@networktocode.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -30,7 +30,7 @@ flake8 = "^3.8.3"
 coverage = "^5.3"
 
 [tool.poetry.scripts]
-test-schema = "jsonschema_testing.cli:main"
+schema-enforcer = "schema_enforcer.cli:main"
 
 [tool.black]
 line-length = 120

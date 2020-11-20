@@ -1,4 +1,4 @@
-[tool.jsonschema_testing]
+[tool.schema_enforcer]
 
 main_directory = "schema1"
 definition_directory = "definitions1"

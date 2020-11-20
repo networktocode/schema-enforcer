@@ -3,7 +3,7 @@ import os
 import re
 import itertools
 from pathlib import Path
-from jsonschema_testing.utils import find_files, load_file
+from schema_enforcer.utils import find_files, load_file
 
 SCHEMA_TAG = "jsonschema"
 
@@ -22,9 +22,9 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
         # Find all instance files
         # TODO need to load file extensions from the config
         files = find_files(
-            file_extensions=config.instance_file_extensions,
-            search_directories=config.instance_search_directories,
-            excluded_filenames=config.instance_file_exclude_filenames,
+            file_extensions=config.data_file_extensions,
+            search_directories=config.data_file_search_directories,
+            excluded_filenames=config.data_file_exclude_filenames,
             excluded_directories=[config.main_directory],
             return_dir=True,
         )
@@ -39,9 +39,9 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
             instance = InstanceFile(root=root, filename=filename, matches=matches)
             self.instances.append(instance)
 
-    def print_instances_schema_mapping(self):
+    def print_schema_mapping(self):
         """Print in CLI the matches for all instance files."""
-        print("Instance File                                     Schema")
+        print("{:50} Schema ID".format("Structured Data File"))
         print("-" * 80)
         print_strings = []
         for instance in self.instances:
@@ -74,9 +74,9 @@ class InstanceFile:
         self.matches.extend(self._find_matches_inline())
 
     def _find_matches_inline(self, content=None):
-        """Find addition matches with SchemaID inside the file itself.
+        """Find addition matches using the Schema ID decorator comment.
 
-        Looking for a line with # jsonschema: schema_id,schema_id
+        Look for a line with # jsonschema: schema_id,schema_id
 
         Args:
             content (string, optional): Content of the file to analyze. Default to None

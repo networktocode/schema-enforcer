@@ -4,11 +4,11 @@ import os
 
 import pytest
 
-from jsonschema_testing.schemas.manager import SchemaManager
-from jsonschema_testing.instances.file import InstanceFileManager, InstanceFile
-from jsonschema_testing import config
-from jsonschema_testing.validation import ValidationResult
-from jsonschema_testing.config import Settings
+from schema_enforcer.schemas.manager import SchemaManager
+from schema_enforcer.instances.file import InstanceFileManager, InstanceFile
+from schema_enforcer import config
+from schema_enforcer.validation import ValidationResult
+from schema_enforcer.config import Settings
 
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_instances")
 
@@ -16,7 +16,7 @@ CONFIG_DATA = {
     "main_directory": os.path.join(FIXTURES_DIR, "schema"),
     # "definitions_directory":
     # "schema_directory":
-    "instance_search_directories": [os.path.join(FIXTURES_DIR, "hostvars")],
+    "data_file_search_directories": [os.path.join(FIXTURES_DIR, "hostvars")],
     "schema_mapping": {"dns.yml": ["schemas/dns_servers"]},
 }
 
@@ -24,7 +24,7 @@ CONFIG_DATA = {
 @pytest.fixture
 def if_w_extended_matches():
     """
-    InstanceFile class with extended matches defined as a `# jsonschema_testing:` decorator in the
+    InstanceFile class with extended matches defined as a `# jsonschema:` decorator in the
     instance file.
     """
     if_instance = InstanceFile(root=os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1"), filename="ntp.yaml")
@@ -49,7 +49,7 @@ def if_w_matches():
 @pytest.fixture
 def if_wo_matches():
     """
-    InstanceFile class without matches passed in and without extended matches denoted in a `# jsonschema_testing`
+    InstanceFile class without matches passed in and without extended matches denoted in a `# jsonschema`
     decorator in the instance file.
     """
     if_instance = InstanceFile(root=os.path.join(FIXTURES_DIR, "hostvars", "chi-beijing-rt1"), filename="syslog.yml")

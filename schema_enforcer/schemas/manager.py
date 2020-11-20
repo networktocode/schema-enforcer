@@ -3,10 +3,10 @@ import os
 import json
 import jsonref
 from termcolor import colored
-from jsonschema_testing.utils import load_file, find_and_load_file, find_files, dump_data_to_yaml
-from jsonschema_testing.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
+from schema_enforcer.utils import load_file, find_and_load_file, find_files, dump_data_to_yaml
+from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
 
-from jsonschema_testing.schemas.jsonschema import JsonSchema
+from schema_enforcer.schemas.jsonschema import JsonSchema
 
 
 class SchemaManager:
@@ -79,7 +79,7 @@ class SchemaManager:
             )
 
     def test_schemas(self):
-        """Tests if all schemas are passing their tests.
+        """Validate all schemas passing tests defined for them.
 
         For each schema, 3 set of tests will be potentially executed.
           - schema must be Draft7 valid
