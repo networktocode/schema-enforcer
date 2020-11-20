@@ -2,7 +2,7 @@ import os
 import json
 import shutil
 
-from jsonschema_testing import utils
+from schema_enforcer import utils
 
 # fmt: off
 TEST_DATA = {

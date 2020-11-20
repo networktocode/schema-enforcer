@@ -4,17 +4,23 @@ import sys
 import click
 from termcolor import colored
 
-from jsonschema_testing.utils import MutuallyExclusiveOption
-from jsonschema_testing import config
-from jsonschema_testing.schemas.manager import SchemaManager
-from jsonschema_testing.instances.file import InstanceFileManager
-from jsonschema_testing.ansible_inventory import AnsibleInventory
-from jsonschema_testing.utils import error
+from schema_enforcer.utils import MutuallyExclusiveOption
+from schema_enforcer import config
+from schema_enforcer.schemas.manager import SchemaManager
+from schema_enforcer.instances.file import InstanceFileManager
+from schema_enforcer.ansible_inventory import AnsibleInventory
+from schema_enforcer.utils import error
 
 
 @click.group()
 def main():
-    """Container for grouping other click commands."""
+    """SCHEMA ENFORCER.
+
+    This tool is used to ensure data adheres to a schema definition. The data can come
+    from YAML files, JSON files, or an Ansible inventory. The schema to which the data
+    should adhere can currently be defined using the JSONSchema language in YAML or JSON
+    format.
+    """
 
 
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
@@ -64,7 +70,7 @@ def validate(show_pass, show_checks, strict):
         sys.exit(1)
 
     if show_checks:
-        ifm.print_instances_schema_mapping()
+        ifm.print_schema_mapping()
         sys.exit(0)
 
     error_exists = False
@@ -187,9 +193,9 @@ def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,t
         FAIL | [ERROR] 12 is not of type 'string' [HOST] leaf1 [PROPERTY] dns_servers:0:address [SCHEMA] schemas/dns_servers
         $ test-schema ansible -i inventory.ini -h spine1 --show-pass
         WARNING | Could not find pyproject.toml in the current working directory.
-        WARNING | Script is being executed from CWD: /Users/damien/projects/jsonschema_testing/examples/ansible
-        WARNING | Using built-in defaults for [tool.jsonschema_testing]
-        WARNING | [tool.jsonschema_testing.schema_mapping] is not defined, instances must be tagged to apply schemas to instances
+        WARNING | Script is being executed from CWD: /Users/damien/projects/schema_validator/examples/ansible
+        WARNING | Using built-in defaults for [tool.schema_validator]
+        WARNING | [tool.schema_validator.data_file_to_schema_ids_mapping] is not defined, instances must be tagged to apply schemas to instances
         Found 4 hosts in the inventory
         PASS | [HOST] spine1 | [VAR] dns_servers | [SCHEMA] schemas/dns_servers
         PASS | [HOST] spine1 | [VAR] interfaces | [SCHEMA] schemas/interfaces

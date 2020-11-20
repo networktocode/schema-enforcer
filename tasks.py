@@ -151,7 +151,7 @@ def pylint(context, name=NAME, python_ver=PYTHON_VER):
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
     context.run(
-        f"{docker} sh -c \"find jsonschema_testing -name '*.py' | xargs pylint\"", pty=True,
+        f"{docker} sh -c \"find schema_enforcer -name '*.py' | xargs pylint\"", pty=True,
     )
 
 
@@ -226,14 +226,14 @@ def tests(context, name=NAME, python_ver=PYTHON_VER):
     pytest(context, name, python_ver)
     print("Running black...")
     black(context, name, python_ver)
-    print("Running flake8...")
-    flake8(context, name, python_ver)
+    # print("Running flake8...")
+    # flake8(context, name, python_ver)
     print("Running pylint...")
     pylint(context, name, python_ver)
     print("Running yamllint...")
     yamllint(context, name, python_ver)
     print("Running pydocstyle...")
     pydocstyle(context, name, python_ver)
-    print("Running bandit...")
-    bandit(context, name, python_ver)
+    # print("Running bandit...")
+    # bandit(context, name, python_ver)
     print("All tests have passed!")

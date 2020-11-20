@@ -3,7 +3,7 @@ import copy
 import pkgutil
 import json
 from jsonschema import Draft7Validator  # pylint: disable=import-self
-from jsonschema_testing.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
+from schema_enforcer.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
 
 # TODO do we need to catch a possible exception here ?
 v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
@@ -11,16 +11,16 @@ v7schema = json.loads(v7data.decode("utf-8"))
 
 
 class JsonSchema:
-    """class to manage jsonschema type schema."""
+    """class to manage jsonschema type schemas."""
 
     schematype = "jsonchema"
 
     def __init__(self, schema, filename, root):
-        """Initilized a new JsonSchema from a dict.
+        """Initiliz a new JsonSchema object from a dict.
 
         Args:
-            schema (dict): Data representing the schema, must be jsonschema valid
-            filename (string): name of the schema file on the filesystem
+            schema (dict): Data representing the schema. Must be jsonschema valid
+            filename (string): Name of the schema file on the filesystem
             root (string): Absolute path to the directory where the schema file is located.
         """
         self.filename = filename
@@ -63,7 +63,9 @@ class JsonSchema:
             )
 
     def validate_to_dict(self, data, strict=False):
-        """Return a list of ValidationResult generated with the validate() function in dict() format instead of Python Object.
+        """Return a list of ValidationResult objects.
+
+        These are generated with the validate() function in dict() format instead of as a Python Object.
 
         Args:
             data (dict, list): Data to validate against the schema
@@ -92,7 +94,7 @@ class JsonSchema:
     def __get_strict_validator(self):
         """Return a strict version of the Validator, create it if it doesn't exist already.
 
-        To create strict version of the schema, this function add `additionalProperties` to all objects in the schema
+        To create a strict version of the schema, this function adds `additionalProperties` to all objects in the schema
         TODO Currently the function is only modifying the top level object, need to add that to all objects recursively
 
         Returns:
@@ -123,7 +125,7 @@ class JsonSchema:
         return self.strict_validator
 
     def check_if_valid(self):
-        """Check if the schema itself is valid against JsonSchema draft7.
+        """Check if the schema definition is valid against JsonSchema draft7.
 
         Returns:
             List[ValidationResult]
