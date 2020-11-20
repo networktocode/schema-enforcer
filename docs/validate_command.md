@@ -43,7 +43,7 @@ Structured Data File                               Schema ID
 ./inventory/group_vars/nyc.yml                     []
 ```
 
-> The structured data file can be mapped to schema definitions in one of a few ways. See the [README in docs/mapping_schemas.md](https://github.com/networktocode-llc/jsonschema_testing/tree/master/docs/mapping_schemas.md) for more information. The [README.md in examples/example2](https://github.com/networktocode-llc/jsonschema_testing/tree/master/examples/example2) also contains detailed examples of schema mappings.
+> The structured data file can be mapped to schema definitions in one of a few ways. See the [README in docs/mapping_schemas.md](https://github.com/networktocode-llc/schema-enforcer/tree/master/docs/mapping_schemas.md) for more information. The [README.md in examples/example2](https://github.com/networktocode-llc/schema-enforcer/tree/master/examples/example2) also contains detailed examples of schema mappings.
 
 #### The `--show-pass` flag
 
