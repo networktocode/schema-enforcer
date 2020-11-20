@@ -1,11 +1,10 @@
 # Mapping Schemas
 
 ## Overview
-In order to validate structured data files against schema definitions, `schema-enforcer` must have a way of mapping structured data files to the schema definition they should adhere to. This is done in one of three ways:
+In order to validate structured data files against schema definitions, `schema-enforcer` must have a way of mapping structured data files to the schema definition they should adhere to. This is done in one of two ways:
 
-1) By default, the top level key in a given structured data file is mapped to the top level key in a schema definition. When these keys match, `schema-enforcer` checks the structured data for compliance against the defined schema based on this correlation
-2) The pyproject.toml file can map structured data filenames to the schema ID to which they should adhere.
-3) Any file containing structured data can be decorated with a comment which instructs `schema-enforcer` to check the file for compliance against the a defined schema.
+1) The pyproject.toml file can map structured data filenames to the schema ID to which they should adhere.
+2) Any file containing structured data can be decorated with a comment which instructs `schema-enforcer` to check the file for compliance against the a defined schema.
 
 To check which structured data files will be examined by which schemas, the `schema-enforcer validate --show-checks` command can be run.
 
@@ -53,11 +52,10 @@ If multiple schema IDs are defined in the list, the structured data file will be
 
 ## Using a decorator to map schemas
 
-A decorator can be used to map structured data files to the schemas they should be validated against. This can be done by adding a comment at the top of a
-YAML file which defines structured data in the form `# schema-enforcer: <schema_id>`. Multiple schemas can be defined here by separating schema IDs with a comma.
+A decorator can be used to map structured data files to the schemas they should be validated against. This can be done by adding a comment at the top of a YAML file which defines structured data in the form `# jsonschema: <schema_id>`. Multiple schemas can be defined here by separating schema IDs with a comma.
 
 ```yaml
-# schema-enforcer: schemas/ntp,schemas/ntpv2
+# jsonschema: schemas/ntp,schemas/ntpv2
 ---
 ntp_servers:
   - address: "10.6.6.6"
@@ -78,11 +76,31 @@ Instance File                                     Schema
 
 > Note: This option only works for structured data files defined in YAML. This is because inline coments are not supported by JSON.
 
-## Order of inheritence
+## Multiple Definitions
 
-`schema-enforcer` will infer which structured data files should adhere to which schema definition in the following order.
+In the event that a configuration section exists in the pyproject.toml file **and** a decorator exists in the structured data file, `schema-enforcer` will check the structured data files for adherenece to both schema IDs. In to following case, for instance, `schema-enforcer` will ensure that the structured data file `ntp.yml` adheres to both the `schemas/ntp` and `schemas/ntp2` schema definitions.
 
-1) If the `schema-enforcer` decorator is defined, it will be used for the mapping. The other mapping options will not be used for structured data files which have a decorator. Structured data files which do not have a decorator will use one of the other methods for inferring which schema definition should be used to check the structured data file for adherence to schema.
-2) If the `schema-enforcer` decorator **is not** defined, but the `[tool.schema-enforcer.schema_mapping]` TOML configuration block is specified for a given filename, the mapping defined within the configuration block will be used to infer which schema definition the structured data file should adhere to. If a structured data file exists which does not have a decorator, and it's file name is not mapped to a schema per the toml configuration block, the next method will be used for that stuctured data file.
-3) `schema-enforcer` will look for the top level key of a structured data file and map it to the top level property of a schema definition if neither the decorator is defined nor a mapping declared in the `[tool.schema-enforcer.schema_mapping]` configuration block
-4) If `schema-enforcer` can not infer a mapping by using any of the methods described above, the structured data file will not be checked for adherence to schema.
+```toml
+[tools.schema_enforcer.schema_mapping]
+'ntp.yml' = ['schemas/ntp2']
+```
+
+```cli
+bash$ cat ntp.yml
+# jsonschema: schemas/ntp
+---
+ntp_servers:
+  - address: "10.6.6.6"
+    name: "ntp1"
+  - address: "10.7.7.7"
+    name: "ntp1"
+ntp_authentication: false
+ntp_logging: true
+```
+
+```cli
+bash$ schema-enforcer validate --show-checks
+Instance File                                     Schema
+--------------------------------------------------------------------------------
+./hostvars/eng-london-rt1/ntp.yml                  ['schemas/ntp2', 'schemas/ntp']
+```
