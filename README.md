@@ -136,7 +136,8 @@ ALL SCHEMA VALIDATION CHECKS PASSED
 If we modify one of the addresses in the `chi-beijing-rt1/dns.yml` file so that it's value is the boolean `true` instead of an IP address string, then run the `schema-enforcer` tool, the validation will fail with an error message.
 
 ```cli
-bash$ cat chi-beijing-rt1/dns.yml                    
+bash$ cat chi-beijing-rt1/dns.yml
+# jsonschema: schemas/dns_servers       
 ---
 dns_servers:
   - address: true
