@@ -83,5 +83,4 @@ def test_get_clean_host_vars(ansible_inv):
     }
     host3 = ansible_inv.inv_mgr.get_host("host3")
     host3_cleaned_vars = ansible_inv.get_clean_host_vars(host3)
-    host3_cleaned_vars.pop("ansible_config_file")
     assert expected == host3_cleaned_vars

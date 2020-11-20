@@ -163,7 +163,7 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
 @click.option("--inventory", "-i", help="Ansible inventory file.", required=False)
 @click.option("--host", "-h", "limit", help="Limit the execution to a single host.", required=False)
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
-def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,too-many-locals
+def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     r"""Validate the hostvar for all hosts within an Ansible inventory.
 
     The hostvar are dynamically rendered based on groups.
@@ -231,39 +231,71 @@ def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,t
             continue
 
         # Generate host_var and automatically remove all keys inserted by ansible
-        hostvar = inv.get_clean_host_vars(host)
+        hostvars = inv.get_clean_host_vars(host)
 
-        # if jsonschema_mapping variable is defined, used it to determine which schema to use to validate each key
-        # if jsonschema_mapping is not defined, validate each key in the inventory agains all schemas in the SchemaManager
+        # Extrapt mapping from hostvar setting
         mapping = None
-        if "jsonschema_mapping" in hostvar:
-            mapping = hostvar["jsonschema_mapping"]
-            del hostvar["jsonschema_mapping"]
+        if "schema_enforcer_schemas" in hostvars:
+            if not isinstance(hostvars["schema_enforcer_schemas"], list):
+                raise TypeError(f"'schema_enforcer_schemas' attribute defined for {host.name} must be of type list")
+            mapping = hostvars["schema_enforcer_schemas"]
+            del hostvars["schema_enforcer_schemas"]
 
-        applicable_schemas = {}
+        # extract whether to use a strict validator or a loose validator from hostvar setting
+        schema_enforcer_strict = False
+        if "schema_enforcer_strict" in hostvars:
+            if not isinstance(hostvars["schema_enforcer_strict"], bool):
+                raise TypeError(f"'schema_enforcer_strict' attribute defined for {host.name} must be of type bool")
+            schema_enforcer_strict = hostvars["schema_enforcer_strict"]
+            del hostvars["schema_enforcer_strict"]
 
-        error_exists = False
-        for key, value in hostvar.items():
-            if mapping and key in mapping.keys():
-                applicable_schemas = {schema_id: smgr.schemas[schema_id] for schema_id in mapping[key]}
-            else:
-                applicable_schemas = smgr.schemas
+        # Raise error if settings are set incorrectly
+        if schema_enforcer_strict and not mapping:
+            msg = (
+                f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schemas' parameter does not declare a schema id. "
+                "The 'schema_enforcer_schemas' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
+            )
+            raise ValueError(msg)
 
-            for _, schema_obj in applicable_schemas.items():
-                for result in schema_obj.validate({key: value}):
+        if schema_enforcer_strict and mapping and len(mapping) > 1:
+            if mapping:
+                msg = f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schemas' parameter declares more than one schema id. "
+                msg += "The 'schema_enforcer_schemas' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
+            raise ValueError(msg)
 
-                    result.instance_type = "VAR"
-                    result.instance_name = key
-                    result.instance_location = host.name
+        # Acquire schemas applicable to the given host
+        applicable_schemas = inv.get_applicable_schemas(hostvars, smgr, mapping)
 
-                    if not result.passed():
-                        error_exists = True
-                        result.print()
+        for _, schema_obj in applicable_schemas.items():
+            # Combine host attributes to those defined in top level of schema
+            if not schema_enforcer_strict:
+                data = dict()
+                for var in schema_obj.top_level_properties:
+                    data.update({var: hostvars.get(var)})
 
-                    elif result.passed() and show_pass:
-                        result.print()
+            # If the schema_enforcer_strict bool is set, hostvars should match a single schema exactly,
+            # Thus, we do not want to extract only those vars which are defined in schema properties out
+            # of the vars passed in.
+            if schema_enforcer_strict:
+                data = hostvars
+
+            # Validate host vars against schema
+            for result in schema_obj.validate(data=data, strict=schema_enforcer_strict):
+
+                result.instance_type = "HOST"
+                result.instance_hostname = host.name
+
+                if not result.passed():
+                    error_exists = True
+                    result.print()
+
+                elif result.passed() and show_pass:
+                    result.print()
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
     else:
         sys.exit(1)
+
+
+# def get_schema_id_from_property(smgr, )

@@ -19,6 +19,7 @@ class ValidationResult(BaseModel):
     instance_name: Optional[str]
     instance_location: Optional[str]
     instance_type: Optional[str]
+    instance_hostname: Optional[str]
     source: Any = None
     strict: bool = False
 
@@ -53,12 +54,23 @@ class ValidationResult(BaseModel):
 
     def print_failed(self):
         """Print the result of the test to CLI when the test failed."""
-        print(
-            colored("FAIL", "red") + f" | [ERROR] {self.message}"
-            f" [{self.instance_type}] {self.instance_location}/{self.instance_name}"
-            f" [PROPERTY] {':'.join(str(item) for item in self.absolute_path)}"
-        )
+        # Construct the message dynamically based on the instance_type
+        msg = colored("FAIL", "red") + f" | [ERROR] {self.message}"
+        if self.instance_type == "FILE":
+            msg += f" [{self.instance_type}] {self.instance_location}/{self.instance_name}"
+
+        if self.instance_type == "HOST":
+            msg += f" [{self.instance_type}] {self.instance_hostname}"
+
+        msg += f" [PROPERTY] {':'.join(str(item) for item in self.absolute_path)}"
+
+        # print the msg
+        print(msg)
 
     def print_passed(self):
         """Print the result of the test to CLI when the test passed."""
-        print(colored("PASS", "green") + f" [{self.instance_type}] {self.instance_location}/{self.instance_name}")
+        if self.instance_type == "FILE":
+            print(colored("PASS", "green") + f" [{self.instance_type}] {self.instance_location}/{self.instance_name}")
+
+        if self.instance_type == "HOST":
+            print(colored("PASS", "green") + f" [{self.instance_type}] {self.instance_hostname}")

@@ -77,6 +77,7 @@ class AnsibleInventory:
             "groups",
             "omit",
             "ansible_version",
+            "ansible_config_file",
         ]
 
         hostvars = self.get_host_vars(host)
@@ -86,3 +87,32 @@ class AnsibleInventory:
                 del hostvars[key]
 
         return hostvars
+
+    @staticmethod
+    def get_applicable_schemas(hostvars, smgr, mapping):
+        """Get applicable schemas.
+
+        Search an explicit mapping to determine the schemas which should be used to validate hostvars
+        for a given host.
+
+        If an explicit mapping is not defined, correlate top level keys in the structured data with top
+        level properties in the schema to acquire applicable schemas.
+
+        Args:
+            hostvars (dict): dictionary of cleaned host vars which will be evaluated against schema
+
+        Returns:
+            applicable_schemas (dict): dictionary mapping schema_id to schema obj for all applicable schemas
+        """
+        applicable_schemas = {}
+        for key in hostvars.keys():
+            if mapping and key in mapping:
+                applicable_schemas = {schema_id: smgr.schemas[schema_id] for schema_id in mapping[key]}
+            else:
+                applicable_schemas = {
+                    schema.id: smgr.schemas[schema.id]
+                    for schema in smgr.schemas.values()
+                    if key in schema.top_level_properties
+                }
+
+        return applicable_schemas

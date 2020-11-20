@@ -7,3 +7,7 @@ interfaces:
     role: "uplink"
   swp2:
     role: "uplink"
+
+schema_enforcer_schemas:
+  - "schemas/dns_servers"
+  - "schemas/interfaces"

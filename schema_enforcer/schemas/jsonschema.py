@@ -16,7 +16,7 @@ class JsonSchema:
     schematype = "jsonchema"
 
     def __init__(self, schema, filename, root):
-        """Initiliz a new JsonSchema object from a dict.
+        """Initilize a new JsonSchema object from a dict.
 
         Args:
             schema (dict): Data representing the schema. Must be jsonschema valid
@@ -27,6 +27,9 @@ class JsonSchema:
         self.root = root
         self.data = schema
         self.id = self.data.get("$id")  # pylint: disable=invalid-name
+        self.top_level_properties = [
+            prop for prop in self.data.get("properties")  # pylint: disable=unnecessary-comprehension
+        ]
         self.validator = None
         self.strict_validator = None
 
