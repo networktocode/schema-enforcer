@@ -1,5 +1,9 @@
 ## Overview
 
+This README.md describes behaviour not yet implemented. As such, it has been commented out and will be modified when the behaviour is implemented.
+
+<!-- ## Overview
+
 This example shows a use case for versioned schemas. There are 3 ways in which the mapping of instance data to schema file occurs:
 
 1) The top level property of an instance file is evaluated against the schema definitions top level property in order to dynamically resolve which schema should be used to validate instance data.
@@ -35,10 +39,10 @@ Because many different tools create and consume this data, it is sometimes benef
 
 #### Filename to Schema ID mapping
 
-The DNS entries in `eng-london-rt1`'s `dns_v1.yml` and `ger-berlin-rt1`'s `dns_v2.yml` files showcase solution #2 described in the section above. In the `[tool.jsonschema_testing.schema_mapping]` section of the `pyproject.toml` file (at the same location as this readme), file hostnames are mapped to a list of schema IDs which should be validated against them as follows:
+The DNS entries in `eng-london-rt1`'s `dns_v1.yml` and `ger-berlin-rt1`'s `dns_v2.yml` files showcase solution #2 described in the section above. In the `[tool.schema_enforcer.schema_mapping]` section of the `pyproject.toml` file (at the same location as this readme), file hostnames are mapped to a list of schema IDs which should be validated against them as follows:
 
 ```toml
-[tool.jsonschema_testing.schema_mapping]
+[tool.schema_enforcer.schema_mapping]
 'dns_v1.yml' = ['schemas/dns_servers']
 'dns_v2.yml' = ['schemas/dns_servers_v2']
 ```
@@ -136,4 +140,4 @@ PASS [FILE] ./hostvars/chi-beijing-rt1/dns/v1/dns.yml
 PASS [FILE] ./hostvars/chi-beijing-rt1/dns/v2/dns.yml
 ```
 
-Further examination of the files (already cat'd out above) shows the v1 schema using the `address` property and the v2 schema using the `host` property to define dns servers.
+Further examination of the files (already cat'd out above) shows the v1 schema using the `address` property and the v2 schema using the `host` property to define dns servers. -->
