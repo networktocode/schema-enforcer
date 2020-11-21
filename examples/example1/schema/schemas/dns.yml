@@ -5,6 +5,19 @@ description: "DNS Server Configuration schema."
 type: "object"
 properties:
   dns_servers:
-    $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        address:
+          type: "string"
+          format: "ipv4"
+        vrf:
+          type: "string"
+      required:
+        - "address"
+      uniqueItems: true
 required:
   - "dns_servers"

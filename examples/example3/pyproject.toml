@@ -1,0 +1,12 @@
+[tool.schema_enforcer]
+schema_file_exclude_filenames = []
+
+definition_directory = "definitions"
+schema_directory = "schemas"
+
+data_file_exclude_filenames = ['.yamllint.yml', '.travis.yml']
+
+[tool.schema_enforcer.schema_mapping]
+# Map structured data filename to list of schema id which should be used to validate adherence to schema
+'dns.yml' = ['schemas/dns_servers']
+'syslog.yml' = ["schemas/syslog_servers"]

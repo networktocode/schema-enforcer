@@ -121,7 +121,7 @@ def validate(show_pass, show_checks, strict):
 )
 @click.option("--schema", help="The name of a schema.")
 @main.command()
-def schema(check, generate_invalid, list_schemas):
+def schema(check, generate_invalid, list_schemas):  # noqa: D417
     r"""Manage your schemas.
 
     \f
@@ -129,7 +129,7 @@ def schema(check, generate_invalid, list_schemas):
     Args:
         check (bool): Validates that all schemas are valid (spec and unit tests)
         generate_invalid (bool): Generates expected invalid data from a given schema
-        list_schemas (bool): List all available schemas
+        list (bool): List all available schemas
     """
     config.load()
 
