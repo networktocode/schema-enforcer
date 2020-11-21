@@ -70,7 +70,7 @@ class ValidationResult(BaseModel):
     def print_passed(self):
         """Print the result of the test to CLI when the test passed."""
         if self.instance_type == "FILE":
-            print(colored("PASS", "green") + f" [{self.instance_type}] {self.instance_location}/{self.instance_name}")
+            print(colored("PASS", "green") + f" | [{self.instance_type}] {self.instance_location}/{self.instance_name}")
 
         if self.instance_type == "HOST":
-            print(colored("PASS", "green") + f" [{self.instance_type}] {self.instance_hostname}")
+            print(colored("PASS", "green") + f" | [{self.instance_type}] {self.instance_hostname} [SCHEMA ID] {self.schema_id}")

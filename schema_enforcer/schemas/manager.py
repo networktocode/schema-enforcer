@@ -221,3 +221,15 @@ class SchemaManager:
     def _get_test_directory(self):
         """Return the path to the main schema test directory."""
         return f"{self.config.main_directory}/{self.config.test_directory}"
+
+    def validate_schemas_exist(self, schema_ids):
+        """Validate that each schema ID in a list of schema IDs exists.
+        
+        Args: schema_ids (list): A list of schema IDs, each of which should exist as a schema object
+        """
+
+        if not isinstance(schema_ids, list):
+            raise TypeError("schema_ids argument passed into validate_schemas_exist must be of type list")
+        for schema_id in schema_ids:
+            if not self.schemas.get(schema_id, None):
+                raise SchemaNotDefined(f"Schema ID {schema_id} declared but not defined")

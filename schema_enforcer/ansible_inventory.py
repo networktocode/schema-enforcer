@@ -3,6 +3,10 @@ from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars.manager import VariableManager
 from ansible.template import Templar
+from termcolor import colored
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Referenced https://github.com/fgiorgetti/qpid-dispatch-tests/ for the below class
@@ -78,8 +82,9 @@ class AnsibleInventory:
             "omit",
             "ansible_version",
             "ansible_config_file",
-            "schema_enforcer_schemas",
+            "schema_enforcer_schema_ids",
             "schema_enforcer_strict",
+            "schema_enforcer_automap_default",
         ]
 
         hostvars = self.get_host_vars(host)
@@ -91,7 +96,7 @@ class AnsibleInventory:
         return hostvars
 
     @staticmethod
-    def get_applicable_schemas(hostvars, smgr, mapping):
+    def get_applicable_schemas(hostvars, smgr, declared_schema_ids, automap):
         """Get applicable schemas.
 
         Search an explicit mapping to determine the schemas which should be used to validate hostvars
@@ -102,20 +107,26 @@ class AnsibleInventory:
 
         Args:
             hostvars (dict): dictionary of cleaned host vars which will be evaluated against schema
+            smgr (schema_enforcer.schemas.manager.SchemaManager): SchemaManager object
+            declared_schema_ids: list of declared schema IDs inferred from schema_enforcer_schemas variable
+            automap:
 
         Returns:
             applicable_schemas (dict): dictionary mapping schema_id to schema obj for all applicable schemas
         """
         applicable_schemas = {}
         for key in hostvars.keys():
-            if mapping and key in mapping:
-                applicable_schemas = {schema_id: smgr.schemas[schema_id] for schema_id in mapping[key]}
-            else:
-                applicable_schemas = {
-                    schema.id: smgr.schemas[schema.id]
-                    for schema in smgr.schemas.values()
-                    if key in schema.top_level_properties
-                }
+            # extract applicable schema ID to JsonSchema objects if schema_ids are declared
+            if declared_schema_ids:
+                for schema_id in declared_schema_ids:
+                    applicable_schemas[schema_id] = smgr.schemas[schema_id]
+
+            # extract applicable schema ID to JsonSchema objects based on host var to top level property mapping.
+            if not declared_schema_ids and automap:
+                for schema in smgr.schemas.values():
+                    if key in schema.top_level_properties:
+                        applicable_schemas[schema.id] = schema
+                        continue
 
         return applicable_schemas
 
@@ -139,13 +150,12 @@ class AnsibleInventory:
         # Generate host_var and automatically remove all keys inserted by ansible
         hostvars = self.get_host_vars(host)
 
-        # Extract mapping from hostvar setting
-        mapping = None
-        if "schema_enforcer_schemas" in hostvars:
-            if not isinstance(hostvars["schema_enforcer_schemas"], list):
-                raise TypeError(f"'schema_enforcer_schemas' attribute defined for {host.name} must be of type list")
-            mapping = hostvars["schema_enforcer_schemas"]
-            del hostvars["schema_enforcer_schemas"]
+        # Extract declared_schema_ids from hostvar setting
+        declared_schema_ids = []
+        if "schema_enforcer_schema_ids" in hostvars:
+            if not isinstance(hostvars["schema_enforcer_schema_ids"], list):
+                raise TypeError(f"'schema_enforcer_schema_ids' attribute defined for {host.name} must be of type list")
+            declared_schema_ids = hostvars["schema_enforcer_schema_ids"]
 
         # Extract whether to use a strict validator or a loose validator from hostvar setting
         strict = False
@@ -153,20 +163,57 @@ class AnsibleInventory:
             if not isinstance(hostvars["schema_enforcer_strict"], bool):
                 raise TypeError(f"'schema_enforcer_strict' attribute defined for {host.name} must be of type bool")
             strict = hostvars["schema_enforcer_strict"]
-            del hostvars["schema_enforcer_strict"]
+
+        automap = True
+        if "schema_enforcer_automap_default" in hostvars:
+            if not isinstance(hostvars["schema_enforcer_automap_default"], bool):
+                raise TypeError(f"'schema_enforcer_automap_default' attribute defined for {host.name} must be of type bool")
+            automap = hostvars["schema_enforcer_automap_default"]
 
         # Raise error if settings are set incorrectly
-        if strict and not mapping:
+        if strict and not declared_schema_ids:
             msg = (
-                f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schemas' parameter does not declare a schema id. "
+                f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schema_ids' parameter does not declare a schema id. "
                 "The 'schema_enforcer_schemas' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
             )
             raise ValueError(msg)
 
-        if strict and mapping and len(mapping) > 1:
-            if mapping:
-                msg = f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schemas' parameter declares more than one schema id. "
-                msg += "The 'schema_enforcer_schemas' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
+        if strict and declared_schema_ids and len(declared_schema_ids) > 1:
+            msg = (
+                f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schema_ids' parameter declares more than one schema id. "
+                "The 'schema_enforcer_schema_ids' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
+            )
             raise ValueError(msg)
 
-        return mapping, strict
+        return declared_schema_ids, strict, automap
+
+    def print_schema_mapping(self, hosts, limit, smgr):
+        print_dict = {}
+        for host in hosts:
+            if limit and host.name != limit:
+                continue
+
+            # Get hostvars
+            hostvars = self.get_clean_host_vars(host)
+
+            # Acquire validation settings for the given host
+            declared_schema_ids, strict, automap = self.get_schema_validation_settings(host)
+
+            # Validate declared schemas exist
+            smgr.validate_schemas_exist(declared_schema_ids)
+
+            # Acquire schemas applicable to the given host
+            applicable_schemas = self.get_applicable_schemas(hostvars, smgr, declared_schema_ids, automap)
+
+            # Add an element to the print dict for this host
+            print_dict[host.name] = [schema_id for schema_id in applicable_schemas.keys()]
+
+        if print_dict:
+            print("{:25} Schema ID".format("Ansible Host"))
+            print("-" * 80)
+            print_strings = []
+            for hostname, schema_ids in print_dict.items():
+                print_strings.append(f"{hostname:25} {schema_ids}")
+            print("\n".join(sorted(print_strings)))
+
+

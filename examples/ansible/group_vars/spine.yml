@@ -1,6 +1,6 @@
 ---
 dns_servers:
-  - address: "10.1.1.1"
+  - address: false
   - address: "10.2.2.2"
 interfaces:
   swp1:
@@ -8,6 +8,8 @@ interfaces:
   swp2:
     role: "uplink"
 
-schema_enforcer_schemas:
+schema_enforcer_schema_ids:
   - "schemas/dns_servers"
   - "schemas/interfaces"
+
+schema_enforcer_automap_default: true

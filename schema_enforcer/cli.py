@@ -34,7 +34,7 @@ def main():
 @click.option(
     "--show-checks",
     default=False,
-    help="Shows the schemas to be checked for each instance file",
+    help="Shows the schemas to be checked for each structured data file",
     is_flag=True,
     show_default=True,
 )
@@ -163,7 +163,14 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
 @click.option("--inventory", "-i", help="Ansible inventory file.", required=False)
 @click.option("--host", "-h", "limit", help="Limit the execution to a single host.", required=False)
 @click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
-def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,too-many-locals,too-many-statements
+@click.option(
+    "--show-checks",
+    default=False,
+    help="Shows the schemas to be checked for each ansible host",
+    is_flag=True,
+    show_default=True,
+)
+def ansible(inventory, limit, show_pass, show_checks):  # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     r"""Validate the hostvar for all hosts within an Ansible inventory.
 
     The hostvar are dynamically rendered based on groups.
@@ -224,6 +231,10 @@ def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,t
     hosts = inv.get_hosts_containing()
     print(f"Found {len(hosts)} hosts in the inventory")
 
+    if show_checks:
+        inv.print_schema_mapping(hosts, limit, smgr)
+        sys.exit(0)
+
     error_exists = False
 
     for host in hosts:
@@ -234,10 +245,13 @@ def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,t
         hostvars = inv.get_clean_host_vars(host)
 
         # Acquire validation settings for the given host
-        mapping, strict = inv.get_schema_validation_settings(host)
+        declared_schema_ids, strict, automap = inv.get_schema_validation_settings(host)
+
+        # Validate declared schemas exist
+        smgr.validate_schemas_exist(declared_schema_ids)
 
         # Acquire schemas applicable to the given host
-        applicable_schemas = inv.get_applicable_schemas(hostvars, smgr, mapping)
+        applicable_schemas = inv.get_applicable_schemas(hostvars, smgr, declared_schema_ids, automap)
 
         for _, schema_obj in applicable_schemas.items():
             # Combine host attributes into a single data structure matching to properties defined at the top level of the schema definition
