@@ -78,6 +78,8 @@ class AnsibleInventory:
             "omit",
             "ansible_version",
             "ansible_config_file",
+            "schema_enforcer_schemas",
+            "schema_enforcer_strict",
         ]
 
         hostvars = self.get_host_vars(host)
@@ -116,3 +118,55 @@ class AnsibleInventory:
                 }
 
         return applicable_schemas
+
+    def get_schema_validation_settings(self, host):
+        """Parse Ansible Schema Validation Settings from a host object.
+
+        Validate settings to ensure an error is raised in the event an invalid parameter is
+        configured in the host file.
+
+        Args:
+            host (AnsibleInventory.host): Ansible Inventory Host Object
+
+        Raises:
+            TypeError: Raised when one of the scehma configuration parameters is of the wrong type
+            ValueError: Raised when one of the schema configuration parameters is incorrectly configured
+
+        Returns:
+            mapping (list): List of schema IDs against which to validate ansible vars
+            strict (bool): Whether or not to use strict validation while validating the schema
+        """
+        # Generate host_var and automatically remove all keys inserted by ansible
+        hostvars = self.get_host_vars(host)
+
+        # Extract mapping from hostvar setting
+        mapping = None
+        if "schema_enforcer_schemas" in hostvars:
+            if not isinstance(hostvars["schema_enforcer_schemas"], list):
+                raise TypeError(f"'schema_enforcer_schemas' attribute defined for {host.name} must be of type list")
+            mapping = hostvars["schema_enforcer_schemas"]
+            del hostvars["schema_enforcer_schemas"]
+
+        # Extract whether to use a strict validator or a loose validator from hostvar setting
+        strict = False
+        if "schema_enforcer_strict" in hostvars:
+            if not isinstance(hostvars["schema_enforcer_strict"], bool):
+                raise TypeError(f"'schema_enforcer_strict' attribute defined for {host.name} must be of type bool")
+            strict = hostvars["schema_enforcer_strict"]
+            del hostvars["schema_enforcer_strict"]
+
+        # Raise error if settings are set incorrectly
+        if strict and not mapping:
+            msg = (
+                f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schemas' parameter does not declare a schema id. "
+                "The 'schema_enforcer_schemas' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
+            )
+            raise ValueError(msg)
+
+        if strict and mapping and len(mapping) > 1:
+            if mapping:
+                msg = f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schemas' parameter declares more than one schema id. "
+                msg += "The 'schema_enforcer_schemas' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
+            raise ValueError(msg)
+
+        return mapping, strict

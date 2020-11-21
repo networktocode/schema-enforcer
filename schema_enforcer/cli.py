@@ -230,57 +230,30 @@ def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,t
         if limit and host.name != limit:
             continue
 
-        # Generate host_var and automatically remove all keys inserted by ansible
+        # Acquire Host Variables
         hostvars = inv.get_clean_host_vars(host)
 
-        # Extrapt mapping from hostvar setting
-        mapping = None
-        if "schema_enforcer_schemas" in hostvars:
-            if not isinstance(hostvars["schema_enforcer_schemas"], list):
-                raise TypeError(f"'schema_enforcer_schemas' attribute defined for {host.name} must be of type list")
-            mapping = hostvars["schema_enforcer_schemas"]
-            del hostvars["schema_enforcer_schemas"]
-
-        # extract whether to use a strict validator or a loose validator from hostvar setting
-        schema_enforcer_strict = False
-        if "schema_enforcer_strict" in hostvars:
-            if not isinstance(hostvars["schema_enforcer_strict"], bool):
-                raise TypeError(f"'schema_enforcer_strict' attribute defined for {host.name} must be of type bool")
-            schema_enforcer_strict = hostvars["schema_enforcer_strict"]
-            del hostvars["schema_enforcer_strict"]
-
-        # Raise error if settings are set incorrectly
-        if schema_enforcer_strict and not mapping:
-            msg = (
-                f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schemas' parameter does not declare a schema id. "
-                "The 'schema_enforcer_schemas' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
-            )
-            raise ValueError(msg)
-
-        if schema_enforcer_strict and mapping and len(mapping) > 1:
-            if mapping:
-                msg = f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schemas' parameter declares more than one schema id. "
-                msg += "The 'schema_enforcer_schemas' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
-            raise ValueError(msg)
+        # Acquire validation settings for the given host
+        mapping, strict = inv.get_schema_validation_settings(host)
 
         # Acquire schemas applicable to the given host
         applicable_schemas = inv.get_applicable_schemas(hostvars, smgr, mapping)
 
         for _, schema_obj in applicable_schemas.items():
-            # Combine host attributes to those defined in top level of schema
-            if not schema_enforcer_strict:
+            # Combine host attributes into a single data structure matching to properties defined at the top level of the schema definition
+            if not strict:
                 data = dict()
                 for var in schema_obj.top_level_properties:
                     data.update({var: hostvars.get(var)})
 
-            # If the schema_enforcer_strict bool is set, hostvars should match a single schema exactly,
-            # Thus, we do not want to extract only those vars which are defined in schema properties out
-            # of the vars passed in.
-            if schema_enforcer_strict:
+            # If the schema_enforcer_strict bool is set, hostvars should match a single schema exactly.
+            # Thus, we want to pass the entirety of the cleaned host vars into the validate method rather
+            # than creating a data structure with only the top level vars defined by the schema.
+            if strict:
                 data = hostvars
 
             # Validate host vars against schema
-            for result in schema_obj.validate(data=data, strict=schema_enforcer_strict):
+            for result in schema_obj.validate(data=data, strict=strict):
 
                 result.instance_type = "HOST"
                 result.instance_hostname = host.name
@@ -296,6 +269,3 @@ def ansible(inventory, limit, show_pass):  # pylint: disable=too-many-branches,t
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
     else:
         sys.exit(1)
-
-
-# def get_schema_id_from_property(smgr, )
