@@ -1,0 +1,8 @@
+---
+results:
+  - result: "FAIL"
+    schema_id: "schemas/dns_servers"
+    absolute_path:
+      - "dns_servers"
+      - "0"
+    message: "'10.1.1.1' is not of type 'object'"

@@ -1,0 +1,5 @@
+---
+dns_servers:
+  - address: "10.6.6.6"
+  - address: "10.7.7.7"
+fun_extr_attribute: "super_fun_when_not_trying_strict"

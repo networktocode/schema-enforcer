@@ -1,0 +1,4 @@
+---
+jsonschema_mapping:
+  dns_servers: ["schemas/dns_servers"]
+  interfaces: ["schemas/interfaces"]

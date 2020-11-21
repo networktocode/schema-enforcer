@@ -1,7 +1,0 @@
----
-location_dns_servers:
-  - address: "10.14.14.14"
-  - address: "10.15.15.15"
-
-syslog_servers:
-  - address: "10.8.8.8"

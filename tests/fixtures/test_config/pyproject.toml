@@ -1,0 +1,17 @@
+[tool.schema_enforcer]
+
+main_directory = "schema1"
+definition_directory = "definitions1"
+schema_directory = "schemas1"
+test_directory = "tests1"
+schema_file_extensions = [".json1", ".yaml1", ".yml1"]
+schema_file_exclude_filenames = ["happy_file.yml1"]
+data_file_search_directories = ["./instance_test/"]
+data_file_extensions = [".json1", ".yaml1", ".yml1"]
+data_file_exclude_filenames = [".yamllint.yml1", ".travis.yml1"]
+ansible_inventory = "inventory.inv"
+
+[tool.schema_enforcer.schema_mapping]
+
+'dns.yml' = ['schemas/dns_servers']
+'syslog.yml' = ["schemas/syslog_servers"]

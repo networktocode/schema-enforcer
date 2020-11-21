@@ -1,288 +1,239 @@
-#!/usr/bin/env python
-
+"""Replacement for Makefile."""
 import os
-from glob import glob
-from collections import defaultdict
-
 from invoke import task
 
-CFG = defaultdict(str)
-SCHEMA_TEST_DIR = "tests"
-# The build and install phase do not require all packages
-if os.sys.argv[1] not in {"build", "install", "--list"}:
-    try:
-        import utils
-    except ModuleNotFoundError:
-        from jsonschema_testing import utils
 
-    CFG = utils.load_config()
+# Can be set to a separate Python version to be used for launching or building container
+PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
+# Name of the docker image/container
+NAME = os.getenv("IMAGE_NAME", "jsonschema-testing")
+# Gather current working directory for Docker commands
+PWD = os.getcwd()
 
 
-IS_WINDOWS = os.sys.platform.startswith("win")
-SEP = os.path.sep
-if not IS_WINDOWS:
-    EXE_PATH = f".venv{SEP}bin{SEP}"
-else:
-    EXE_PATH = f".venv{SEP}Scripts{SEP}"
+@task
+def build_test_container(context, name=NAME, python_ver=PYTHON_VER):
+    """This will build a container with the provided name and python version.
 
-PYTHON_EXECUTABLES = ["python", "pip", "invoke", "activate"]
-for exe in PYTHON_EXECUTABLES:
-    var_name = f"{exe.upper()}_EXE"
-    if not IS_WINDOWS:
-        locals()[var_name] = f"{EXE_PATH}{exe}"
+    Args:
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
+    """
+    print(f"Building container {name}-{python_ver}")
+    result = context.run(f"docker build --tag {name}-{python_ver} --build-arg PYTHON={python_ver} -f Dockerfile .")
+    if result.exited != 0:
+        print(f"Failed to build container {name}-{python_ver}\nError: {result.stderr}")
+
+
+@task
+def build_test_containers(context):
+    """This will build two containers using Python 3.7.
+
+    Args:
+        context (obj): Used to run specific commands
+    """
+    build_test_container(context, python_ver="3.7")
+    build_test_container(context, python_ver="3.8")
+
+
+@task
+def clean_container(context, name=NAME):
+    """This stops and removes the specified container.
+
+    Args:
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+    """
+    print(f"Attempting to stop {name}")
+    stop = context.run(f"docker stop {name}")
+    print(f"Successfully stopped {name}")
+    if stop.ok:
+        print(f"Attempting to remove {name}")
+        context.run(f"docker rm {name}")
+        print(f"Successfully removed {name}")
     else:
-        if exe != "activate":
-            locals()[var_name] = f"{EXE_PATH}{exe}.exe"
-        else:
-            locals()[var_name] = f"{EXE_PATH}{exe}.bat"
+        print(f"Failed to stop container {name}")
 
 
 @task
-def install(context):
-    """
-    installs ``requirments.txt`` into Python Environment.
-    """
-    context.run(f"{PIP_EXE} install -r requirements.txt")  # noqa F821
+def _clean_image(context, name=NAME, python_ver=PYTHON_VER):
+    """This will remove the specific image.
 
-
-@task(post=[install])
-def build(context):
+    Args:
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
     """
-    Creates a Virtual Environment and installs ``requirements.txt` file.
-    """
-    context.run(f"{os.sys.executable} -m virtualenv .venv")
+    print(f"Attempting to forcefully remove image {name}-{python_ver}")
+    context.run(f"docker rmi {name}-{python_ver}:latest --force")
+    print(f"Successfully removed image {name}-{python_ver}")
 
 
 @task
-def convert_yaml_to_json(
-    context, yaml_path=CFG["yaml_schema_path"], json_path=CFG["json_schema_path"],
-):
-    """
-    Reads YAML files and writes them to JSON files.
+def clean_images(context):
+    """This will remove the Python 3.7 and 3.8 images.
 
     Args:
-        yaml_path (str): The root directory containing YAML files to convert to JSON.
-        json_path (str): The root directory to build JSON files from YAML files in ``yaml_path``.
-
-    Example:
-        $ ls schema/
-        yaml
-        $ python -m invoke convert-yaml-to-json -y schema/yaml -j schema/json
-        Converting schema/yaml/definitions/arrays/ip.yml ->
-        schema/yaml/definitions/arrays/ip.json
-        Converting schema/yaml/definitions/objects/ip.yml ->
-        schema/yaml/definitions/objects/ip.json
-        Converting schema/yaml/definitions/properties/ip.yml ->
-        schema/yaml/definitions/properties/ip.json
-        Converting schema/yaml/schemas/ntp.yml ->
-        schema/yaml/schemas/ntp.json
-        $ ls schema/
-        json    yaml
-        $
+        context (obj): Used to run specific commands
     """
-    utils.convert_yaml_to_json(yaml_path, json_path)
+    _clean_image(context, NAME, "3.7")
+    _clean_image(context, NAME, "3.8")
 
 
 @task
-def convert_json_to_yaml(
-    context, json_path=CFG["json_schema_path"], yaml_path=CFG["yaml_schema_path"],
-):
-    """
-    Reads JSON files and writes them to YAML files.
+def rebuild_docker_images(context):
+    """This will clean the images for both Python 3.7 and 3.8 and then rebuild containers without using cache.
 
     Args:
-        json_path (str): The root directory containing JSON files to convert to YAML.
-        yaml_path (str): The root directory to build YAML files from JSON files in ``json_path``.
-
-    Example:
-        $ ls schema/
-        json
-        $ python -m invoke convert-json-to-yaml -y schema/yaml -j schema/json
-        Converting schema/yaml/definitions/arrays/ip.json ->
-        schema/yaml/definitions/arrays/ip.yml
-        Converting schema/yaml/definitions/objects/ip.json ->
-        schema/yaml/definitions/objects/ip.yml
-        Converting schema/yaml/definitions/properties/ip.json ->
-        schema/yaml/definitions/properties/ip.yml
-        Converting schema/yaml/schemas/ntp.json ->
-        schema/yaml/schemas/ntp.yml
-        $ ls schema/
-        json    yaml
-        $
+        context (obj): Used to run specific commands
     """
-    utils.convert_json_to_yaml(json_path, yaml_path)
+    clean_images(context)
+    build_test_containers(context)
 
 
 @task
-def resolve_json_refs(
-    context,
-    json_schema_path=CFG["json_schema_definitions"],
-    output_path=CFG["json_full_schema_definitions"],
-):
-    """
-    Loads JSONSchema schema files, resolves ``refs``, and writes to a file.
+def pytest(context, name=NAME, python_ver=PYTHON_VER):
+    """This will run pytest for the specified name and Python version.
 
     Args:
-        json_schema_path: The path to JSONSchema schema definitions.
-        output_path: The path to write updated JSONSchema schema files.
-
-    Example:
-    $ ls schema/json/
-    definitions    schemas
-    $ python -m invoke resolve-json-refs -j schema/json/schemas -o schema/json/full
-    Converting schema/json/schemas/ntp.json -> schema/json/full/ntp.json
-    Converting schema/json/schemas/snmp.json -> schema/json/full/snmp.json
-    $ ls schema/json
-    definitions    full    schemas
-    $
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
     """
-    utils.resolve_json_refs(json_schema_path, output_path)
-
-
-@task(iterable=["schema"])
-def validate(context, schema, vars_dir=None, hosts=None):
-    """
-    Executes Pytest to validate data against schema
-
-    Args:
-        schema (list): The specific schema to execute tests against.
-        vars_dir (str): The path to device directories containig variable definitions.
-        hosts (str): The comma-separated subset of hosts to execute against.
-
-    Example:
-        $ python -m invoke validate -s ntp -s snmp -v ../my_project/hostvars -h csr1,eos1
-        python -m pytest tests/test_data_against_schema.py --schema=ntp --schema=ntp --hosts=csr1,eos1 -vv
-        ============================= test session starts =============================
-        collecting ... collected 4 items
-        tests/test_data_against_schema.py::test_config_definitions_against_schema[ntp-validator0-csr1] PASSED [ 25%]
-        tests/test_data_against_schema.py::test_config_definitions_against_schema[snmp-validator1-csr1] PASSED [ 50%]
-        tests/test_data_against_schema.py::test_config_definitions_against_schema[ntp-validator0-eos1] PASSED [ 75%]
-        tests/test_data_against_schema.py::test_config_definitions_against_schema[snmp-validator1-eos1] PASSED [ 100%]
-        $
-    """
-    cmd = f"python -m pytest {SCHEMA_TEST_DIR}/test_data_against_schema.py"
-    if schema:
-        schema_flag = " --schema=".join(schema)
-        cmd += f" --schema={schema_flag}"
-    if vars_dir is not None:
-        cmd += f" --hostvars={vars_dir}"
-    if hosts is not None:
-        cmd += f" --hosts={hosts}"
-    context.run(f"{cmd} -vv", echo=True)
+    # pty is set to true to properly run the docker commands due to the invocation process of docker
+    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
+    # Install python module
+    docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
+    context.run(f"{docker} /bin/bash -c 'coverage run -m pytest -vv && coverage report -im'", pty=True)
 
 
 @task
-def view_validation_error(context, schema, mock_file):
-    """
-    Generates ValidationError from invalid mock data and prints available Attrs.
-
-    This is meant to be used as an aid to generate test cases for invalid mock
-    schema data.
+def black(context, name=NAME, python_ver=PYTHON_VER):
+    """This will run black to check that Python files adherence to black standards.
 
     Args:
-        schema (str): The name of the schema to validate against.
-        mock_file (str): The name of the mock file to view the error attributes.
-
-    Example:
-        $ python -m invoke view-validation-error -s ntp -m invalid_ip
-
-        absolute_path        = deque(['ntp_servers', 0, 'address'])
-        absolute_schema_path = deque(['properties', 'ntp_servers', 'items', ...])
-        cause                = None
-        context              = []
-        message              = '10.1.1.1000' is not a 'ipv4'
-        parent               = None
-        path                 = deque(['ntp_servers', 0, 'address'])
-        schema               = {'type': 'string', 'format': 'ipv4'}
-        schema_path          = deque(['properties', 'ntp_servers', 'items', ...])
-        validator            = format
-        validator_value      = ipv4
-
-        $
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
     """
-    schema_root_dir = os.path.realpath(CFG["json_schema_path"])
-    schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-    mock_file = f"tests/mocks/{schema}/invalid/{mock_file}.json"
-
-    validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-    error_attributes = utils.generate_validation_error_attributes(mock_file, validator)
-    print()
-    for attr, value in error_attributes.items():
-        print(f"{attr:20} = {value}")
+    # pty is set to true to properly run the docker commands due to the invocation process of docker
+    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
+    docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
+    context.run(f"{docker} black --check --diff .", pty=True)
 
 
 @task
-def generate_hostvars(
-    context,
-    output_path=CFG["device_variables"],
-    schema_path=CFG["json_schema_definitions"],
-    inventory_path=CFG["inventory_path"],
-):
-    """
-    Generates ansible variables and creates a file per schema for each host.
+def flake8(context, name=NAME, python_ver=PYTHON_VER):
+    """This will run flake8 for the specified name and Python version.
 
     Args:
-        output_path (str): The path to store the variable files.
-        schema_path (str): The path to JSONSchema schema definitions.
-        inventory_path (str): The path to ansible inventory.
-
-    Example:
-        $ ls example/hostvars
-        $
-        $ python -m invoke generate-hostvars -o example/hostvars -s schema/json/schemas -i inventory
-        Generating var files for bra-saupau-rt1
-        -> dns
-        -> syslog
-        Generating var files for chi-beijing-rt1
-        -> bgp
-        -> dns
-        -> syslog
-        Generating var files for mex-mexcty-rt1
-        -> dns
-        -> syslog
-        $ ls example/hostvars/
-        bra-saupau-rt1    chi-beijing-rt1    mex-mexcty-rt1
-        $
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
     """
-    os.makedirs(output_path, exist_ok=True)
-    utils.generate_hostvars(inventory_path, schema_path, output_path)
+    # pty is set to true to properly run the docker commands due to the invocation process of docker
+    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
+    docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
+    context.run(f"{docker} flake8 .", pty=True)
 
 
 @task
-def create_invalid_expected(context, schema):
-    """
-    Generates expected ValidationError data from mock_file and writes to mock dir.
-
-    This is meant to be used as an aid to generate test cases for invalid mock
-    schema data.
+def pylint(context, name=NAME, python_ver=PYTHON_VER):
+    """This will run pylint for the specified name and Python version.
 
     Args:
-        schema (str): The name of the schema to validate against.
-
-    Example:
-        $ ls tests/mocks/ntp/invalid/
-        invalid_format.json    invalid_ip.json
-        $ python -m invoke create-invalid-expected -s ntp
-        Writing file to tests/mocks/ntp/invalid/invalid_format.yml
-        Writing file to tests/mocks/ntp/invalid/invalid_ip.yml
-        $ ls tests/mocks/ntp/invalid/
-        invalid_format.json    invalid_format.yml    invalid_ip.json
-        invalid_ip.yml
-        $
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
     """
-    schema_root_dir = os.path.realpath(CFG["json_schema_path"])
-    schema_filepath = f"{CFG['json_schema_definitions']}/{schema}.json"
-    validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-    mock_path = f"tests/mocks/{schema}/invalid"
-    for invalid_mock in glob(f"{mock_path}/*.json"):
-        error_attributes = utils.generate_validation_error_attributes(
-            invalid_mock, validator
-        )
-        mock_attributes = {attr: str(error_attributes[attr]) for attr in error_attributes}
-        mock_attributes_formatted = utils.ensure_strings_have_quotes_mapping(
-            mock_attributes
-        )
-        mock_response = f"{invalid_mock[:-4]}yml"
-        print(f"Writing file to {mock_response}")
-        with open(mock_response, "w", encoding="utf-8") as fh:
-            utils.YAML_HANDLER.dump(mock_attributes_formatted, fh)
+    # pty is set to true to properly run the docker commands due to the invocation process of docker
+    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
+    docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
+    context.run(
+        f"{docker} sh -c \"find schema_enforcer -name '*.py' | xargs pylint\"", pty=True,
+    )
+
+
+@task
+def yamllint(context, name=NAME, python_ver=PYTHON_VER):
+    """This will run yamllint to validate formatting adheres to NTC defined YAML standards.
+
+    Args:
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
+    """
+    # pty is set to true to properly run the docker commands due to the invocation process of docker
+    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
+    docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
+    context.run(f"{docker} yamllint .", pty=True)
+
+
+@task
+def pydocstyle(context, name=NAME, python_ver=PYTHON_VER):
+    """This will run pydocstyle to validate docstring formatting adheres to NTC defined standards.
+
+    Args:
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
+    """
+    # pty is set to true to properly run the docker commands due to the invocation process of docker
+    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
+    docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
+    context.run(f"{docker} pydocstyle .", pty=True)
+
+
+@task
+def bandit(context, name=NAME, python_ver=PYTHON_VER):
+    """This will run bandit to validate basic static code security analysis.
+
+    Args:
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
+    """
+    # pty is set to true to properly run the docker commands due to the invocation process of docker
+    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
+    docker = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest"
+    context.run(f"{docker} bandit --recursive ./ --configfile .bandit.yml", pty=True)
+
+
+@task
+def enter_container(context, name=NAME, python_ver=PYTHON_VER):
+    """This will enter the container to perform troubleshooting or dev work.
+
+    Args:
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
+    """
+    dev = f"docker run -it -v {PWD}:/local {name}-{python_ver}:latest /bin/bash"
+    context.run(f"{dev}", pty=True)
+
+
+@task
+def tests(context, name=NAME, python_ver=PYTHON_VER):
+    """This will run all tests for the specified name and Python version.
+
+    Args:
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        python_ver (str): Will use the Python version docker image to build from
+    """
+    print("Running pytest...")
+    pytest(context, name, python_ver)
+    print("Running black...")
+    black(context, name, python_ver)
+    # print("Running flake8...")
+    # flake8(context, name, python_ver)
+    print("Running pylint...")
+    pylint(context, name, python_ver)
+    print("Running yamllint...")
+    yamllint(context, name, python_ver)
+    print("Running pydocstyle...")
+    pydocstyle(context, name, python_ver)
+    # print("Running bandit...")
+    # bandit(context, name, python_ver)
+    print("All tests have passed!")

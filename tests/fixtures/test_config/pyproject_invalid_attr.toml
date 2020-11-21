@@ -1,0 +1,3 @@
+[tool.schema_enforcer]
+
+happy_variable = "fun_variable"
