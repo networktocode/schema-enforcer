@@ -50,7 +50,9 @@ schema_enforcer_schema_ids:
 
 Though the invalid property (the boolean true for a DNS address) is defined only once, two validation errors are flagged because two different hosts belong to to the `spine` group.
 
-## The `--show-checks` flag
+## Command Arguments
+
+### The `--show-checks` flag
 
 The `--show-checks` flag is used to show which ansible inventory hosts will be validated against which schema definition IDs.
 
@@ -66,7 +68,7 @@ spine2                    ['schemas/dns_servers', 'schemas/interfaces']
 
 > Note: The ansible inventory hosts can be mapped to schema definition ids in one of a few ways. This is discussed in the Schema Mapping section below
 
-## The `--show-pass` flag
+### The `--show-pass` flag
 
 The `--show-pass` flag is used to show what schema definition ids each host passes in addition to the schema definition ids each host fails.
 
@@ -83,7 +85,7 @@ PASS | [HOST] leaf2 [SCHEMA ID] schemas/dns_servers
 
 In the above example, the leaf switches are checked for adherence to the `schemas/dns_servers` definition and the spine switches are checked for adherence to two schema ids; the `schemas/dns_servers` schema id and the `schemas/interfaces` schema id. A PASS statement is printed to stdout for each validation that passes and a FAIL statement is printed for each validation that fails.
 
-## The `--host` flag
+### The `--host` flag
 
 The `--host` flag can be used to limit schema validation to a single ansible inventory host. `-h` can also be used as shorthand for `--host`
 
@@ -94,9 +96,9 @@ FAIL | [ERROR] True is not of type 'string' [HOST] spine2 [PROPERTY] dns_servers
 PASS | [HOST] spine2 [SCHEMA ID] schemas/interfaces
 ```
 
-## Specifying an ansible inventory file to use
+### The `--inventory` flag
 
-The ansible inventory file which should be used can be specified in one of two ways:
+The `--inventory` flag (or `-i`) specifies the inventory file which should be used to determine the ansible inventory. The inventory file can be specified in one of two ways:
 
 1) The `--inventory` flag (or `-i`) can be used to pass in the location of an ansible inventory file
 2) A `pyproject.toml` file can contain a `[tool.schema_enforcer]` config block setting the `ansible_inventory` paramer. This `pyproject.toml` file must be inside the repository from which the tool is run.
@@ -111,11 +113,16 @@ If the inventory is set in both ways, the -i flag will take precedence.
 
 > Note: Dynamic inventory sources can not currently be parsed for schema adherence.
 
-## Mapping inventory variables to schema definitions
+## Inventory Variables and Schema Mapping
 
 `schema-enforcer` will check ansible hosts for adherence to defined schema ids in one of two ways.
 
-1) The `schema_enforcer_schema_ids` ansible inventory variable can be used to declare which schemas a given host/group of hosts should be checked for adherence to. The value of this variable is a list of the schema ids.
+- By using a list of schema ids defined by the `schema_enforcer_schema_ids` command
+- By automatically mapping a schema's top level property to ansible variable keys.
+
+### Using The `schema_enforcer_schema_ids` ansible inventory variable
+
+This variable can be used to declare which schemas a given host/group of hosts should be checked for adherence to. The value of this variable is a list of the schema ids.
 
 Take for example the `spine` group in our `ansible` exmple. In this example, the schema ids `schemas/dns_servers` and `schemas/interfaces` are declared.
 
@@ -159,7 +166,9 @@ properties:
             type: "string"
 ```
 
-2) Automatically infer which schema IDs should be used to check for adherence. If no `schema_enforcer_schema_ids` property is declared, the `schema-enforcer ansible` command will automatically infer which ansible hosts should be checked for adherence to which schema definition. It does this by matching the top level property in a schema definition to the top level key in a defined variable. 
+### Using the `schema_enforcer_automap_default` ansible inventory variable
+
+This variable specifies whether or not to use automapping. It defaults to true. When automapping is in use, schema enforcer will automatically map map schema IDs to host variables if the variable's name matches a top level property defined in the schema. This happens by default when no `schema_enforcer_schema_ids` property is declared.
 
 The leaf group in the included ansible example does not declare any schemas per the `schema_enforcer_schema_ids` property. 
 
@@ -199,10 +208,6 @@ required:
 > Note: The order listed above is the order in which the options for mapping schema ids to variables occurs.
 > Note: Schema ID to host property mapping methods are **mutually exclusive**. This means that if a `schema_definition_schema_ids` variable is declared in an ansible hosts/groups file, automatic mapping of schema IDs to variables will not occur.
 
-## Advanced Options
-
-### The `schema_enforcer_automap_default` variable
-
 The `schema_enforcer_automap_default` variable can be declared in an ansible host or group file. This variable defaults to true if not set. If set to false, the automapping behaviour described above will not occur. For instance, if we change the `schema_enforcer_automap_default` variable for leaf switches to false then re-run schema validation, no checks will be performed because automapping is disabled.
 
 ```yaml
@@ -222,6 +227,8 @@ Ansible Host              Schema ID
 --------------------------------------------------------------------------------
 leaf1                     []
 ```
+
+## Advanced Options
 
 ### The `schema_enforcer_strict` variable
 
