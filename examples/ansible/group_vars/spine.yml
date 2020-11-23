@@ -11,5 +11,3 @@ interfaces:
 schema_enforcer_schema_ids:
   - "schemas/dns_servers"
   - "schemas/interfaces"
-
-schema_enforcer_automap_default: true

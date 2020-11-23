@@ -1,0 +1,284 @@
+# The `ansible` command
+
+The `ansible` command is used to check ansible inventory for adherence to a schema definition. An example exists in the `examples/ansible` folder. With no flags passed in, schema-enforcer will display a line for each property definition that **fails** schema validation along with contextual information elucidating why a given portion of the ansible inventory failed schema validation, the host for which schema validation failed, and the portion of structured data that is failing validation. If all checks pass, `schema-enforcer` will inform the user that all tests have passed.
+
+## How the inventory is loaded
+
+When the `schema-enforcer ansible` command is run, an ansible inventory is constructed. Each host's properties are extracted from the ansible inventory then validated against schema. Take the following example
+
+```cli
+bash $ cd examples/ansible && schema-enforcer ansible
+Found 4 hosts in the inventory
+FAIL | [ERROR] True is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
+FAIL | [ERROR] True is not of type 'string' [HOST] spine2 [PROPERTY] dns_servers:0:address
+```
+
+The `schema-enforcer ansible` command validates adherence to schema on a **per host** basis. In the example above, both `spine1` and `spine2` devices belong to a group called `spine`
+
+```ini
+[nyc:children]
+spine
+leaf
+
+[spine]
+spine1
+spine2
+
+[leaf]
+leaf1
+leaf2
+```
+
+The property `dns_servers` is defined only at the `spine` group level in ansible and not at the host level. Below is the `spine.yml` group_vars file.
+
+```yaml
+cat group_vars/spine.yaml
+---
+dns_servers:
+  - address: true
+  - address: "10.2.2.2"
+interfaces:
+  swp1:
+    role: "uplink"
+  swp2:
+    role: "uplink"
+
+schema_enforcer_schema_ids:
+  - "schemas/dns_servers"
+  - "schemas/interfaces"
+```
+
+Though the invalid property (the boolean true for a DNS address) is defined only once, two validation errors are flagged because two different hosts belong to to the `spine` group.
+
+## The `--show-checks` flag
+
+The `--show-checks` flag is used to show which ansible inventory hosts will be validated against which schema definition IDs.
+
+```cli
+Found 4 hosts in the inventory
+Ansible Host              Schema ID
+--------------------------------------------------------------------------------
+leaf1                     ['schemas/dns_servers']
+leaf2                     ['schemas/dns_servers']
+spine1                    ['schemas/dns_servers', 'schemas/interfaces']
+spine2                    ['schemas/dns_servers', 'schemas/interfaces']
+```
+
+> Note: The ansible inventory hosts can be mapped to schema definition ids in one of a few ways. This is discussed in the Schema Mapping section below
+
+## The `--show-pass` flag
+
+The `--show-pass` flag is used to show what schema definition ids each host passes in addition to the schema definition ids each host fails.
+
+```cli
+bash$ schema-enforcer ansible --show-pass  
+Found 4 hosts in the inventory
+FAIL | [ERROR] True is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
+PASS | [HOST] spine1 [SCHEMA ID] schemas/interfaces
+FAIL | [ERROR] True is not of type 'string' [HOST] spine2 [PROPERTY] dns_servers:0:address
+PASS | [HOST] spine2 [SCHEMA ID] schemas/interfaces
+PASS | [HOST] leaf1 [SCHEMA ID] schemas/dns_servers
+PASS | [HOST] leaf2 [SCHEMA ID] schemas/dns_servers
+```
+
+In the above example, the leaf switches are checked for adherence to the `schemas/dns_servers` definition and the spine switches are checked for adherence to two schema ids; the `schemas/dns_servers` schema id and the `schemas/interfaces` schema id. A PASS statement is printed to stdout for each validation that passes and a FAIL statement is printed for each validation that fails.
+
+## The `--host` flag
+
+The `--host` flag can be used to limit schema validation to a single ansible inventory host. `-h` can also be used as shorthand for `--host`
+
+```cli
+bash$ schema-enforcer ansible -h spine2 --show-pass  
+Found 4 hosts in the inventory
+FAIL | [ERROR] True is not of type 'string' [HOST] spine2 [PROPERTY] dns_servers:0:address
+PASS | [HOST] spine2 [SCHEMA ID] schemas/interfaces
+```
+
+## Specifying an ansible inventory file to use
+
+The ansible inventory file which should be used can be specified in one of two ways:
+
+1) The `--inventory` flag (or `-i`) can be used to pass in the location of an ansible inventory file
+2) A `pyproject.toml` file can contain a `[tool.schema_enforcer]` config block setting the `ansible_inventory` paramer. This `pyproject.toml` file must be inside the repository from which the tool is run.
+
+```toml
+bash$ cat pyproject.toml
+[tool.schema_enforcer]
+ansible_inventory = "inventory.ini"
+```
+
+If the inventory is set in both ways, the -i flag will take precedence.
+
+> Note: Dynamic inventory sources can not currently be parsed for schema adherence.
+
+## Mapping inventory variables to schema definitions
+
+`schema-enforcer` will check ansible hosts for adherence to defined schema ids in one of two ways.
+
+1) The `schema_enforcer_schema_ids` ansible inventory variable can be used to declare which schemas a given host/group of hosts should be checked for adherence to. The value of this variable is a list of the schema ids.
+
+Take for example the `spine` group in our `ansible` exmple. In this example, the schema ids `schemas/dns_servers` and `schemas/interfaces` are declared.
+
+```yaml
+bash$ cat group_vars/spine.yml
+---
+dns_servers:
+  - address: true
+  - address: "10.2.2.2"
+interfaces:
+  swp1:
+    role: "uplink"
+  swp2:
+    role: "uplink"
+
+schema_enforcer_schema_ids:
+  - "schemas/dns_servers"
+  - "schemas/interfaces"
+```
+
+The `$id` property in the following schema definition file is what is being declared by spine group var file above.
+
+```yaml
+bash$ cat schema/schemas/interfaces.yml
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/interfaces"
+description: "Interfaces configuration schema."
+type: "object"
+properties:
+  interfaces:
+    type: "object"
+    patternProperties:
+      ^swp.*$:
+        properties:
+          type:
+            type: "string"
+          description:
+            type: "string"
+          role:
+            type: "string"
+```
+
+2) Automatically infer which schema IDs should be used to check for adherence. If no `schema_enforcer_schema_ids` property is declared, the `schema-enforcer ansible` command will automatically infer which ansible hosts should be checked for adherence to which schema definition. It does this by matching the top level property in a schema definition to the top level key in a defined variable. 
+
+The leaf group in the included ansible example does not declare any schemas per the `schema_enforcer_schema_ids` property. 
+
+```yaml
+bash$ cat group_vars/leaf.yml
+---
+dns_servers:
+  - address: "10.1.1.1"
+  - address: "10.2.2.2"
+```
+
+Yet when schema enforcer is run against one of the leaf hosts, we can see it's host vars are checked for adherence to the dns_servers.yml schema.
+
+```cli
+schema-enforcer ansible -h leaf1 --show-pass
+Found 4 hosts in the inventory
+PASS | [HOST] leaf1 [SCHEMA ID] schemas/dns_servers
+ALL SCHEMA VALIDATION CHECKS PASSED
+```
+
+This is done because `schema-enforcer` maps the `dns_servers` key in the `group_vars/leaf.yml` to the `dns_servers` top level property in the `schema/schemas/dns.yml` schema definition file.
+
+```yaml
+cat schema/schemas/dns.yml   
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/dns_servers"
+description: "DNS Server Configuration schema."
+type: "object"
+properties:
+  dns_servers:
+    $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
+required:
+  - "dns_servers"
+```
+
+> Note: The order listed above is the order in which the options for mapping schema ids to variables occurs.
+> Note: Schema ID to host property mapping methods are **mutually exclusive**. This means that if a `schema_definition_schema_ids` variable is declared in an ansible hosts/groups file, automatic mapping of schema IDs to variables will not occur.
+
+## Advanced Options
+
+### The `schema_enforcer_automap_default` variable
+
+The `schema_enforcer_automap_default` variable can be declared in an ansible host or group file. This variable defaults to true if not set. If set to false, the automapping behaviour described above will not occur. For instance, if we change the `schema_enforcer_automap_default` variable for leaf switches to false then re-run schema validation, no checks will be performed because automapping is disabled.
+
+```yaml
+bash$ cat group_vars/leaf.yml
+---
+dns_servers:
+  - address: "10.1.1.1"
+  - address: "10.2.2.2"
+
+schema_enforcer_automap_default: false
+```
+
+```yaml
+bash$ schema-enforcer ansible -h leaf1 --show-checks
+Found 4 hosts in the inventory
+Ansible Host              Schema ID
+--------------------------------------------------------------------------------
+leaf1                     []
+```
+
+### The `schema_enforcer_strict` variable
+
+The `schema_enforcer_strict` variable can be declared in an ansible host or group file. This varaible defaults to false if not set. If set to true, the `schema-enforcer` tool checks for `strict` adherence to schema. This means that no additional properties can be specified as variables beyond those that are defined in the schema. Two major caveats apply to using the `schema_enforcer_strict` variable.
+
+1) If the `schema_enforcer_strict` variable is set to true, the `schema_enforcer_schema_ids` variabe **MUST** be defined as a list of one and only one schema ID. If it is either not defined at all or defined as something other than a list with one element, an error will be printed to the screen and the tool will exit before performing any validations.
+2) The schema ID referenced by `schema_enforcer_schema_ids` **MUST** include all variables defined for the ansible host/group. If an ansible variable not defined in the schema is defined for a given host, schema validation will fail as, when strict mode is run, properties not defined in the schema are not allowed.
+
+> Note: If either of these conditions are not met, an error message will be printed to stdout and the tool will stop execution before evaluating host variables against schema.
+
+In the following example, the leaf.yml group vars file has been modified so that all hosts which belong to it are checked for strict enforcement against the `schemas/dns_servers` schema id.
+
+```yaml
+bash$ cat group_vars/leaf.yml
+---
+dns_servers:
+  - address: "10.1.1.1"
+  - address: "10.2.2.2"
+
+schema_enforcer_schema_ids:
+  - schemas/dns_servers
+
+schema_enforcer_strict: true
+```
+
+When `schema-enforcer` is run, it shows checks passing as expected
+
+```cli
+schema-enforcer ansible -h leaf1 --show-pass  
+Found 4 hosts in the inventory
+PASS | [HOST] leaf1 [SCHEMA ID] schemas/dns_servers
+ALL SCHEMA VALIDATION CHECKS PASSED
+```
+
+If we do the same thing for the spine switches then run validation, we two validation errors -- one indicating that the `dns_servers` property failed validation because its first address is of type `bool`, and one indicating that `interfaces` is an additional property which falls outside of the declared schema definition (`schemas/dns_servers') and is not allowed.
+
+```yaml
+bash$ cat group_vars/spine.yml
+---
+dns_servers:
+  - address: true
+  - address: "10.2.2.2"
+interfaces:
+  swp1:
+    role: "uplink"
+  swp2:
+    role: "uplink"
+
+schema_enforcer_schema_ids:
+  - "schemas/dns_servers"
+
+schema_enforcer_strict: true
+```
+
+```cli
+bash$ schema-enforcer ansible -h spine1 --show-pass
+Found 4 hosts in the inventory
+FAIL | [ERROR] True is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
+FAIL | [ERROR] Additional properties are not allowed ('interfaces' was unexpected) [HOST] spine1 [PROPERTY]
+```
