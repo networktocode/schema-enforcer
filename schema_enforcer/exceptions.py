@@ -13,5 +13,8 @@ limitations under the License.
 """
 
 
-class SchemaNotDefinedError(Exception):
-    """Raised when a schema is declared but not defiled"""
+class SchemaNotDefined(Exception):
+    """Raised when a schema is declared but not defined.
+
+    Args (Exception): Base Exception Object
+    """

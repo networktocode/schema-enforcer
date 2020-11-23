@@ -5,6 +5,7 @@ import jsonref
 from termcolor import colored
 from schema_enforcer.utils import load_file, find_and_load_file, find_files, dump_data_to_yaml
 from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
+from schema_enforcer.exceptions import SchemaNotDefined
 
 from schema_enforcer.schemas.jsonschema import JsonSchema
 
@@ -224,10 +225,9 @@ class SchemaManager:
 
     def validate_schemas_exist(self, schema_ids):
         """Validate that each schema ID in a list of schema IDs exists.
-        
+
         Args: schema_ids (list): A list of schema IDs, each of which should exist as a schema object
         """
-
         if not isinstance(schema_ids, list):
             raise TypeError("schema_ids argument passed into validate_schemas_exist must be of type list")
         for schema_id in schema_ids:

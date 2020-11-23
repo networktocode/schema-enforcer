@@ -73,4 +73,7 @@ class ValidationResult(BaseModel):
             print(colored("PASS", "green") + f" | [{self.instance_type}] {self.instance_location}/{self.instance_name}")
 
         if self.instance_type == "HOST":
-            print(colored("PASS", "green") + f" | [{self.instance_type}] {self.instance_hostname} [SCHEMA ID] {self.schema_id}")
+            print(
+                colored("PASS", "green")
+                + f" | [{self.instance_type}] {self.instance_hostname} [SCHEMA ID] {self.schema_id}"
+            )

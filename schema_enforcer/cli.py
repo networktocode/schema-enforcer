@@ -170,7 +170,9 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
     is_flag=True,
     show_default=True,
 )
-def ansible(inventory, limit, show_pass, show_checks):  # pylint: disable=too-many-branches,too-many-locals,too-many-statements
+def ansible(
+    inventory, limit, show_pass, show_checks
+):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals
     r"""Validate the hostvar for all hosts within an Ansible inventory.
 
     The hostvar are dynamically rendered based on groups.
@@ -182,6 +184,7 @@ def ansible(inventory, limit, show_pass, show_checks):  # pylint: disable=too-ma
         inventory (string): The name of the inventory file to validate against
         limit (string, None): Name of a host to limit the execution to
         show_pass (bool): Shows validation checks that passed Default to False
+        show_checks (book): Shows the schema checks each host will be evaluated against
 
     Example:
         $ cd examples/ansible
@@ -245,7 +248,10 @@ def ansible(inventory, limit, show_pass, show_checks):  # pylint: disable=too-ma
         hostvars = inv.get_clean_host_vars(host)
 
         # Acquire validation settings for the given host
-        declared_schema_ids, strict, automap = inv.get_schema_validation_settings(host)
+        schema_validation_settings = inv.get_schema_validation_settings(host)
+        declared_schema_ids = schema_validation_settings["declared_schema_ids"]
+        strict = schema_validation_settings["strict"]
+        automap = schema_validation_settings["automap"]
 
         # Validate declared schemas exist
         smgr.validate_schemas_exist(declared_schema_ids)

@@ -3,10 +3,6 @@ from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars.manager import VariableManager
 from ansible.template import Templar
-from termcolor import colored
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 # Referenced https://github.com/fgiorgetti/qpid-dispatch-tests/ for the below class
@@ -144,8 +140,7 @@ class AnsibleInventory:
             ValueError: Raised when one of the schema configuration parameters is incorrectly configured
 
         Returns:
-            mapping (list): List of schema IDs against which to validate ansible vars
-            strict (bool): Whether or not to use strict validation while validating the schema
+            (dict): Dict of validation settings with keys "declared_schema_ids", "strict", and "automap"
         """
         # Generate host_var and automatically remove all keys inserted by ansible
         hostvars = self.get_host_vars(host)
@@ -167,7 +162,9 @@ class AnsibleInventory:
         automap = True
         if "schema_enforcer_automap_default" in hostvars:
             if not isinstance(hostvars["schema_enforcer_automap_default"], bool):
-                raise TypeError(f"'schema_enforcer_automap_default' attribute defined for {host.name} must be of type bool")
+                raise TypeError(
+                    f"'schema_enforcer_automap_default' attribute defined for {host.name} must be of type bool"
+                )
             automap = hostvars["schema_enforcer_automap_default"]
 
         # Raise error if settings are set incorrectly
@@ -185,9 +182,20 @@ class AnsibleInventory:
             )
             raise ValueError(msg)
 
-        return declared_schema_ids, strict, automap
+        return {
+            "declared_schema_ids": declared_schema_ids,
+            "strict": strict,
+            "automap": automap,
+        }
 
     def print_schema_mapping(self, hosts, limit, smgr):
+        """Print host to schema IDs mapping.
+
+        Args:
+            hosts (list): A list of ansible.inventory.host.Host objects for which the mapping should be printed
+            limit (str): The host to which to limit the search
+            smgr (schema_enforcer.schemas.manager.SchemaManager): Schema manager which handles schema objects
+        """
         print_dict = {}
         for host in hosts:
             if limit and host.name != limit:
@@ -197,7 +205,9 @@ class AnsibleInventory:
             hostvars = self.get_clean_host_vars(host)
 
             # Acquire validation settings for the given host
-            declared_schema_ids, strict, automap = self.get_schema_validation_settings(host)
+            schema_validation_settings = self.get_schema_validation_settings(host)
+            declared_schema_ids = schema_validation_settings["declared_schema_ids"]
+            automap = schema_validation_settings["automap"]
 
             # Validate declared schemas exist
             smgr.validate_schemas_exist(declared_schema_ids)
@@ -206,7 +216,7 @@ class AnsibleInventory:
             applicable_schemas = self.get_applicable_schemas(hostvars, smgr, declared_schema_ids, automap)
 
             # Add an element to the print dict for this host
-            print_dict[host.name] = [schema_id for schema_id in applicable_schemas.keys()]
+            print_dict[host.name] = list(applicable_schemas.keys())
 
         if print_dict:
             print("{:25} Schema ID".format("Ansible Host"))
@@ -215,5 +225,3 @@ class AnsibleInventory:
             for hostname, schema_ids in print_dict.items():
                 print_strings.append(f"{hostname:25} {schema_ids}")
             print("\n".join(sorted(print_strings)))
-
-
