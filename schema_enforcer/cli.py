@@ -258,8 +258,8 @@ def ansible(
 
         # Acquire schemas applicable to the given host
         applicable_schemas = inv.get_applicable_schemas(hostvars, smgr, declared_schema_ids, automap)
-
-        for _, schema_obj in applicable_schemas.items():
+        # import pdb; pdb.set_trace()
+        for schema_obj in applicable_schemas.values():
             # Combine host attributes into a single data structure matching to properties defined at the top level of the schema definition
             if not strict:
                 data = dict()
@@ -269,7 +269,7 @@ def ansible(
             # If the schema_enforcer_strict bool is set, hostvars should match a single schema exactly.
             # Thus, we want to pass the entirety of the cleaned host vars into the validate method rather
             # than creating a data structure with only the top level vars defined by the schema.
-            if strict:
+            else:
                 data = hostvars
 
             # Validate host vars against schema

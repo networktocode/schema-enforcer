@@ -168,7 +168,7 @@ properties:
 
 ### Using the `schema_enforcer_automap_default` ansible inventory variable
 
-This variable specifies whether or not to use automapping. It defaults to true. When automapping is in use, schema enforcer will automatically map map schema IDs to host variables if the variable's name matches a top level property defined in the schema. This happens by default when no `schema_enforcer_schema_ids` property is declared.
+This variable specifies whether or not to use automapping. It defaults to true. When automapping is in use, schema enforcer will automatically map schema IDs to host variables if the variable's name matches a top level property defined in the schema. This happens by default when no `schema_enforcer_schema_ids` property is declared.
 
 The leaf group in the included ansible example does not declare any schemas per the `schema_enforcer_schema_ids` property. 
 

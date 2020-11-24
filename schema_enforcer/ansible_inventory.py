@@ -104,8 +104,9 @@ class AnsibleInventory:
         Args:
             hostvars (dict): dictionary of cleaned host vars which will be evaluated against schema
             smgr (schema_enforcer.schemas.manager.SchemaManager): SchemaManager object
-            declared_schema_ids: list of declared schema IDs inferred from schema_enforcer_schemas variable
-            automap:
+            declared_schema_ids (list): A list of declared schema IDs inferred from schema_enforcer_schemas variable
+            automap (bool): Whether or not to use the `automap` feature to automatically map top level hostvar keys
+                to top level schema definition properties if no schema ids are declared (list of schema ids is empty)
 
         Returns:
             applicable_schemas (dict): dictionary mapping schema_id to schema obj for all applicable schemas
@@ -129,7 +130,7 @@ class AnsibleInventory:
     def get_schema_validation_settings(self, host):
         """Parse Ansible Schema Validation Settings from a host object.
 
-        Validate settings to ensure an error is raised in the event an invalid parameter is
+        Validate settings or ensure an error is raised in the event an invalid parameter is
         configured in the host file.
 
         Args:

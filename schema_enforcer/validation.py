@@ -59,7 +59,7 @@ class ValidationResult(BaseModel):
         if self.instance_type == "FILE":
             msg += f" [{self.instance_type}] {self.instance_location}/{self.instance_name}"
 
-        if self.instance_type == "HOST":
+        elif self.instance_type == "HOST":
             msg += f" [{self.instance_type}] {self.instance_hostname}"
 
         msg += f" [PROPERTY] {':'.join(str(item) for item in self.absolute_path)}"
