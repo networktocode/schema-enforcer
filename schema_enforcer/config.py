@@ -17,7 +17,7 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     The type of each setting is defined using Python annotations
     and is validated when a config file is loaded with Pydantic.
 
-    Most input files specific to this project are expected to be located in the same directory
+    Most input files specific to this project are expected to be located in the same directory. e.g.
     schema/
      - definitions
      - schemas
@@ -61,7 +61,7 @@ def load(config_file_name="pyproject.toml", config_data=None):
 
     config_data can be passed in to override the config_file_name. If this is done, a combination of the data
     specified and the defaults for parameters not specified will be used, and settings in the config file will
-    be ignored
+    be ignored.
 
     Args:
         config_file_name (str, optional): Name of the configuration file to load. Defaults to "pyproject.toml".

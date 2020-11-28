@@ -19,8 +19,8 @@ class JsonSchema:
         """Initilize a new JsonSchema object from a dict.
 
         Args:
-            schema (dict): Data representing the schema. Must be jsonschema valid
-            filename (string): Name of the schema file on the filesystem
+            schema (dict): Data representing the schema. Must be jsonschema valid.
+            filename (string): Name of the schema file on the filesystem.
             root (string): Absolute path to the directory where the schema file is located.
         """
         self.filename = filename
@@ -41,7 +41,7 @@ class JsonSchema:
         """Validate a given data with this schema.
 
         Args:
-            data (dict, list): Data to validate against the schema
+            data (dict, list): Data to validate against the schema.
             strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
 
         Returns:
@@ -71,11 +71,11 @@ class JsonSchema:
         These are generated with the validate() function in dict() format instead of as a Python Object.
 
         Args:
-            data (dict, list): Data to validate against the schema
+            data (dict, list): Data to validate against the schema.
             strict (bool, optional): if True the validation will automatically flag additional properties. Defaults to False.
 
         Returns:
-            list of dictionnary
+            list of dictionnaries containing the results.
         """
         return [
             result.dict(exclude_unset=True, exclude_none=True) for result in self.validate(data=data, strict=strict)
@@ -85,7 +85,7 @@ class JsonSchema:
         """Return the validator for this schema, create if it doesn't exist already.
 
         Returns:
-            Draft7Validator: Validator for this schema
+            Draft7Validator: The validator for this schema.
         """
         if self.validator:
             return self.validator
@@ -97,12 +97,12 @@ class JsonSchema:
     def __get_strict_validator(self):
         """Return a strict version of the Validator, create it if it doesn't exist already.
 
-        To create a strict version of the schema, this function adds `additionalProperties` to all objects in the schema
-        TODO Currently the function is only modifying the top level object, need to add that to all objects recursively
+        To create a strict version of the schema, this function adds `additionalProperties` to all objects in the schema.
 
         Returns:
-            Draft7Validator: Validator for this schema in strict mode
+            Draft7Validator: Validator for this schema in strict mode.
         """
+        # TODO Currently the function is only modifying the top level object, need to add that to all objects recursively
         if self.strict_validator:
             return self.strict_validator
 
@@ -131,7 +131,7 @@ class JsonSchema:
         """Check if the schema definition is valid against JsonSchema draft7.
 
         Returns:
-            List[ValidationResult]
+            List[ValidationResult]: A list of validation result objects.
         """
         validator = Draft7Validator(v7schema)
 

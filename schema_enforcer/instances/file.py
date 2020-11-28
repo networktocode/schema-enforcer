@@ -11,10 +11,13 @@ SCHEMA_TAG = "jsonschema"
 class InstanceFileManager:  # pylint: disable=too-few-public-methods
     """InstanceFileManager."""
 
-    def __init__(self, config):
+    def _init__(self, config):
         """Initialize the interface File manager.
 
-        The file manager will locate all potential instance files in the search directories
+        The file manager will locate all potential instance files in the search directories.
+
+        Args:
+            config (string): The pydantec config object.
         """
         self.instances = []
         self.config = config
@@ -57,9 +60,8 @@ class InstanceFile:
         """Initializes InstanceFile object.
 
         Args:
-            root (string): Location of the file on the filesystem
-            filename (string): Name of the file
-            matches (string, optional): List of schema IDs that matches with this Instance file. Defaults to None.
+            filename (string): Name of the file.
+            matches (list, optional): List of schema IDs that matches with this Instance file. Defaults to None.
         """
         self.data = None
         self.path = root
@@ -79,10 +81,10 @@ class InstanceFile:
         Look for a line with # jsonschema: schema_id,schema_id
 
         Args:
-            content (string, optional): Content of the file to analyze. Default to None
+            content (string, optional): Content of the file to analyze. Default to None.
 
         Returns:
-            list(string): List of matches found in the file
+            list(string): List of matches found in the file.
         """
         if not content:
             content = Path(os.path.join(self.full_path, self.filename)).read_text()
@@ -103,22 +105,21 @@ class InstanceFile:
         Content returned can be either dict or list depending on the content of the file
 
         Returns:
-            dict or list: Content of the instance file
+            dict or list: Content of the instance file.
         """
         return load_file(os.path.join(self.full_path, self.filename))
 
     def validate(self, schema_manager, strict=False):
         """Validate this instance file with all matching schema in the schema manager.
 
-        # TODO need to add something to check if a schema is missing
-
         Args:
-            schema_manager (SchemaManager): SchemaManager object
+            schema_manager (SchemaManager): A SchemaManager object.
             strict (bool, optional): True is the validation should automatically flag unsupported element. Defaults to False.
 
         Returns:
-            iterator: Iterator of ValidationErrors returned by schema.validate
+            iterator: Iterator of ValidationErrors returned by schema.validate.
         """
+        # TODO need to add something to check if a schema is missing
         # Create new iterator chain to be able to aggregate multiple iterators
         errs = itertools.chain()
 
