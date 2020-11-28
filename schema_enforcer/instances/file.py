@@ -11,7 +11,7 @@ SCHEMA_TAG = "jsonschema"
 class InstanceFileManager:  # pylint: disable=too-few-public-methods
     """InstanceFileManager."""
 
-    def _init__(self, config):
+    def __init__(self, config):
         """Initialize the interface File manager.
 
         The file manager will locate all potential instance files in the search directories.
@@ -60,6 +60,7 @@ class InstanceFile:
         """Initializes InstanceFile object.
 
         Args:
+            root (string): Absolute path to the directory where the schema file is located.
             filename (string): Name of the file.
             matches (list, optional): List of schema IDs that matches with this Instance file. Defaults to None.
         """
