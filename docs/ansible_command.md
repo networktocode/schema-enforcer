@@ -59,6 +59,7 @@ Though the invalid property (the boolean true for a DNS address) is defined only
 The `--show-checks` flag is used to show which ansible inventory hosts will be validated against which schema definition IDs.
 
 ```cli
+bash $ ANSIBLE_INVENTORY_PLUGINS=$(pwd inventory_plugins) schema-enforcer ansible -i inventory --show-checks
 Found 6 hosts in the inventory
 Ansible Host              Schema ID
 --------------------------------------------------------------------------------
@@ -77,6 +78,7 @@ spine2                    ['schemas/dns_servers', 'schemas/interfaces']
 The `--show-pass` flag is used to show what schema definition ids each host passes in addition to the schema definition ids each host fails.
 
 ```cli
+bash $ ANSIBLE_INVENTORY_PLUGINS=$(pwd inventory_plugins) schema-enforcer ansible -i inventory --show-pass
 Found 6 hosts in the inventory
 FAIL | [ERROR] False is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
 PASS | [HOST] spine1 [SCHEMA ID] schemas/interfaces
@@ -103,8 +105,9 @@ PASS | [HOST] spine2 [SCHEMA ID] schemas/interfaces
 
 ### The `--inventory` flag
 
-The `--inventory` flag (or `-i`) specifies the inventory file which should be used to determine the ansible inventory. The inventory can reference a static file, a inventory plugin, or folder
-containing multiple inventories of either static or inventory plugins can be specified in one of two ways:
+The `--inventory` flag (or `-i`) specifies the inventory file or folder which should be used to construct the ansible inventory. The inventory can
+reference a static file, an inventory plugin, or a folder containing multiple inventories. The inventory which should be used can be specified in one of
+two ways:
 
 1) The `--inventory` flag (or `-i`) can be used to pass in the location of an ansible inventory file
 2) A `pyproject.toml` file can contain a `[tool.schema_enforcer]` config block setting the `ansible_inventory` paramer. This `pyproject.toml` file must be inside the repository from which the tool is run.
