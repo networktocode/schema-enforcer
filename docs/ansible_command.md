@@ -232,38 +232,74 @@ leaf1                     []
 
 ### The `schema_enforcer_strict` variable
 
-The `schema_enforcer_strict` variable can be declared in an ansible host or group file. This varaible defaults to false if not set. If set to true, the `schema-enforcer` tool checks for `strict` adherence to schema. This means that no additional properties can be specified as variables beyond those that are defined in the schema. Two major caveats apply to using the `schema_enforcer_strict` variable.
+The `schema_enforcer_strict` variable can be declared in an ansible host or group file. This variable defaults to false if not set. If set to true, the `schema-enforcer` tool checks for `strict` adherence to schema. This means that no additional host vars can exist beyond those that are defined in the schema.
+
+From a design pattern perspective, when strict enforcment is used, all host variables are evaulated against a single schema id. This is in contrast to a design patern where a different schema id is defined for each top level host var/property. To this end, when strict enforcement is used, a single schema should be defined with references to schemas for all properties which are defined for a given host. The ids for such schema definitions are better named by role instead of host variable. For instance `schemas/spines` or `schemas/leafs` makes more sense with this design pattern than `schemas/dns_servers`.
+
+Two major caveats apply to using the `schema_enforcer_strict` variable.
 
 1) If the `schema_enforcer_strict` variable is set to true, the `schema_enforcer_schema_ids` variabe **MUST** be defined as a list of one and only one schema ID. If it is either not defined at all or defined as something other than a list with one element, an error will be printed to the screen and the tool will exit before performing any validations.
 2) The schema ID referenced by `schema_enforcer_schema_ids` **MUST** include all variables defined for the ansible host/group. If an ansible variable not defined in the schema is defined for a given host, schema validation will fail as, when strict mode is run, properties not defined in the schema are not allowed.
 
 > Note: If either of these conditions are not met, an error message will be printed to stdout and the tool will stop execution before evaluating host variables against schema.
 
-In the following example, the leaf.yml group vars file has been modified so that all hosts which belong to it are checked for strict enforcement against the `schemas/dns_servers` schema id.
+In the following example, the `spine.yml` ansible group has been defined to use strict enforcement in checking against the `schemas/spine` schema ID.
 
 ```yaml
-bash$ cat group_vars/leaf.yml
+bash$ cd examples/ansible2 && cat group_vars/spine.yml
 ---
 dns_servers:
   - address: "10.1.1.1"
   - address: "10.2.2.2"
-
-schema_enforcer_schema_ids:
-  - schemas/dns_servers
+interfaces:
+  swp1:
+    role: "uplink"
+  swp2:
+    role: "uplink"
 
 schema_enforcer_strict: true
+schema_enforcer_schema_ids:
+  - schemas/spines
+```
+
+The `schemas/spines` schema definition includes two properties -- dns_servers and interfaces. Both of these properties are required by the schema.
+
+```yaml
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/spines"
+description: "Spine Switches Schema"
+type: "object"
+properties:
+  dns_servers:
+    type: object
+    $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
+  interfaces:
+    type: "object"
+    patternProperties:
+      ^swp.*$:
+        properties:
+          type:
+            type: "string"
+          description:
+            type: "string"
+          role:
+            type: "string"
+required:
+  - dns_servers
+  - interfaces
 ```
 
 When `schema-enforcer` is run, it shows checks passing as expected
 
 ```cli
-schema-enforcer ansible -h leaf1 --show-pass  
+bash$ schema-enforcer ansible -h spine1 --show-pass
 Found 4 hosts in the inventory
-PASS | [HOST] leaf1 [SCHEMA ID] schemas/dns_servers
+PASS | [HOST] spine1 [SCHEMA ID] schemas/spines
 ALL SCHEMA VALIDATION CHECKS PASSED
 ```
 
-If we do the same thing for the spine switches then run validation, we two validation errors -- one indicating that the `dns_servers` property failed validation because its first address is of type `bool`, and one indicating that `interfaces` is an additional property which falls outside of the declared schema definition (`schemas/dns_servers') and is not allowed.
+If we add another property to the spine switches group, we see that spine1 fails validation. This is because properties outside of the purview of those defined by the schema are not allowed when `schema_enforcer_strict` is set to true.
 
 ```yaml
 bash$ cat group_vars/spine.yml
@@ -276,6 +312,7 @@ interfaces:
     role: "uplink"
   swp2:
     role: "uplink"
+bogus_property: true
 
 schema_enforcer_schema_ids:
   - "schemas/dns_servers"
@@ -284,8 +321,7 @@ schema_enforcer_strict: true
 ```
 
 ```cli
-bash$ schema-enforcer ansible -h spine1 --show-pass
+bash$ schema-enforcer ansible -h spine1            
 Found 4 hosts in the inventory
-FAIL | [ERROR] True is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
-FAIL | [ERROR] Additional properties are not allowed ('interfaces' was unexpected) [HOST] spine1 [PROPERTY]
+FAIL | [ERROR] Additional properties are not allowed ('bogus_property' was unexpected) [HOST] spine1 [PROPERTY]
 ```

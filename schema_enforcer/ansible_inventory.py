@@ -119,7 +119,7 @@ class AnsibleInventory:
                     applicable_schemas[schema_id] = smgr.schemas[schema_id]
 
             # extract applicable schema ID to JsonSchema objects based on host var to top level property mapping.
-            if not declared_schema_ids and automap:
+            elif automap:
                 for schema in smgr.schemas.values():
                     if key in schema.top_level_properties:
                         applicable_schemas[schema.id] = schema
@@ -172,7 +172,7 @@ class AnsibleInventory:
         if strict and not declared_schema_ids:
             msg = (
                 f"The 'schema_enforcer_strict' parameter is set for {host.name} but the 'schema_enforcer_schema_ids' parameter does not declare a schema id. "
-                "The 'schema_enforcer_schemas' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
+                "The 'schema_enforcer_schema_ids' parameter MUST be defined as a list declaring only one schema ID if 'schema_enforcer_strict' is set."
             )
             raise ValueError(msg)
 
