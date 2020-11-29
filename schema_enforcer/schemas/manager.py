@@ -17,7 +17,7 @@ class SchemaManager:
         """Initialize the SchemaManager and search for all schema files in the schema_directories.
 
         Args:
-            config (Config): Instance of Config object returned by jsonschema_testing.config.load() method.
+            config (Config): Instance of Config object returned by schema_enforcer.config.load() method.
         """
         self.schemas = {}
         self.config = config
