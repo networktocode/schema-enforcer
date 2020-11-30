@@ -5,4 +5,4 @@ dns_servers:
 
 schema_enforcer_strict: true
 schema_enforcer_schema_ids:
-  - schemas/leafs
+  - "schemas/leafs"

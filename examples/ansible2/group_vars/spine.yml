@@ -11,4 +11,4 @@ bogus_property: true
 
 schema_enforcer_strict: true
 schema_enforcer_schema_ids:
-  - schemas/spines
+  - "schemas/spines"

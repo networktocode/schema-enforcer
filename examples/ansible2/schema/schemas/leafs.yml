@@ -5,7 +5,7 @@ description: "Leaf Switches Schema"
 type: "object"
 properties:
   dns_servers:
-    type: object
+    type: "object"
     $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
 required:
-  - dns_servers
+  - "dns_servers"

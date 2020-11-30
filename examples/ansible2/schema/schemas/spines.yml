@@ -5,7 +5,7 @@ description: "Spine Switches Schema"
 type: "object"
 properties:
   dns_servers:
-    type: object
+    type: "object"
     $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
   interfaces:
     type: "object"
@@ -19,5 +19,5 @@ properties:
           role:
             type: "string"
 required:
-  - dns_servers
-  - interfaces
+  - "dns_servers"
+  - "interfaces"
