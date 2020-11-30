@@ -1,6 +1,13 @@
 # The `ansible` command
 
-The `ansible` command is used to check ansible inventory for adherence to a schema definition. An example exists in the `examples/ansible` folder. With no flags passed in, schema-enforcer will display a line for each property definition that **fails** schema validation along with contextual information elucidating why a given portion of the ansible inventory failed schema validation, the host for which schema validation failed, and the portion of structured data that is failing validation. If all checks pass, `schema-enforcer` will inform the user that all tests have passed.
+The `ansible` command is used to check ansible inventory for adherence to a schema definition. An example exists in the `examples/ansible` folder. With no flags passed in, schema-enforcer will:
+
+- display a line for each property definition that **fails** schema validation
+- provide contextual information elucidating why a given portion of the ansible inventory failed schema validation
+- display the host for which schema validation failed
+- enumerate the portion of structured data that is failing validation.
+
+If all checks pass, `schema-enforcer` will inform the user that all tests have passed.
 
 ## How the inventory is loaded
 
