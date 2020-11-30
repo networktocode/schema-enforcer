@@ -67,7 +67,7 @@ dns_servers:
   - address: "10.1.1.1"
   - address: "10.2.2.2"
 ```
-> Note: The line `# jsonschema: schemas/dns_servers` tells `schema-enforcer` the ID of the schema which the structured data defined in the file should be validated against. More information on how the structured data is mapped to a schema ID to which it should adhere can be found in the [docs/mapping_schemas.md README](https://github.com/networktocode-llc/jsonschema_testing/tree/master/docs/mapping_schemas.md)
+> Note: The line `# jsonschema: schemas/dns_servers` tells `schema-enforcer` the ID of the schema which the structured data defined in the file should be validated against. More information on how the structured data is mapped to a schema ID to which it should adhere can be found in the [docs/mapping_schemas.md README](./docs/mapping_schemas.md)
 
 The file `schema/schemas/dns.yml` is a schema definition file. It contains a schema definition for ntp servers written in JSONSchema. The data in `chi-beijing-rt1/dns.yml` and `eng-london-rt1/dns.yml` should adhere to the schema defined in this schema definition file.
 

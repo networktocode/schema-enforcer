@@ -105,7 +105,7 @@ def get_conversion_filepaths(original_path, original_extension, conversion_path,
         original_path (str): The path to look for files to convert.
         original_extension (str): The original file extension of files being converted.
         conversion_path (str): The root path to place files after conversion.
-        conversion_extension (str): The file extension to use for files after conversion
+        conversion_extension (str): The file extension to use for files after conversion.
 
     Returns:
         list: A tuple of paths to the original and the conversion files.
@@ -459,15 +459,15 @@ class MutuallyExclusiveOption(Option):
         """Validate that two mutually exclusive arguments are not provided together.
 
         Args:
-            ctx : context
-            opts : options
-            args : arguments
+            ctx : context.
+            opts : options.
+            args : arguments.
 
         Raises:
-            UsageError: if two mutually exclusive arguments are provided
+            UsageError: If two mutually exclusive arguments are provided.
 
         Returns:
-            ctx, opts, args
+            ctx, opts, args.
         """
         if self.mutually_exclusive.intersection(opts) and self.name in opts:
             raise UsageError(

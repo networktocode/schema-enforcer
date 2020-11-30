@@ -3,7 +3,7 @@ from typing import List, Optional, Any
 from pydantic import BaseModel, validator  # pylint: disable=no-name-in-module
 from termcolor import colored
 
-RESULT_PASS = "PASS"
+RESULT_PASS = "PASS"  # nosec
 RESULT_FAIL = "FAIL"
 
 
