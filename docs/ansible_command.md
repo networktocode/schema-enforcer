@@ -4,7 +4,7 @@ The `ansible` command is used to check ansible inventory for adherence to a sche
 
 ## How the inventory is loaded
 
-When the `schema-enforcer ansible` command is run, an ansible inventory is constructed. Each host's properties are extracted from the ansible inventory into a single data structure per host, then this data structure is validated against all applicable schemas. Take the following example
+When the `schema-enforcer ansible` command is run, an ansible inventory is constructed. Each host's properties are extracted from the ansible inventory into a single data structure per host, then this data structure is validated against all applicable schemas. For instance, take a look at the following example:
 
 ```cli
 bash $ cd examples/ansible && schema-enforcer ansible          
@@ -241,7 +241,7 @@ From a design pattern perspective, because all host variables are evaluated agai
 Two major caveats apply to using the `schema_enforcer_strict` variable.
 
 1) If the `schema_enforcer_strict` variable is set to true, the `schema_enforcer_schema_ids` variabe **MUST** be defined as a list of one and only one schema ID. If it is either not defined at all or defined as something other than a list with one element, an error will be printed to the screen and the tool will exit before performing any validations.
-2) The schema ID referenced by `schema_enforcer_schema_ids` **MUST** include all variables that exists when the inventory is rendered for a host. If an ansible variable not defined in the schema id defined for a given host, schema validation will fail. This happens because properties not defined in the schema are not allowed when strict mode is run.
+2) The schema ID referenced by `schema_enforcer_schema_ids` **MUST** include all variables that exists when the inventory is rendered for a host. If an ansible variable is not defined as a property in the schema id defined for a given host, schema validation will fail. This happens because properties not defined in the schema are not allowed when strict mode is run.
 
 > Note: If either of these conditions are not met, an error message will be printed to stdout and the tool will stop execution before evaluating host variables against schema.
 
