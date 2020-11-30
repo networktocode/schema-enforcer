@@ -1,0 +1,8 @@
+---
+dns_servers:
+  - address: "10.1.1.1"
+  - address: "10.2.2.2"
+
+schema_enforcer_strict: true
+schema_enforcer_schema_ids:
+  - schemas/leafs

@@ -1,2 +1,2 @@
 [tool.schema_enforcer]
-ansible_inventory = "inventory"
+ansible_inventory = "inventory.ini"

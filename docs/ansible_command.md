@@ -7,13 +7,11 @@ The `ansible` command is used to check ansible inventory for adherence to a sche
 When the `schema-enforcer ansible` command is run, an ansible inventory is constructed. Each host's properties are extracted from the ansible inventory then validated against schema. Take the following example
 
 ```cli
-bash $ cd examples/ansible && ANSIBLE_INVENTORY_PLUGINS=$(pwd inventory_plugins) schema-enforcer ansible -i inventory
-Found 6 hosts in the inventory
+bash $ cd examples/ansible && schema-enforcer ansible          
+Found 4 hosts in the inventory
 FAIL | [ERROR] False is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
 FAIL | [ERROR] False is not of type 'string' [HOST] spine2 [PROPERTY] dns_servers:0:address
 ```
-
-> Note: The `ANSIBLE_INVENTORY_PLUGINS` environment variable is used in this sample (and should be used in all examples described in this file), as the inventory is not relative to the inventory_plugin directory. In actual implementations, standard inventory rules apply.
 
 The `schema-enforcer ansible` command validates adherence to schema on a **per host** basis. In the example above, both `spine1` and `spine2` devices belong to a group called `spine`
 
@@ -59,14 +57,12 @@ Though the invalid property (the boolean true for a DNS address) is defined only
 The `--show-checks` flag is used to show which ansible inventory hosts will be validated against which schema definition IDs.
 
 ```cli
-bash $ ANSIBLE_INVENTORY_PLUGINS=$(pwd inventory_plugins) schema-enforcer ansible -i inventory --show-checks
-Found 6 hosts in the inventory
+bash$ schema-enforcer ansible --show-checks
+Found 4 hosts in the inventory
 Ansible Host              Schema ID
 --------------------------------------------------------------------------------
 leaf1                     ['schemas/dns_servers']
 leaf2                     ['schemas/dns_servers']
-leaf3                     ['schemas/dns_servers']
-leaf4                     ['schemas/dns_servers']
 spine1                    ['schemas/dns_servers', 'schemas/interfaces']
 spine2                    ['schemas/dns_servers', 'schemas/interfaces']
 ```
@@ -78,16 +74,14 @@ spine2                    ['schemas/dns_servers', 'schemas/interfaces']
 The `--show-pass` flag is used to show what schema definition ids each host passes in addition to the schema definition ids each host fails.
 
 ```cli
-bash $ ANSIBLE_INVENTORY_PLUGINS=$(pwd inventory_plugins) schema-enforcer ansible -i inventory --show-pass
-Found 6 hosts in the inventory
+bash$ schema-enforcer ansible --show-pass  
+Found 4 hosts in the inventory
 FAIL | [ERROR] False is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
 PASS | [HOST] spine1 [SCHEMA ID] schemas/interfaces
 FAIL | [ERROR] False is not of type 'string' [HOST] spine2 [PROPERTY] dns_servers:0:address
 PASS | [HOST] spine2 [SCHEMA ID] schemas/interfaces
 PASS | [HOST] leaf1 [SCHEMA ID] schemas/dns_servers
 PASS | [HOST] leaf2 [SCHEMA ID] schemas/dns_servers
-PASS | [HOST] leaf3 [SCHEMA ID] schemas/dns_servers
-PASS | [HOST] leaf4 [SCHEMA ID] schemas/dns_servers
 ```
 
 In the above example, the leaf switches are checked for adherence to the `schemas/dns_servers` definition and the spine switches are checked for adherence to two schema ids; the `schemas/dns_servers` schema id and the `schemas/interfaces` schema id. A PASS statement is printed to stdout for each validation that passes and a FAIL statement is printed for each validation that fails.
@@ -97,16 +91,15 @@ In the above example, the leaf switches are checked for adherence to the `schema
 The `--host` flag can be used to limit schema validation to a single ansible inventory host. `-h` can also be used as shorthand for `--host`
 
 ```cli
-bash$ schema-enforcer ansible -h spine2 --show-pass  
+bash$ schema-enforcer ansible -h spine2 --show-pass
 Found 4 hosts in the inventory
-FAIL | [ERROR] True is not of type 'string' [HOST] spine2 [PROPERTY] dns_servers:0:address
+FAIL | [ERROR] False is not of type 'string' [HOST] spine2 [PROPERTY] dns_servers:0:address
 PASS | [HOST] spine2 [SCHEMA ID] schemas/interfaces
 ```
 
 ### The `--inventory` flag
 
-The `--inventory` flag (or `-i`) specifies the inventory file or folder which should be used to construct the ansible inventory. The inventory can
-reference a static file, an inventory plugin, or a folder containing multiple inventories. The inventory which should be used can be specified in one of
+The `--inventory` flag (or `-i`) specifies the inventory file or folder which should be used to construct the ansible inventory. The inventory can reference a static file, an inventory plugin, or a folder containing multiple inventories. The inventory which should be used can be specified in one of
 two ways:
 
 1) The `--inventory` flag (or `-i`) can be used to pass in the location of an ansible inventory file
@@ -120,7 +113,7 @@ ansible_inventory = "inventory"
 
 If the inventory is set in both ways, the -i flag will take precedence.
 
-> Note: Dynamic inventory sources can not currently be parsed for schema adherence.
+> Note: Dynamic inventory sources can be parsed for schema adherence by using ansible built-in environment variables. An `ansible.cfg` file is not currently ingested as part of ansible inventory instantiation by `schema-enforcer` and thus can not declare settings.
 
 ## Inventory Variables and Schema Mapping
 
