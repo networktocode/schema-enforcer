@@ -173,18 +173,21 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
 def ansible(
     inventory, limit, show_pass, show_checks
 ):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals
-    r"""Validate the hostvar for all hosts within an Ansible inventory.
+    r"""Validate the hostvars for all hosts within an Ansible inventory.
 
-    The hostvar are dynamically rendered based on groups.
-    For each host, if a variable `jsonschema_mapping` is defined, it will be used
-    to determine which schemas should be use to validate each key.
+    The hostvars are dynamically rendered based on groups to which each host belongs.
+    For each host, if a variable `schema_enforcer_schema_ids` is defined, it will be used
+    to determine which schemas should be use to validate each key. If this variable is
+    not defined, the hostvars top level keys will be automatically mapped to a schema
+    definition's top level properties to automatically infer which schema should be used
+    to validate which hostvar.
     \f
 
     Args:
-        inventory (string): The name of the inventory file to validate against
-        limit (string, None): Name of a host to limit the execution to
-        show_pass (bool): Shows validation checks that passed Default to False
-        show_checks (book): Shows the schema checks each host will be evaluated against
+        inventory (string): The name of the file used to construct an ansible inventory.
+        limit (string, None): Name of a host to limit the execution to.
+        show_pass (bool): Shows validation checks that pass. Defaults to False.
+        show_checks (bool): Shows the schema ids each host will be evaluated against.
 
     Example:
         $ cd examples/ansible
@@ -194,22 +197,17 @@ def ansible(
         drwxr-xr-x  4 damien  staff   128B Jul 25 16:37 host_vars
         -rw-r--r--  1 damien  staff    69B Jul 25 16:37 inventory.ini
         drwxr-xr-x  4 damien  staff   128B Jul 25 16:37 schema
-        $ test-schema ansible -i inventory.ini
-        Found 4 hosts in the ansible inventory
-        FAIL | [ERROR] 12 is not of type 'string' [HOST] leaf1 [PROPERTY] dns_servers:0:address [SCHEMA] schemas/dns_servers
-        FAIL | [ERROR] 12 is not of type 'string' [HOST] leaf2 [PROPERTY] dns_servers:0:address [SCHEMA] schemas/dns_servers
-        $ test-schema ansible -i inventory.ini -h leaf1
-        Found 4 hosts in the ansible inventory
-        FAIL | [ERROR] 12 is not of type 'string' [HOST] leaf1 [PROPERTY] dns_servers:0:address [SCHEMA] schemas/dns_servers
-        $ test-schema ansible -i inventory.ini -h spine1 --show-pass
-        WARNING | Could not find pyproject.toml in the current working directory.
-        WARNING | Script is being executed from CWD: /Users/damien/projects/schema_validator/examples/ansible
-        WARNING | Using built-in defaults for [tool.schema_validator]
-        WARNING | [tool.schema_validator.data_file_to_schema_ids_mapping] is not defined, instances must be tagged to apply schemas to instances
+        $ schema-enforcer ansible -i inventory.ini
         Found 4 hosts in the inventory
-        PASS | [HOST] spine1 | [VAR] dns_servers | [SCHEMA] schemas/dns_servers
-        PASS | [HOST] spine1 | [VAR] interfaces | [SCHEMA] schemas/interfaces
+        FAIL | [ERROR] False is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
+        FAIL | [ERROR] False is not of type 'string' [HOST] spine2 [PROPERTY] dns_servers:0:address
+        $ schema-enforcer ansible -i inventory.ini -h leaf1
+        Found 4 hosts in the inventory
         ALL SCHEMA VALIDATION CHECKS PASSED
+        $ schema-enforcer ansible -i inventory.ini -h spine1 --show-pass
+        Found 4 hosts in the inventory
+        FAIL | [ERROR] False is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
+        PASS | [HOST] spine1 [SCHEMA ID] schemas/interfaces
     """
     if inventory:
         config.load(config_data={"ansible_inventory": inventory})

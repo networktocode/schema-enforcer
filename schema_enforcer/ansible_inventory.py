@@ -27,7 +27,7 @@ class AnsibleInventory:
     def get_hosts_containing(self, var=None):
         """Gets hosts that have a value for ``var``.
 
-        If ``var`` is None, then all hosts in inventory will be returned.
+        If ``var`` is None, then all hosts in the inventory will be returned.
 
         Args:
             var (str): The variable to use to restrict hosts.
@@ -47,7 +47,7 @@ class AnsibleInventory:
         """Retrieves Jinja2 rendered variables for ``host``.
 
         Args:
-            host (ansible.inventory.host.Host): The host to retrieve variable data.
+            host (ansible.inventory.host.Host): The host to retrieve variable data from.
 
         Returns:
             dict: The variables defined by the ``host`` in Ansible Inventory.
@@ -60,10 +60,10 @@ class AnsibleInventory:
         """Return clean hostvars for a given host, cleaned up of all keys inserted by Templar.
 
         Args:
-            host (ansible.inventory.host.Host): The host to retrieve variable data.
+            host (ansible.inventory.host.Host): The host to retrieve variable data from.
 
         Returns:
-            dict: clean hostvar
+            dict: clean hostvars
         """
         keys_cleanup = [
             "inventory_file",
