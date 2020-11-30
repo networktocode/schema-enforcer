@@ -137,7 +137,7 @@ class AnsibleInventory:
             host (AnsibleInventory.host): Ansible Inventory Host Object
 
         Raises:
-            TypeError: Raised when one of the scehma configuration parameters is of the wrong type
+            TypeError: Raised when one of the schema configuration parameters is of the wrong type
             ValueError: Raised when one of the schema configuration parameters is incorrectly configured
 
         Returns:

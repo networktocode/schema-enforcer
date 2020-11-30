@@ -236,7 +236,7 @@ leaf1                     []
 
 The `schema_enforcer_strict` variable can be declared in an ansible host or group file. This variable defaults to false if not set. If set to true, the `schema-enforcer` tool checks for `strict` adherence to schema. This means that no additional host vars can exist beyond those that are defined in the schema.
 
-From a design pattern perspective, when strict enforcment is used, all host variables are evaulated against a single schema id. This is in contrast to a design patern where a different schema id is defined for each top level host var/property. To this end, when strict enforcement is used, a single schema should be defined with references to schemas for all properties which are defined for a given host. The ids for such schema definitions are better named by role instead of host variable. For instance `schemas/spines` or `schemas/leafs` makes more sense with this design pattern than `schemas/dns_servers`.
+From a design pattern perspective, when strict enforcment is used, all host variables are evaluated against a single schema id. This is in contrast to a design patern where a different schema id is defined for each top level host var/property. To this end, when strict enforcement is used, a single schema should be defined with references to schemas for all properties which are defined for a given host. The ids for such schema definitions are better named by role instead of host variable. For instance `schemas/spines` or `schemas/leafs` makes more sense with this design pattern than `schemas/dns_servers`.
 
 Two major caveats apply to using the `schema_enforcer_strict` variable.
 
