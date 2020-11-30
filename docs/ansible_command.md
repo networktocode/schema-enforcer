@@ -4,7 +4,7 @@ The `ansible` command is used to check ansible inventory for adherence to a sche
 
 ## How the inventory is loaded
 
-When the `schema-enforcer ansible` command is run, an ansible inventory is constructed. Each host's properties are extracted from the ansible inventory then validated against schema. Take the following example
+When the `schema-enforcer ansible` command is run, an ansible inventory is constructed. Each host's properties are extracted from the ansible inventory into a single data structure per host, then this data structure is validated against all applicable schemas. Take the following example
 
 ```cli
 bash $ cd examples/ansible && schema-enforcer ansible          
@@ -120,7 +120,7 @@ If the inventory is set in both ways, the -i flag will take precedence.
 `schema-enforcer` will check ansible hosts for adherence to defined schema ids in one of two ways.
 
 - By using a list of schema ids defined by the `schema_enforcer_schema_ids` command
-- By automatically mapping a schema's top level property to ansible variable keys.
+- By automatically mapping a schema's top level properties to ansible variable keys.
 
 ### Using The `schema_enforcer_schema_ids` ansible inventory variable
 
@@ -234,14 +234,14 @@ leaf1                     []
 
 ### The `schema_enforcer_strict` variable
 
-The `schema_enforcer_strict` variable can be declared in an ansible host or group file. This variable defaults to false if not set. If set to true, the `schema-enforcer` tool checks for `strict` adherence to schema. This means that no additional host vars can exist beyond those that are defined in the schema.
+The `schema_enforcer_strict` variable can be declared in an ansible host or group file. This setting defaults to false if not set. If set to true, the `schema-enforcer` tool checks for `strict` adherence to schema. Just like in normal operation, each host's variables are extracted from the ansible inventory into a single data structure. Unlike normal operation, only a single schema can be defined, and no additional host vars can exist in this data structure beyond those that are defined in that single schema.
 
-From a design pattern perspective, when strict enforcment is used, all host variables are evaluated against a single schema id. This is in contrast to a design patern where a different schema id is defined for each top level host var/property. To this end, when strict enforcement is used, a single schema should be defined with references to schemas for all properties which are defined for a given host. The ids for such schema definitions are better named by role instead of host variable. For instance `schemas/spines` or `schemas/leafs` makes more sense with this design pattern than `schemas/dns_servers`.
+From a design pattern perspective, because all host variables are evaluated against a single schema id when strict mode is used, the ids for schema definitions are better named by role instead of host variable. For instance `schemas/spines` or `schemas/leafs` makes more sense with this design pattern than `schemas/dns_servers` and/or `schemas/ntp`.
 
 Two major caveats apply to using the `schema_enforcer_strict` variable.
 
 1) If the `schema_enforcer_strict` variable is set to true, the `schema_enforcer_schema_ids` variabe **MUST** be defined as a list of one and only one schema ID. If it is either not defined at all or defined as something other than a list with one element, an error will be printed to the screen and the tool will exit before performing any validations.
-2) The schema ID referenced by `schema_enforcer_schema_ids` **MUST** include all variables defined for the ansible host/group. If an ansible variable not defined in the schema is defined for a given host, schema validation will fail as, when strict mode is run, properties not defined in the schema are not allowed.
+2) The schema ID referenced by `schema_enforcer_schema_ids` **MUST** include all variables that exists when the inventory is rendered for a host. If an ansible variable not defined in the schema id defined for a given host, schema validation will fail. This happens because properties not defined in the schema are not allowed when strict mode is run.
 
 > Note: If either of these conditions are not met, an error message will be printed to stdout and the tool will stop execution before evaluating host variables against schema.
 
