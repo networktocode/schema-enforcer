@@ -1,2 +1,2 @@
-[tool.jsonschema_testing]
+[tool.schema_enforcer]
 ansible_inventory = "inventory.ini"

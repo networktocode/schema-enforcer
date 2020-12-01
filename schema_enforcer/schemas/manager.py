@@ -5,6 +5,7 @@ import jsonref
 from termcolor import colored
 from schema_enforcer.utils import load_file, find_and_load_file, find_files, dump_data_to_yaml
 from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
+from schema_enforcer.exceptions import SchemaNotDefined
 
 from schema_enforcer.schemas.jsonschema import JsonSchema
 
@@ -16,7 +17,7 @@ class SchemaManager:
         """Initialize the SchemaManager and search for all schema files in the schema_directories.
 
         Args:
-            config (Config): Instance of Config object returned by jsonschema_testing.config.load() method
+            config (Config): Instance of Config object returned by schema_enforcer.config.load() method.
         """
         self.schemas = {}
         self.config = config
@@ -40,14 +41,14 @@ class SchemaManager:
     def create_schema_from_file(self, root, filename):  # pylint: disable=no-self-use
         """Create a new JsonSchema object for a given file.
 
-        Load the content from disk and resolve all JSONRef within the schema file
+        Load the content from disk and resolve all JSONRef within the schema file.
 
         Args:
-            root (string): Absolute location of the file in the filesystem
-            filename (string): Name of the file
+            root (string): Absolute location of the file in the filesystem.
+            filename (string): Name of the file.
 
         Returns:
-            JsonSchema: JsonSchema object newly created
+            JsonSchema: JsonSchema object newly created.
         """
         file_data = load_file(os.path.join(root, filename))
 
@@ -61,14 +62,14 @@ class SchemaManager:
         """Return an iterator of all schemas in the SchemaManager.
 
         Returns:
-            Iterator: Iterator of all schemas in K,v format (key, value)
+            Iterator: Iterator of all schemas in K,v format (key, value).
         """
         return self.schemas.items()
 
     def print_schemas_list(self):
         """Print the list of all schemas to the cli.
 
-        To avoid very long location string, dynamically replace the current dir with a dot
+        To avoid very long location string, dynamically replace the current dir with a dot.
         """
         current_dir = os.getcwd()
         columns = "{:20}{:12}{:30} {:20}"
@@ -82,9 +83,9 @@ class SchemaManager:
         """Validate all schemas passing tests defined for them.
 
         For each schema, 3 set of tests will be potentially executed.
-          - schema must be Draft7 valid
-          - Valid tests must pass
-          - Invalid tests must pass
+          - schema must be Draft7 valid.
+          - Valid tests must pass.
+          - Invalid tests must pass.
         """
         error_exists = False
 
@@ -107,10 +108,10 @@ class SchemaManager:
         """Execute all valid tests for a given schema.
 
         Args:
-            schema_id (str): unique identifier of a schema
+            schema_id (str): The unique identifier of a schema.
 
         Returns:
-            list of ValidationResult
+            list of ValidationResult.
         """
         schema = self.schemas[schema_id]
 
@@ -147,10 +148,10 @@ class SchemaManager:
         """Execute all invalid tests for a given schema.
 
         Args:
-            schema_id (str): unique identifier of a schema
+            schema_id (str): The unique identifier of a schema.
 
         Returns:
-            list of ValidationResult
+            list of ValidationResult.
         """
         schema = self.schemas[schema_id]
 
@@ -221,3 +222,15 @@ class SchemaManager:
     def _get_test_directory(self):
         """Return the path to the main schema test directory."""
         return f"{self.config.main_directory}/{self.config.test_directory}"
+
+    def validate_schemas_exist(self, schema_ids):
+        """Validate that each schema ID in a list of schema IDs exists.
+
+        Args:
+            schema_ids (list): A list of schema IDs, each of which should exist as a schema object.
+        """
+        if not isinstance(schema_ids, list):
+            raise TypeError("schema_ids argument passed into validate_schemas_exist must be of type list")
+        for schema_id in schema_ids:
+            if not self.schemas.get(schema_id, None):
+                raise SchemaNotDefined(f"Schema ID {schema_id} declared but not defined")

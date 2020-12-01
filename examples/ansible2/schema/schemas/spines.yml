@@ -1,9 +1,12 @@
 ---
 $schema: "http://json-schema.org/draft-07/schema#"
-$id: "schemas/interfaces"
-description: "Interfaces configuration schema."
+$id: "schemas/spines"
+description: "Spine Switches Schema"
 type: "object"
 properties:
+  dns_servers:
+    type: "object"
+    $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
   interfaces:
     type: "object"
     patternProperties:
@@ -15,3 +18,6 @@ properties:
             type: "string"
           role:
             type: "string"
+required:
+  - "dns_servers"
+  - "interfaces"

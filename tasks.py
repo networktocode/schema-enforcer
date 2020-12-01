@@ -6,7 +6,7 @@ from invoke import task
 # Can be set to a separate Python version to be used for launching or building container
 PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
 # Name of the docker image/container
-NAME = os.getenv("IMAGE_NAME", "jsonschema-testing")
+NAME = os.getenv("IMAGE_NAME", "schema-enforcer")
 # Gather current working directory for Docker commands
 PWD = os.getcwd()
 
@@ -226,14 +226,14 @@ def tests(context, name=NAME, python_ver=PYTHON_VER):
     pytest(context, name, python_ver)
     print("Running black...")
     black(context, name, python_ver)
-    # print("Running flake8...")
-    # flake8(context, name, python_ver)
+    print("Running flake8...")
+    flake8(context, name, python_ver)
     print("Running pylint...")
     pylint(context, name, python_ver)
     print("Running yamllint...")
     yamllint(context, name, python_ver)
     print("Running pydocstyle...")
     pydocstyle(context, name, python_ver)
-    # print("Running bandit...")
-    # bandit(context, name, python_ver)
+    print("Running bandit...")
+    bandit(context, name, python_ver)
     print("All tests have passed!")

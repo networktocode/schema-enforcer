@@ -51,12 +51,12 @@ def test_get_hosts_containing_var(ansible_inv):
 
 def test_get_host_vars(ansible_inv):
     expected = {
-        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"},],
+        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
         "group_names": ["ios", "na", "nyc"],
         "inventory_hostname": "host3",
         "ntp_servers": [{"address": "10.3.3.3"}],
-        "os_dns": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"},],
-        "region_dns": [{"address": "10.1.1.1", "vrf": "mgmt"}, {"address": "10.2.2.2"},],
+        "os_dns": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
+        "region_dns": [{"address": "10.1.1.1", "vrf": "mgmt"}, {"address": "10.2.2.2"}],
     }
 
     filtered_hosts = ansible_inv.get_hosts_containing(var="os_dns")
@@ -76,12 +76,11 @@ def test_get_host_vars(ansible_inv):
 
 def test_get_clean_host_vars(ansible_inv):
     expected = {
-        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"},],
+        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
         "os_dns": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
         "region_dns": [{"address": "10.1.1.1", "vrf": "mgmt"}, {"address": "10.2.2.2"}],
         "ntp_servers": [{"address": "10.3.3.3"}],
     }
     host3 = ansible_inv.inv_mgr.get_host("host3")
     host3_cleaned_vars = ansible_inv.get_clean_host_vars(host3)
-    host3_cleaned_vars.pop("ansible_config_file")
     assert expected == host3_cleaned_vars
