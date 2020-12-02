@@ -1,0 +1,4 @@
+# jsonschema: schemas/syslog_servers
+---
+syslog_servers:
+  - address: "10.3.3.3"

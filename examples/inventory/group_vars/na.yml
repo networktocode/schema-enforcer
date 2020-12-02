@@ -1,7 +1,0 @@
----
-region_dns_servers:
-  - address: "10.12.12.12"
-  - address: "10.13.13.13"
-
-syslog_servers:
-  - address: "10.14.14.14"

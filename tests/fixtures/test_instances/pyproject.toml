@@ -1,0 +1,10 @@
+[tool.schema_enforcer]
+schema_file_exclude_filenames = []
+
+definition_directory = "definitions"
+schema_directory = "schemas"
+
+[tool.schema_enforcer.schema_mapping]
+# Map instance filename to schema filename
+'dns.yml' = ['schemas/dns_servers']
+# 'syslog.yml' = ["schemas/syslog_servers"]

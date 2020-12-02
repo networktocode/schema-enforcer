@@ -1,0 +1,14 @@
+---
+dns_servers:
+  - address: "10.1.1.1"
+  - address: "10.2.2.2"
+interfaces:
+  swp1:
+    role: "uplink"
+  swp2:
+    role: "uplink"
+bogus_property: true
+
+schema_enforcer_strict: true
+schema_enforcer_schema_ids:
+  - "schemas/spines"

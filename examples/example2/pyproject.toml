@@ -1,0 +1,5 @@
+[tool.schema_enforcer.schema_mapping]
+# Map structured data filename to schema IDs
+'dns_v1.yml' = ['schemas/dns_servers']
+'dns_v2.yml' = ['schemas/dns_servers_v2']
+'syslog.yml' = ["schemas/syslog_servers"]

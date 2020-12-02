@@ -1,0 +1,4 @@
+---
+results:
+  - result: "PASS"
+    schema_id: "schemas/dns_servers"
