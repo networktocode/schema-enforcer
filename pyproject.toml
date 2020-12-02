@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "schema_enforcer"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 
@@ -31,7 +31,6 @@ coverage = "^5.3"
 
 [tool.poetry.scripts]
 schema-enforcer = "schema_enforcer.cli:main"
-
 [tool.black]
 line-length = 120
 include = '\.pyi?$'
@@ -47,6 +46,10 @@ exclude = '''
         )/
     '''
 
+[tool.pylint.basic]
+# No docstrings required for private methods (pylint default) or for test_ functions.
+no-docstring-rgx="^(_|test_)"
+
 [tool.pylint.messages_control]
 # Line length is enforced by Black, so pylint doesn't need to check it.
 # Pylint and Black disagree about how to format multi-line arrays; Black wins.
@@ -61,7 +64,7 @@ notes = """,
     FIXME,
     XXX,
     """
-    
+
 [tool.pytest.ini_options]
 testpaths = [
     "tests"
