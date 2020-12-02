@@ -32,9 +32,9 @@ def is_truthy(arg):
 
 
 # Can be set to a separate Python version to be used for launching or building image
-PYTHON_VER = os.getenv("PYTHON_VER", "3.6")
+PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
 # Name of the docker image/image
-NAME = os.getenv("IMAGE_NAME", f"{{cookiecutter.project_slug}}-py{PYTHON_VER}")
+NAME = os.getenv("IMAGE_NAME", f"schema-enforcer-py{PYTHON_VER}")
 # Tag for the image
 IMAGE_VER = os.getenv("IMAGE_VER", project_ver())
 # Gather current working directory for Docker commands
