@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 """Unit Tests for ansible_inventory.py"""
 
 import pytest
@@ -9,17 +10,20 @@ INVENTORY_DIR = "tests/mocks/inventory"
 
 
 @pytest.fixture
-def ansible_inv(scope="module"):
+def ansible_inv(scope="module"):  # pylint: disable=unused-argument
+    """Ansible inventory fixture."""
     return AnsibleInventory(INVENTORY_DIR)
 
 
 def test_init_hosts(ansible_inv):
+    """Test initialization of hosts."""
     expected = {"host3", "host4"}
     acutal = set(ansible_inv.inv_mgr.hosts.keys())
     assert acutal == expected
 
 
 def test_init_groups(ansible_inv):
+    """Test initialization of groups."""
     expected = {
         "ios": ["host3"],
         "eos": ["host4"],
@@ -28,8 +32,8 @@ def test_init_groups(ansible_inv):
         "nyc": ["host3"],
         "lon": ["host4"],
     }
-    vars = ansible_inv.var_mgr.get_vars()
-    actual = vars["groups"]
+    ansible_vars = ansible_inv.var_mgr.get_vars()
+    actual = ansible_vars["groups"]
     actual.pop("all")
     actual.pop("ungrouped")
     assert actual == expected

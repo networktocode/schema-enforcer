@@ -81,9 +81,19 @@ class AnsibleInventory:
             "schema_enforcer_schema_ids",
             "schema_enforcer_strict",
             "schema_enforcer_automap_default",
+            "magic_vars_to_evaluate",
         ]
 
         hostvars = self.get_host_vars(host)
+
+        # Extract magic vars which should be evaluated
+        magic_vars_to_evaluate = hostvars.get("magic_vars_to_evaluate", [])
+        if not isinstance(magic_vars_to_evaluate, list):
+            raise TypeError(
+                "magic_vars_to_evaluate variable configured for host {} must be of type list".format(host.name,)
+            )
+
+        keys_cleanup = list(set(keys_cleanup) - set(magic_vars_to_evaluate))
 
         for key in keys_cleanup:
             if key in hostvars:

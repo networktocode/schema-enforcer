@@ -7,5 +7,8 @@ properties:
   dns_servers:
     type: "object"
     $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
+  inventory_hostname:
+    type: "string"
 required:
   - "dns_servers"
+  - "inventory_hostname"
