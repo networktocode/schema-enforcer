@@ -62,6 +62,10 @@ class AnsibleInventory:
         Args:
             host (ansible.inventory.host.Host): The host to retrieve variable data from.
 
+        Raises:
+            TypeError: When "magic_vars_to_evaluate" is declared in an ansbile inventory file and is not of type list,
+            a type error is raised
+
         Returns:
             dict: clean hostvars
         """

@@ -88,3 +88,14 @@ def test_get_clean_host_vars(ansible_inv):
     host3 = ansible_inv.inv_mgr.get_host("host3")
     host3_cleaned_vars = ansible_inv.get_clean_host_vars(host3)
     assert expected == host3_cleaned_vars
+
+    # Test setting magic_vars_to_evaluate
+    host3.set_variable("magic_vars_to_evaluate", ["inventory_hostname"])
+    expected["inventory_hostname"] = host3.name
+    host3_cleaned_vars = ansible_inv.get_clean_host_vars(host3)
+    assert expected == host3_cleaned_vars
+
+    # Test invalid magic_vars_to_evaluate setting
+    host3.set_variable("magic_vars_to_evaluate", "inventory_hostname")
+    with pytest.raises(TypeError):
+        host3_cleaned_vars = ansible_inv.get_clean_host_vars(host3)
