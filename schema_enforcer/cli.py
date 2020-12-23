@@ -40,7 +40,7 @@ def main():
 )
 @main.command()
 def validate(show_pass, show_checks, strict):
-    r"""Validates instance files against defined schema.
+    """Validates instance files against defined schema.
 
     \f
 
@@ -99,7 +99,7 @@ def validate(show_pass, show_checks, strict):
     "list_schemas",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["generate_invalid", "check", "schema"],
+    mutually_exclusive=["generate_invalid", "check", "schema-id"],
     help="List all available schemas",
     is_flag=True,
 )
@@ -116,18 +116,18 @@ def validate(show_pass, show_checks, strict):
     default=False,
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["check", "list"],
-    help="Generates expected invalid data from a given schema [--schema]",
+    help="Generates expected invalid data from a given schema [--schema-id]",
     is_flag=True,
 )
 @click.option(
-    "--schema",
+    "--schema-id",
     default=None,
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["list"],
     help="The name of a schema."
 )
 @main.command()
-def schema(check, generate_invalid, list_schemas, schema):  # noqa: D417
+def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417
     """Manage your schemas.
 
     \f
@@ -154,11 +154,11 @@ def schema(check, generate_invalid, list_schemas, schema):  # noqa: D417
         sys.exit(0)
 
     if generate_invalid:
-        if not schema:
+        if not schema_id:
             sys.exit(
-                "Please indicate the name of the schema you'd like to generate the invalid data for using --schema"
+                "Please indicate the schema you'd like to generate invalid data for using the --schema-id flag"
             )
-        smgr.generate_invalid_tests_expected(schema_id=schema)
+        smgr.generate_invalid_tests_expected(schema_id=schema_id)
         sys.exit(0)
 
     if check:
@@ -180,7 +180,7 @@ def schema(check, generate_invalid, list_schemas, schema):  # noqa: D417
 def ansible(
     inventory, limit, show_pass, show_checks
 ):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals
-    r"""Validate the hostvars for all hosts within an Ansible inventory.
+    """Validate the hostvars for all hosts within an Ansible inventory.
 
     The hostvars are dynamically rendered based on groups to which each host belongs.
     For each host, if a variable `schema_enforcer_schema_ids` is defined, it will be used

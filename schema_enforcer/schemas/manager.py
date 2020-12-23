@@ -3,9 +3,11 @@ import os
 import json
 import jsonref
 from termcolor import colored
-from schema_enforcer.utils import load_file, find_and_load_file, find_files, dump_data_to_yaml
+from schema_enforcer.utils import load_file, find_file, find_and_load_file, find_files, dump_data_to_yaml
 from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
 from schema_enforcer.exceptions import SchemaNotDefined
+from schema_enforcer.utils import error, warn
+import sys
 
 from schema_enforcer.schemas.jsonschema import JsonSchema
 
@@ -77,12 +79,12 @@ class SchemaManager:
         console = Console()
         table = Table(show_header=True, header_style="bold cyan")
         current_dir = os.getcwd()
-        table.add_column("Name", style="bright_green")
+        table.add_column("Schema ID", style="bright_green")
         table.add_column("Type")
         table.add_column("Location")
         table.add_column("Filename")
-        for schema_name, schema in self.iter_schemas():
-                table.add_row(schema_name, schema.schematype, schema.root.replace(current_dir, "."), schema.filename)
+        for schema_id, schema in self.iter_schemas():
+            table.add_row(schema_id, schema.schematype, schema.root.replace(current_dir, "."), schema.filename)
         console.print(table)
 
     def test_schemas(self):
@@ -126,7 +128,7 @@ class SchemaManager:
 
         # See how we can define a better name
         short_schema_id = schema_id.split("/")[1]
-        test_dir = self._get_test_directory()
+        test_dir = self.test_directory
         valid_test_dir = f"{test_dir}/{short_schema_id}/valid"
 
         valid_files = find_files(
@@ -153,30 +155,47 @@ class SchemaManager:
     def test_schema_invalid(self, schema_id):  # pylint: disable=too-many-locals
         """Execute all invalid tests for a given schema.
 
+        - Acquire structured data to be validated against a given schema. Do this by searching for a file named
+          "data.yml", "data.yaml", or "data.json" within a directory of hierarchy
+          "./<test_directory>/<schema_id>/invalid/"
+        - Acquire results expected after data is validated against a giveh schema. Do this by searching for a file
+          named "results.yml", "results.yaml", or "results.json" within a directory of hierarchy
+          "./<test_directory>/<schema_id>/results/"
+        - Validate expected results match actual results of data after it is checked for adherence to schema.
+
         Args:
             schema_id (str): The unique identifier of a schema.
 
         Returns:
-            list of ValidationResult.
+            list of ValidationResult objects.
         """
         schema = self.schemas[schema_id]
 
         root = os.path.abspath(os.getcwd())
-        test_dir = self._get_test_directory()
-        short_schema_id = schema_id.split("/")[1]
-        invalid_test_dir = f"{test_dir}/{short_schema_id}/invalid"
+        short_schema_id = schema_id.split("/")[1] if "/" in schema_id else schema_id
+        invalid_test_dir = f"{self.test_directory}/{short_schema_id}/invalid"
+        if not os.path.exists(os.path.join(root, invalid_test_dir)):
+            error("Tried to search {} for invalid data and results, but the path does not exist.".format(os.path.join(root, invalid_test_dir)))
+            sys.exit(1)
         test_dirs = next(os.walk(invalid_test_dir))[1]
 
         results = []
         for test_dir in test_dirs:
+            data_file = find_file(os.path.join(root, invalid_test_dir, test_dir, "data"))
+            expected_results_file = find_file(os.path.join(root, invalid_test_dir, test_dir, "results"))
 
-            # TODO Check if data and expected results are present
-            data = find_and_load_file(os.path.join(root, invalid_test_dir, test_dir, "data"))
-            expected_results = find_and_load_file(os.path.join(root, invalid_test_dir, test_dir, "results"))
-            tmp_results = schema.validate_to_dict(data)
-
-            if not expected_results:
+            if not data_file:
+                warn("Could not find data file {}. Skipping...".format(os.path.join(root, invalid_test_dir, test_dir, "data")))
                 continue
+
+            if not expected_results_file:
+                warn("Could not find expected_results_file {}. Skipping...".format(os.path.join(root, invalid_test_dir, test_dir, "results")))
+                continue
+
+            data = load_file(data_file)
+            expected_results = load_file(expected_results_file)
+
+            tmp_results = schema.validate_to_dict(data)
 
             # Currently the expected results are using OrderedDict instead of Dict
             # the easiest way to remove that is to dump into JSON and convert back into a "normal" dict
@@ -190,7 +209,9 @@ class SchemaManager:
             )
             if results_sorted != expected_results_sorted:
                 params["result"] = RESULT_FAIL
-                params["message"] = "Invalid test do not match"
+                params["message"] = "Invalid test results do not match expected test results from {}".format(
+                    expected_results_file
+                )
             else:
                 params["result"] = RESULT_PASS
 
@@ -200,32 +221,39 @@ class SchemaManager:
         return results  # [ ValidationResult(**result) for result in results ]
 
     def generate_invalid_tests_expected(self, schema_id):
-        """Generate the expected invalid tests for a given Schema.
+        """Generate expected invalid test results for a given schema.
 
         Args:
             schema_id (str): unique identifier of a schema
         """
-        # TODO check if schema is present
         schema = self.schemas[schema_id]
-
         root = os.path.abspath(os.getcwd())
         short_schema_id = schema_id.split("/")[1]
 
-        # TODO Check if invalid dir exist for this schema
         # Find list of all subdirectory in the invalid dir
-        test_dir = self._get_test_directory()
-        invalid_test_dir = f"{test_dir}/{short_schema_id}/invalid"
+        invalid_test_dir = f"{self.test_directory}/{short_schema_id}/invalid"
+        if not os.path.exists(os.path.join(root, invalid_test_dir)):
+            error("Tried to search {} for invalid data and results, but the path does not exist.".format(os.path.join(root, invalid_test_dir)))
+            sys.exit(1)
+
         test_dirs = next(os.walk(invalid_test_dir))[1]
 
         # For each test, load the data file, test the data against the schema and save the results
         for test_dir in test_dirs:
-            data = find_and_load_file(os.path.join(root, invalid_test_dir, test_dir, "data"))
+
+            data_file = find_file(os.path.join(root, invalid_test_dir, test_dir, "data"))
+
+            if not data_file:
+                warn("Could not find data file {}".format(os.path.join(root, invalid_test_dir, test_dir, f"data")))
+
+            data = load_file(data_file)
             results = schema.validate_to_dict(data)
             result_file = os.path.join(root, invalid_test_dir, test_dir, "results.yml")
             dump_data_to_yaml({"results": results}, result_file)
             print(f"Generated/Updated results file: {result_file}")
 
-    def _get_test_directory(self):
+    @property
+    def test_directory(self):
         """Return the path to the main schema test directory."""
         return f"{self.config.main_directory}/{self.config.test_directory}"
 
