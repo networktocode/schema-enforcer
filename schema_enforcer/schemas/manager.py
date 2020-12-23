@@ -9,6 +9,9 @@ from schema_enforcer.exceptions import SchemaNotDefined
 
 from schema_enforcer.schemas.jsonschema import JsonSchema
 
+from rich.console import Console
+from rich.table import Table
+
 
 class SchemaManager:
     """The SchemaManager class is designed to load and organaized all the schemas."""
@@ -71,13 +74,16 @@ class SchemaManager:
 
         To avoid very long location string, dynamically replace the current dir with a dot.
         """
+        console = Console()
+        table = Table(show_header=True, header_style="bold cyan")
         current_dir = os.getcwd()
-        columns = "{:20}{:12}{:30} {:20}"
-        print(columns.format("Name", "Type", "Location", "Filename"))
+        table.add_column("Name", style="bright_green")
+        table.add_column("Type")
+        table.add_column("Location")
+        table.add_column("Filename")
         for schema_name, schema in self.iter_schemas():
-            print(
-                columns.format(schema_name, schema.schematype, schema.root.replace(current_dir, "."), schema.filename)
-            )
+                table.add_row(schema_name, schema.schematype, schema.root.replace(current_dir, "."), schema.filename)
+        console.print(table)
 
     def test_schemas(self):
         """Validate all schemas passing tests defined for them.

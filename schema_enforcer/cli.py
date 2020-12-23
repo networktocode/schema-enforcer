@@ -99,7 +99,7 @@ def validate(show_pass, show_checks, strict):
     "list_schemas",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["generate_invalid", "check"],
+    mutually_exclusive=["generate_invalid", "check", "schema"],
     help="List all available schemas",
     is_flag=True,
 )
@@ -107,7 +107,7 @@ def validate(show_pass, show_checks, strict):
     "--check",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["generate_invalid", "list", "schema"],
+    mutually_exclusive=["generate_invalid", "list"],
     help="Validates that all schemas are valid (spec and unit tests)",
     is_flag=True,
 )
@@ -119,10 +119,16 @@ def validate(show_pass, show_checks, strict):
     help="Generates expected invalid data from a given schema [--schema]",
     is_flag=True,
 )
-@click.option("--schema", help="The name of a schema.")
+@click.option(
+    "--schema",
+    default=None,
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["list"],
+    help="The name of a schema."
+)
 @main.command()
-def schema(check, generate_invalid, list_schemas):  # noqa: D417
-    r"""Manage your schemas.
+def schema(check, generate_invalid, list_schemas, schema):  # noqa: D417
+    """Manage your schemas.
 
     \f
 
@@ -130,6 +136,7 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
         check (bool): Validates that all schemas are valid (spec and unit tests)
         generate_invalid (bool): Generates expected invalid data from a given schema
         list (bool): List all available schemas
+        schema (str): Name of schema to evaluate
     """
     config.load()
 
