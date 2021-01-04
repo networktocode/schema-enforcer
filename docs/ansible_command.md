@@ -339,21 +339,21 @@ FAIL | [ERROR] Additional properties are not allowed ('bogus_property' was unexp
 
 By default, ansible adds a few variables (called magic variables) to each host when it loads the inventory. The variables added are as follows.
 
-- inventory_file
-- inventory_dir
-- inventory_hostname
-- inventory_hostname_short
-- group_names
-- ansible_facts
-- playbook_dir
-- ansible_playbook_python
-- groups
-- omit
-- ansible_version
-- ansible_config_file
-- schema_enforcer_schema_ids
-- schema_enforcer_strict
-- schema_enforcer_automap_default
+- `inventory_file`
+- `inventory_dir`
+- `inventory_hostname`
+- `inventory_hostname_short`
+- `group_names`
+- `ansible_facts`
+- `playbook_dir`
+- `ansible_playbook_python`
+- `groups`
+- `omit`
+- `ansible_version`
+- `ansible_config_file`
+- `schema_enforcer_schema_ids`
+- `schema_enforcer_strict`
+- `schema_enforcer_automap_default`
 
 Schema enforcer strips these variables from each host before evaluating the host variables for adherence to schema. If you would like to include any of these host vars in schema evaluation, you can do so by declaring the `magic_vars_to_evaluate` setting in the ansible host/group files.
 
