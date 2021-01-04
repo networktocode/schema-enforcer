@@ -3,11 +3,13 @@ key: "value"
 list_of_strings:
   - "one"
   - "two"
+# yamllint disable rule:hyphens
 list_of_lists:
   -   - 1
       - 2
   -   - 3
       - 4
+# yamllint enable rule:hyphens
 list_of_dicts:
   - one: 1
     two: 2

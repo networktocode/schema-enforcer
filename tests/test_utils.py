@@ -36,6 +36,24 @@ ANSIBLE_HOST_VARIABLES = {
 }
 
 
+def remove_comments_from_yaml_string(yaml_string):
+    """Strip comments from yaml data which is in string representation.
+
+    Args:
+        yaml_string (str): yaml data as a string
+
+    Returns:
+        yaml_string (str): yaml data as a string
+    """
+    yaml_payload_list = yaml_string.split("\n")
+    for item in yaml_payload_list:
+        if item.startswith("#"):
+            yaml_payload_list.remove(item)
+    yaml_string = "\n".join(yaml_payload_list)
+
+    return yaml_string
+
+
 def test_get_path_and_filename():
     path, filename = utils.get_path_and_filename("json/schemas/ntp.json")
     assert path == "json/schemas"
@@ -53,6 +71,8 @@ def test_ensure_yaml_output_format():
 
     with open("tests/mocks/utils/formatted.yml") as fileh:
         mock = fileh.read()
+
+    mock = remove_comments_from_yaml_string(mock)
 
     assert actual == mock
     os.remove(yaml_path)
@@ -95,6 +115,9 @@ def test_dump_data_to_yaml():
         actual = fileh.read()
     with open("tests/mocks/utils/formatted.yml") as fileh:
         mock = fileh.read()
+
+    mock = remove_comments_from_yaml_string(mock)
+
     assert actual == mock
     os.remove(test_file)
     assert not os.path.isfile(test_file)
