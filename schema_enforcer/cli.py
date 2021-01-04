@@ -116,7 +116,7 @@ def validate(show_pass, show_checks, strict):
     default=False,
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["check", "list"],
-    help="Generates expected invalid data from a given schema [--schema-id]",
+    help="Generates expected invalid result from a given schema [--schema-id] and data defined in a data file",
     is_flag=True,
 )
 @click.option(
@@ -138,6 +138,10 @@ def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417
         list (bool): List all available schemas
         schema (str): Name of schema to evaluate
     """
+    if not check and not generate_invalid and not list_schemas and not schema_id:
+        error("The 'schema' command requires one or more arguments. You can run the command 'schema-enforcer schema --help' to see the arguments available.")
+        sys.exit(1)
+
     config.load()
 
     # ---------------------------------------------------------------------
