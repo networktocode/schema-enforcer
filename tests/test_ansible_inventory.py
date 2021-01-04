@@ -18,8 +18,8 @@ def ansible_inv(scope="module"):  # pylint: disable=unused-argument
 def test_init_hosts(ansible_inv):
     """Test initialization of hosts."""
     expected = {"host3", "host4"}
-    acutal = set(ansible_inv.inv_mgr.hosts.keys())
-    assert acutal == expected
+    actual = set(ansible_inv.inv_mgr.hosts.keys())
+    assert actual == expected
 
 
 def test_init_groups(ansible_inv):

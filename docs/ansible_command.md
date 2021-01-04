@@ -355,7 +355,7 @@ By default, ansible adds a few variables (called magic variables) to each host w
 - schema_enforcer_strict
 - schema_enforcer_automap_default
 
-Schema enforcer strips these variables from each host before evaluating the host variables for adherence to schema. If you would like to include any of these host vars in schema evaluation, you can do so by declaring the `ansible_vars_to_evaluate` setting in the ansible host/group files.
+Schema enforcer strips these variables from each host before evaluating the host variables for adherence to schema. If you would like to include any of these host vars in schema evaluation, you can do so by declaring the `magic_vars_to_evaluate` setting in the ansible host/group files.
 
 In the following example, the `inventory_hostname` ansible magic var is set to be evaluated against schema.
 
