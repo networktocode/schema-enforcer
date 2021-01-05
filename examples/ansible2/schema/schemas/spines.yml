@@ -18,6 +18,9 @@ properties:
             type: "string"
           role:
             type: "string"
+  inventory_hostname:
+    type: "string"
 required:
   - "dns_servers"
   - "interfaces"
+  - "inventory_hostname"
