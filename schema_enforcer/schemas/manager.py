@@ -3,7 +3,7 @@ import os
 import json
 import jsonref
 from termcolor import colored
-from schema_enforcer.utils import load_file, find_file, find_and_load_file, find_files, dump_data_to_yaml
+from schema_enforcer.utils import load_file, find_file, find_files, dump_data_to_yaml
 from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
 from schema_enforcer.exceptions import SchemaNotDefined
 from schema_enforcer.utils import error, warn
@@ -88,7 +88,7 @@ class SchemaManager:
         console.print(table)
 
     def test_schemas(self):
-        """Validate all schemas passing tests defined for them.
+        """Validate all schemas pass the tests defined for them.
 
         For each schema, 3 set of tests will be potentially executed.
           - schema must be Draft7 valid.
@@ -123,13 +123,7 @@ class SchemaManager:
         """
         schema = self.schemas[schema_id]
 
-        # TODO Check if top dir is present
-        # TODO Check if valid dir is present
-
-        # See how we can define a better name
-        short_schema_id = schema_id.split("/")[1]
-        test_dir = self.test_directory
-        valid_test_dir = f"{test_dir}/{short_schema_id}/valid"
+        valid_test_dir = self._get_test_dir(test_type="valid", schema_id=schema_id)
 
         valid_files = find_files(
             file_extensions=[".yaml", ".yml", ".json"],
@@ -171,25 +165,26 @@ class SchemaManager:
         """
         schema = self.schemas[schema_id]
 
-        root = os.path.abspath(os.getcwd())
-        short_schema_id = schema_id.split("/")[1] if "/" in schema_id else schema_id
-        invalid_test_dir = f"{self.test_directory}/{short_schema_id}/invalid"
-        if not os.path.exists(os.path.join(root, invalid_test_dir)):
-            error("Tried to search {} for invalid data and results, but the path does not exist.".format(os.path.join(root, invalid_test_dir)))
-            sys.exit(1)
+        invalid_test_dir = self._get_test_dir(test_type="invalid", schema_id=schema_id)
         test_dirs = next(os.walk(invalid_test_dir))[1]
 
         results = []
         for test_dir in test_dirs:
-            data_file = find_file(os.path.join(root, invalid_test_dir, test_dir, "data"))
-            expected_results_file = find_file(os.path.join(root, invalid_test_dir, test_dir, "results"))
+            data_file = find_file(os.path.join(invalid_test_dir, test_dir, "data"))
+            expected_results_file = find_file(os.path.join(invalid_test_dir, test_dir, "results"))
 
             if not data_file:
-                warn("Could not find data file {}. Skipping...".format(os.path.join(root, invalid_test_dir, test_dir, "data")))
+                warn(
+                    "Could not find data file {}. Skipping...".format(os.path.join(invalid_test_dir, test_dir, "data"))
+                )
                 continue
 
             if not expected_results_file:
-                warn("Could not find expected_results_file {}. Skipping...".format(os.path.join(root, invalid_test_dir, test_dir, "results")))
+                warn(
+                    "Could not find expected_results_file {}. Skipping...".format(
+                        os.path.join(invalid_test_dir, test_dir, "results")
+                    )
+                )
                 continue
 
             data = load_file(data_file)
@@ -233,7 +228,11 @@ class SchemaManager:
         # Find list of all subdirectory in the invalid dir
         invalid_test_dir = f"{self.test_directory}/{short_schema_id}/invalid"
         if not os.path.exists(os.path.join(root, invalid_test_dir)):
-            error("Tried to search {} for invalid data and results, but the path does not exist.".format(os.path.join(root, invalid_test_dir)))
+            error(
+                "Tried to search {} for invalid data and results, but the path does not exist.".format(
+                    os.path.join(root, invalid_test_dir)
+                )
+            )
             sys.exit(1)
 
         test_dirs = next(os.walk(invalid_test_dir))[1]
@@ -244,7 +243,7 @@ class SchemaManager:
             data_file = find_file(os.path.join(root, invalid_test_dir, test_dir, "data"))
 
             if not data_file:
-                warn("Could not find data file {}".format(os.path.join(root, invalid_test_dir, test_dir, f"data")))
+                warn("Could not find data file {}".format(os.path.join(root, invalid_test_dir, test_dir, "data")))
 
             data = load_file(data_file)
             results = schema.validate_to_dict(data)
@@ -268,3 +267,28 @@ class SchemaManager:
         for schema_id in schema_ids:
             if not self.schemas.get(schema_id, None):
                 raise SchemaNotDefined(f"Schema ID {schema_id} declared but not defined")
+
+    def _get_test_dir(self, test_type, schema_id):
+        """Get directory in which schema unit tests exist.
+
+        Args:
+            test_type (str): Test type. One of "valid" or "invalid"
+
+        Returns:
+            str: Full path of test directory.
+        """
+        if test_type not in ["valid", "invalid"]:
+            raise ValueError("Test type parameter was {}. Must be one of 'valid' or 'invalid'", test_type)
+
+        if not self.schemas.get(schema_id, None):
+            raise ValueError("Could not find schema ID {}", schema_id)
+
+        root = os.path.abspath(os.getcwd())
+        short_schema_id = schema_id.split("/")[1] if "/" in schema_id else schema_id
+        test_dir = os.path.join(root, self.test_directory, short_schema_id, test_type)
+
+        if not os.path.exists(test_dir):
+            error("Tried to search {} for {} data, but the path does not exist.".format(test_dir, test_type))
+            sys.exit(1)
+
+        return test_dir
