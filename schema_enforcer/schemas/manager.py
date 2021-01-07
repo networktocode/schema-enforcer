@@ -268,6 +268,7 @@ class SchemaManager:
 
         Args:
             test_type (str): Test type. One of "valid" or "invalid"
+            schema_id (str): Schema ID for which to get test dir absolute path
 
         Returns:
             str: Full path of test directory.
