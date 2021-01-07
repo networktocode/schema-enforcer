@@ -242,6 +242,8 @@ class SchemaManager:
 
             data = load_file(data_file)
             results = schema.validate_to_dict(data)
+            self._ensure_results_invalid(results, data_file)
+
             result_file = os.path.join(invalid_test_dir, test_dir, "results.yml")
             dump_data_to_yaml({"results": results}, result_file)
             print(f"Generated/Updated results file: {result_file}")
@@ -261,7 +263,7 @@ class SchemaManager:
     @property
     def test_directory(self):
         """Return the path to the main schema test directory."""
-        return f"{self.config.main_directory}/{self.config.test_directory}"
+        return os.path.join(self.config.main_directory, self.config.test_directory)
 
     def _get_test_dir_absolute(self, test_type, schema_id):
         """Get absolute path of directory in which schema unit tests exist.
@@ -288,3 +290,20 @@ class SchemaManager:
             sys.exit(1)
 
         return test_dir
+
+    @staticmethod
+    def _ensure_results_invalid(results, data_file):
+        """Ensures each result is schema valid in a list of results data structures.
+        
+        Args:
+            results(dict): List of Dicts of results. Each result dict must include a 'result' key of 'PASS' or 'FAIL'
+            data_file (str): Data file which should be schema invalid
+
+        Raises:
+            error(): Raises an error and calls sys.exit(1) if one of the results objects is schema valid.
+        """
+        results_pass_or_fail = [result['result'] for result in results]
+
+        if 'PASS' in results_pass_or_fail:
+            error(f"{data_file} is schema valid, but should be schema invalid as it defines an invalid test")
+            sys.exit(1)
