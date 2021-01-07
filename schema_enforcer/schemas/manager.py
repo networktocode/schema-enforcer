@@ -294,16 +294,16 @@ class SchemaManager:
     @staticmethod
     def _ensure_results_invalid(results, data_file):
         """Ensures each result is schema valid in a list of results data structures.
-        
+
         Args:
             results(dict): List of Dicts of results. Each result dict must include a 'result' key of 'PASS' or 'FAIL'
             data_file (str): Data file which should be schema invalid
 
         Raises:
-            error(): Raises an error and calls sys.exit(1) if one of the results objects is schema valid.
+            error: Raises an error and calls sys.exit(1) if one of the results objects is schema valid.
         """
-        results_pass_or_fail = [result['result'] for result in results]
+        results_pass_or_fail = [result["result"] for result in results]
 
-        if 'PASS' in results_pass_or_fail:
+        if "PASS" in results_pass_or_fail:
             error(f"{data_file} is schema valid, but should be schema invalid as it defines an invalid test")
             sys.exit(1)
