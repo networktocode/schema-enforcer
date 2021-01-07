@@ -39,7 +39,7 @@ def main():
     show_default=True,
 )
 @main.command()
-def validate(show_pass, show_checks, strict):
+def validate(show_pass, show_checks, strict):  # noqa D205
     """Validates instance files against defined schema.
 
     \f
@@ -120,14 +120,10 @@ def validate(show_pass, show_checks, strict):
     is_flag=True,
 )
 @click.option(
-    "--schema-id",
-    default=None,
-    cls=MutuallyExclusiveOption,
-    mutually_exclusive=["list"],
-    help="The name of a schema."
+    "--schema-id", default=None, cls=MutuallyExclusiveOption, mutually_exclusive=["list"], help="The name of a schema."
 )
 @main.command()
-def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417
+def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417,D301,D205
     """Manage your schemas.
 
     \f
@@ -139,7 +135,9 @@ def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417
         schema (str): Name of schema to evaluate
     """
     if not check and not generate_invalid and not list_schemas and not schema_id:
-        error("The 'schema' command requires one or more arguments. You can run the command 'schema-enforcer schema --help' to see the arguments available.")
+        error(
+            "The 'schema' command requires one or more arguments. You can run the command 'schema-enforcer schema --help' to see the arguments available."
+        )
         sys.exit(1)
 
     config.load()
@@ -159,9 +157,7 @@ def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417
 
     if generate_invalid:
         if not schema_id:
-            sys.exit(
-                "Please indicate the schema you'd like to generate invalid data for using the --schema-id flag"
-            )
+            sys.exit("Please indicate the schema you'd like to generate invalid data for using the --schema-id flag")
         smgr.generate_invalid_tests_expected(schema_id=schema_id)
         sys.exit(0)
 
@@ -183,7 +179,7 @@ def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417
 )
 def ansible(
     inventory, limit, show_pass, show_checks
-):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals
+):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals  # noqa: D417,D301
     """Validate the hostvars for all hosts within an Ansible inventory.
 
     The hostvars are dynamically rendered based on groups to which each host belongs.

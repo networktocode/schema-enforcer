@@ -1,18 +1,18 @@
 """Schema manager."""
 import os
+import sys
 import json
+
 import jsonref
 from termcolor import colored
+from rich.console import Console
+from rich.table import Table
+
 from schema_enforcer.utils import load_file, find_file, find_files, dump_data_to_yaml
 from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
 from schema_enforcer.exceptions import SchemaNotDefined
 from schema_enforcer.utils import error, warn
-import sys
-
 from schema_enforcer.schemas.jsonschema import JsonSchema
-
-from rich.console import Console
-from rich.table import Table
 
 
 class SchemaManager:
@@ -278,17 +278,17 @@ class SchemaManager:
             str: Full path of test directory.
         """
         if test_type not in ["valid", "invalid"]:
-            raise ValueError("Test type parameter was {}. Must be one of 'valid' or 'invalid'", test_type)
+            raise ValueError(f"Test type parameter was {test_type}. Must be one of 'valid' or 'invalid'")
 
         if not self.schemas.get(schema_id, None):
-            raise ValueError("Could not find schema ID {}", schema_id)
+            raise ValueError(f"Could not find schema ID {schema_id}")
 
         root = os.path.abspath(os.getcwd())
         short_schema_id = schema_id.split("/")[1] if "/" in schema_id else schema_id
         test_dir = os.path.join(root, self.test_directory, short_schema_id, test_type)
 
         if not os.path.exists(test_dir):
-            error("Tried to search {} for {} data, but the path does not exist.".format(test_dir, test_type))
+            error(f"Tried to search {test_dir} for {test_type} data, but the path does not exist.")
             sys.exit(1)
 
         return test_dir

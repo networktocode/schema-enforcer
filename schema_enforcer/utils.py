@@ -5,8 +5,6 @@ import glob
 from collections.abc import Mapping, Sequence
 import importlib
 
-import typing_extensions
-
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
 from jsonschema import (  # pylint: disable=no-name-in-module
@@ -407,7 +405,8 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
 
     return data
 
-def find_file(filename, formats=["yml", "yaml", "json"]):
+
+def find_file(filename, formats=["yml", "yaml", "json"]):  # pylint: disable=dangerous-default-value
     """Search for a file with multiple extensions and return the filename if found.
 
     If multiple files with the same name but different extensions exist, only the first match is returned.
@@ -423,7 +422,7 @@ def find_file(filename, formats=["yml", "yaml", "json"]):
         file_ext = f"{filename}.{ext}"
         if not os.path.isfile(file_ext):
             continue
-        
+
         return file_ext
 
 
