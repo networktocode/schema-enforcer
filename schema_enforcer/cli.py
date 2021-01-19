@@ -1,5 +1,4 @@
 """main cli commands."""
-from importlib import import_module
 import sys
 
 import click
@@ -210,7 +209,7 @@ def ansible(
         PASS | [HOST] spine1 [SCHEMA ID] schemas/interfaces
     """
     try:
-        import_module("schema_enforcer.ansible_inventory", "AnsibleInventory")
+        from schema_enforcer.ansible_inventory import AnsibleInventory  # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError:
         error(
             "ansible package not found, you can run the command 'pip install schema-enforcer[ansible]' to install the latest schema-enforcer sanctioned version."
@@ -236,7 +235,7 @@ def ansible(
     #  - generate hostvar for all devices in the inventory
     #  - Validate Each key in the hostvar individually against the schemas defined in the var jsonschema_mapping
     # ---------------------------------------------------------------------
-    inv = AnsibleInventory(inventory=config.SETTINGS.ansible_inventory)  # noqa F821 pylint: disable=undefined-variable
+    inv = AnsibleInventory(inventory=config.SETTINGS.ansible_inventory)
     hosts = inv.get_hosts_containing()
     print(f"Found {len(hosts)} hosts in the inventory")
 
