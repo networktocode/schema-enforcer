@@ -9,6 +9,8 @@ The `ansible` command is used to check ansible inventory for adherence to a sche
 
 If all checks pass, `schema-enforcer` will inform the user that all tests have passed.
 
+> Note: In order to use the `ansible` command, ansible 2.8, 2.9, or 2.10 must be installed on the system running schema enforcer. If you do not already have ansible installed, you can install it as an extra dependency of the schema-enforcer tool by running `pip install schema-enforcer[ansible]`. 
+
 ## How the inventory is loaded
 
 When the `schema-enforcer ansible` command is run, an ansible inventory is constructed. Each host's properties are extracted from the ansible inventory into a single data structure per host, then this data structure is validated against all applicable schemas. For instance, take a look at the following example:

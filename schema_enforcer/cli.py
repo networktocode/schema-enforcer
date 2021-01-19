@@ -1,4 +1,5 @@
 """main cli commands."""
+from importlib import import_module
 import sys
 
 import click
@@ -8,7 +9,6 @@ from schema_enforcer.utils import MutuallyExclusiveOption
 from schema_enforcer import config
 from schema_enforcer.schemas.manager import SchemaManager
 from schema_enforcer.instances.file import InstanceFileManager
-from schema_enforcer.ansible_inventory import AnsibleInventory
 from schema_enforcer.utils import error
 
 
@@ -209,6 +209,14 @@ def ansible(
         FAIL | [ERROR] False is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
         PASS | [HOST] spine1 [SCHEMA ID] schemas/interfaces
     """
+    try:
+        import_module("schema_enforcer.ansible_inventory", "AnsibleInventory")
+    except ModuleNotFoundError:
+        error(
+            "ansible package not found, you can run the command 'pip install schema-enforcer[ansible]' to install the latest schema-enforcer sanctioned version."
+        )
+        sys.exit(1)
+
     if inventory:
         config.load(config_data={"ansible_inventory": inventory})
     else:
@@ -228,7 +236,7 @@ def ansible(
     #  - generate hostvar for all devices in the inventory
     #  - Validate Each key in the hostvar individually against the schemas defined in the var jsonschema_mapping
     # ---------------------------------------------------------------------
-    inv = AnsibleInventory(inventory=config.SETTINGS.ansible_inventory)
+    inv = AnsibleInventory(inventory=config.SETTINGS.ansible_inventory)  # noqa F821 pylint: disable=undefined-variable
     hosts = inv.get_hosts_containing()
     print(f"Found {len(hosts)} hosts in the inventory")
 

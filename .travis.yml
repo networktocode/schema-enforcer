@@ -11,11 +11,13 @@ services:
 
 env:
   matrix:
-    - "PYTHON_VER=3.7"
+    - "PYTHON_VER=3.7 ANSIBLE_VERSION==2.8.18"
+    - "PYTHON_VER=3.7 ANSIBLE_VERSION==2.9.17"
+    - "PYTHON_VER=3.7 ANSIBLE_VERSION==2.10.5"
     - "PYTHON_VER=3.8"
     - "PYTHON_VER=3.9"
 before_script:
-  - "pip install invoke poetry toml"
+  - "pip install invoke poetry toml ansible==$ANSIBLE_VERSION"
   - "invoke build-image --nocache"
 script:
   - "invoke pytest"
