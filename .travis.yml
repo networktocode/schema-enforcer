@@ -18,9 +18,9 @@ services:
 # Env, before_script, and script for test stage
 env:
   matrix:
-    - "ANSIBLE_VERSION==2.8.18"
-    - "ANSIBLE_VERSION==2.9.17"
-    - "ANSIBLE_VERSION==2.10.5"
+    - "ANSIBLE_VERSION=2.8.18"
+    - "ANSIBLE_VERSION=2.9.17"
+    - "ANSIBLE_VERSION=2.10.5"
 before_script:
   - "pip install invoke toml"
   - "invoke build-image --nocache"

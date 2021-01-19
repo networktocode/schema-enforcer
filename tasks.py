@@ -80,8 +80,12 @@ def build_image(
         nocache (bool): Do not use cache when building the image
         forcerm (bool): Always remove intermediate containers
     """
-    print(f"Building image {name}:{image_ver}")
-    command = f"docker build --tag {name}:{image_ver} --build-arg PYTHON_VER={python_ver} -f Dockerfile ."
+    ansible_ver = os.getenv("ANSIBLE_VERSION", "latest")
+    print(f"Building image {name}:{image_ver} with ansible version {ansible_ver}")
+
+    command = f"docker build --tag {name}:{image_ver} --build-arg PYTHON_VER={python_ver} "
+    command += f"--build-arg ANSIBLE_VERSION={ansible_ver} "
+    command += "-f Dockerfile ."
 
     if nocache:
         command += " --no-cache"
