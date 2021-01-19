@@ -5,19 +5,24 @@ stages:
   - "test"
 
 if: "type IN (pull_request)"  # Add in "branch" as an option if desired for branch testing as well
+
 language: "python"
+python:
+  - 3.7
+  - 3.8
+  - 3.9
+
 services:
   - "docker"
 
+# Env, before_script, and script for test stage
 env:
   matrix:
-    - "PYTHON_VER=3.7 ANSIBLE_VERSION==2.8.18"
-    - "PYTHON_VER=3.7 ANSIBLE_VERSION==2.9.17"
-    - "PYTHON_VER=3.7 ANSIBLE_VERSION==2.10.5"
-    - "PYTHON_VER=3.8"
-    - "PYTHON_VER=3.9"
+    - "ANSIBLE_VERSION==2.8.18"
+    - "ANSIBLE_VERSION==2.9.17"
+    - "ANSIBLE_VERSION==2.10.5"
 before_script:
-  - "pip install invoke poetry toml ansible==$ANSIBLE_VERSION"
+  - "pip install invoke toml"
   - "invoke build-image --nocache"
 script:
   - "invoke pytest"
@@ -29,6 +34,7 @@ jobs:
         - "INVOKE_LOCAL=True"
       before_script:
         - "pip install invoke toml"
+        - "invoke build-image --no-cache"
       script:
         - "invoke black"
         - "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
