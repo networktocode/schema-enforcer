@@ -24,8 +24,8 @@ env:
 before_script:
   - "pip install invoke toml"
 script:
-  - "invoke pytest"
   - "invoke build-image --nocache"
+  - "invoke pytest"
 
 jobs:
   include:
