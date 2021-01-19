@@ -30,6 +30,8 @@ script:
 jobs:
   include:
     - stage: "lint"
+      env:
+        - "ANSIBLE_VERSION=latest"
       before_script:
         - "pip install invoke toml"
         - "invoke build-image --nocache"
