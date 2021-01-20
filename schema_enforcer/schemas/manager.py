@@ -88,9 +88,9 @@ class SchemaManager:
         console.print(table)
 
     def dump_schema(self, schema_id):
-        """Dump schema with references resolved
+        """Dump schema with references resolved.
 
-        Dumps all schemas or a single schema represented by schema_id
+        Dumps all schemas or a single schema represented by schema_id.
         """
         if schema_id:
             schema = self.schemas.get(schema_id, None)
