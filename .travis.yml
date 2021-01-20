@@ -33,7 +33,7 @@ jobs:
     - stage: "lint"
       before_script:
         - "pip install invoke toml"
-        - "invoke build-image --without-ansible --nocache"
+        - "invoke build-image --nocache"
       script:
         - "invoke black"
         - "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
