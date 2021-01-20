@@ -5,19 +5,20 @@ stages:
   - "test"
 
 if: "type IN (pull_request)"  # Add in "branch" as an option if desired for branch testing as well
+
 language: "python"
+python:
+  - 3.7
+  - 3.8
+  - 3.9
+
 services:
   - "docker"
 
-env:
-  matrix:
-    - "PYTHON_VER=3.7"
-    - "PYTHON_VER=3.8"
-    - "PYTHON_VER=3.9"
 before_script:
-  - "pip install invoke poetry toml"
-  - "invoke build-image --nocache"
+  - "pip install invoke toml"
 script:
+  - "invoke build-image --nocache"
   - "invoke pytest"
 
 jobs:
@@ -27,6 +28,7 @@ jobs:
         - "INVOKE_LOCAL=True"
       before_script:
         - "pip install invoke toml"
+        - "invoke build-image --nocache"
       script:
         - "invoke black"
         - "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
