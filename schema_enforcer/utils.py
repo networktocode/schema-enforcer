@@ -406,7 +406,27 @@ def load_data(file_extensions, search_directories, excluded_filenames, file_type
     return data
 
 
-def find_and_load_file(filename, formats=["yml", "yaml", "json"]):  # pylint: disable=dangerous-default-value
+def find_file(filename, extensions=("yml", "yaml", "json")):
+    """Search for a file with multiple extensions and return the filename if found.
+
+    If multiple files with the same name but different extensions exist, only the first match is returned.
+
+    Args:
+        filename (str): Full filename of the file to search for, without the extension.
+        formats(Tuple[str]): Tuple of formats (file extensions) appended to the file to search for it's existence.
+
+    Returns:
+        str or None: string of the filename found
+    """
+    for ext in extensions:
+        file_ext = f"{filename}.{ext}"
+        if not os.path.isfile(file_ext):
+            continue
+
+        return file_ext
+
+
+def find_and_load_file(filename, formats=("yml", "yaml", "json")):
     """Search a file based on multiple extensions and load its content if found.
 
     Args:

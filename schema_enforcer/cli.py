@@ -39,8 +39,8 @@ def main():
     show_default=True,
 )
 @main.command()
-def validate(show_pass, show_checks, strict):
-    r"""Validates instance files against defined schema.
+def validate(show_pass, show_checks, strict):  # noqa D205
+    """Validates instance files against defined schema.
 
     \f
 
@@ -99,7 +99,7 @@ def validate(show_pass, show_checks, strict):
     "list_schemas",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["generate_invalid", "check"],
+    mutually_exclusive=["generate_invalid", "check", "schema-id"],
     help="List all available schemas",
     is_flag=True,
 )
@@ -107,7 +107,7 @@ def validate(show_pass, show_checks, strict):
     "--check",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["generate_invalid", "list", "schema"],
+    mutually_exclusive=["generate_invalid", "list"],
     help="Validates that all schemas are valid (spec and unit tests)",
     is_flag=True,
 )
@@ -116,13 +116,15 @@ def validate(show_pass, show_checks, strict):
     default=False,
     cls=MutuallyExclusiveOption,
     mutually_exclusive=["check", "list"],
-    help="Generates expected invalid data from a given schema [--schema]",
+    help="Generates expected invalid result from a given schema [--schema-id] and data defined in a data file",
     is_flag=True,
 )
-@click.option("--schema", help="The name of a schema.")
+@click.option(
+    "--schema-id", default=None, cls=MutuallyExclusiveOption, mutually_exclusive=["list"], help="The name of a schema."
+)
 @main.command()
-def schema(check, generate_invalid, list_schemas):  # noqa: D417
-    r"""Manage your schemas.
+def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417,D301,D205
+    """Manage your schemas.
 
     \f
 
@@ -130,7 +132,14 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
         check (bool): Validates that all schemas are valid (spec and unit tests)
         generate_invalid (bool): Generates expected invalid data from a given schema
         list (bool): List all available schemas
+        schema (str): Name of schema to evaluate
     """
+    if not check and not generate_invalid and not list_schemas and not schema_id:
+        error(
+            "The 'schema' command requires one or more arguments. You can run the command 'schema-enforcer schema --help' to see the arguments available."
+        )
+        sys.exit(1)
+
     config.load()
 
     # ---------------------------------------------------------------------
@@ -147,11 +156,9 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
         sys.exit(0)
 
     if generate_invalid:
-        if not schema:
-            sys.exit(
-                "Please indicate the name of the schema you'd like to generate the invalid data for using --schema"
-            )
-        smgr.generate_invalid_tests_expected(schema_id=schema)
+        if not schema_id:
+            sys.exit("Please indicate the schema you'd like to generate invalid data for using the --schema-id flag")
+        smgr.generate_invalid_tests_expected(schema_id=schema_id)
         sys.exit(0)
 
     if check:
@@ -172,8 +179,8 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
 )
 def ansible(
     inventory, limit, show_pass, show_checks
-):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals
-    r"""Validate the hostvars for all hosts within an Ansible inventory.
+):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals  # noqa: D417,D301
+    """Validate the hostvars for all hosts within an Ansible inventory.
 
     The hostvars are dynamically rendered based on groups to which each host belongs.
     For each host, if a variable `schema_enforcer_schema_ids` is defined, it will be used
