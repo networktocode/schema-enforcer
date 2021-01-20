@@ -140,8 +140,9 @@ def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # n
     Args:
         check (bool): Validates that all schemas are valid (spec and unit tests)
         generate_invalid (bool): Generates expected invalid data from a given schema
-        list (bool): List all available schemas
-        schema (str): Name of schema to evaluate
+        list_schemas (bool): List all available schemas
+        schema_id (str): Name of schema to evaluate
+        dump_schemas (bool): Dump all schema data or a single schema if schema_id is provided
     """
     if not check and not generate_invalid and not list_schemas and not schema_id and not dump_schemas:
         error(
