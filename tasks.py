@@ -68,7 +68,7 @@ def run_cmd(context, exec_cmd, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCA
 
 @task
 def build_image(
-    context, name=NAME, python_ver=PYTHON_VER, image_ver=IMAGE_VER, nocache=False, forcerm=False
+    context, name=NAME, python_ver=PYTHON_VER, image_ver=IMAGE_VER, nocache=False, forcerm=False, without_ansible=False,
 ):  # pylint: disable=too-many-arguments
     """This will build an image with the provided name and python version.
 
@@ -79,12 +79,21 @@ def build_image(
         image_ver (str): Define image version
         nocache (bool): Do not use cache when building the image
         forcerm (bool): Always remove intermediate containers
+        without_ansible (bool): Build image without ansible
     """
-    ansible_ver = os.getenv("ANSIBLE_VERSION", "latest")
-    print(f"Building image {name}:{image_ver} with ansible version {ansible_ver}")
-
     command = f"docker build --tag {name}:{image_ver} --build-arg PYTHON_VER={python_ver} "
-    command += f"--build-arg ANSIBLE_VERSION={ansible_ver} "
+
+    if without_ansible:
+        stdout_string = f"Building image {name}:{image_ver} without extras"
+        command = f"docker build --tag {name}:{image_ver} --build-arg PYTHON_VER={python_ver} "
+        command += "--target base "
+
+    else:
+        ansible_ver = os.getenv("ANSIBLE_VER", "latest")
+        stdout_string = f"Building image {name}:{image_ver} with ansible version {ansible_ver}"
+        command += f"--build-arg ANSIBLE_VER={ansible_ver} "
+        command += "--target with_ansible "
+
     command += "-f Dockerfile ."
 
     if nocache:
@@ -92,6 +101,7 @@ def build_image(
     if forcerm:
         command += " --force-rm"
 
+    print(stdout_string)
     result = context.run(command, hide=True)
     if result.exited != 0:
         print(f"Failed to build image {name}:{image_ver}\nError: {result.stderr}")
@@ -138,7 +148,25 @@ def pytest(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
     # pty is set to true to properly run the docker commands due to the invocation process of docker
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     # Install python module
-    exec_cmd = 'find tests/ -name "*.py" | xargs pytest -vv'
+    exec_cmd = 'find tests/ -name "*.py" -a -not -name "test_cli_ansible_not_exists.py" | xargs pytest -vv'
+    run_cmd(context, exec_cmd, name, image_ver, local)
+
+
+@task
+def pytest_without_ansible(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+    """This will run pytest only to assert the correct errors are raised when pytest is not installed.
+
+    This must be run inside of a container or environment in which ansible is not installed, otherwise the test case
+    assertion will fail.
+
+    Args:
+        context (obj): Used to run specific commands
+        name (str): Used to name the docker image
+        image_ver (str): Will use the container version docker image
+        local (bool): Define as `True` to execute locally
+    """
+    exec_cmd = 'find tests/ -name "test_cli_ansible_not_exists.py" | xargs pytest -vv'
+
     run_cmd(context, exec_cmd, name, image_ver, local)
 
 

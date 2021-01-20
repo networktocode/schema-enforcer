@@ -3,6 +3,7 @@
 stages:
   - "lint"
   - "test"
+  - "test-without-ansible"
 
 if: "type IN (pull_request)"  # Add in "branch" as an option if desired for branch testing as well
 
@@ -18,9 +19,9 @@ services:
 # Env, before_script, and script for test stage
 env:
   matrix:
-    - "ANSIBLE_VERSION=2.8.18"
-    - "ANSIBLE_VERSION=2.9.17"
-    - "ANSIBLE_VERSION=2.10.5"
+    - "ANSIBLE_VER=2.8.18"
+    - "ANSIBLE_VER=2.9.17"
+    - "ANSIBLE_VER=2.10.5"
 before_script:
   - "pip install invoke toml"
 script:
@@ -31,14 +32,26 @@ jobs:
   include:
     - stage: "lint"
       env:
-        - "ANSIBLE_VERSION=latest"
+        - "ANSIBLE_VER=latest"
       before_script:
         - "pip install invoke toml"
-        - "invoke build-image --nocache"
-      script:
-        - "invoke black"
-        - "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
-        - "invoke pydocstyle"
-        - "invoke flake8"
-        - "invoke yamllint"
-        - "invoke pylint"
+        - "invoke build-image --without-ansible --nocache"
+    - name: "black"
+      script: "invoke black"
+    - name: "bandit"
+      script: "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
+    - name: "pydocstyle"
+      script: "invoke pydocstyle"
+    - name: "flake8"
+      script: "invoke flake8"
+    - name: "yamllint"
+      script: "invoke yamllint"
+    - name: "pylint"
+      script: "invoke pylint"
+
+    - stage: "test-without-ansible"
+      before_script:
+        - "pip install invoke toml"
+        - "invoke build-image --without-ansible --nocache"
+    - name: "test_without_ansible"
+      script: "invoke pytest-without-ansible"
