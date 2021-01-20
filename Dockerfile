@@ -13,6 +13,6 @@ RUN poetry config virtualenvs.create false \
 
 FROM base as with_ansible
 
-ARG ANSIBLE_VER
+ARG ANSIBLE_VER=latest
 
-RUN pip install ansible==${ANSIBLE_VER}
+RUN if [ "$ANSIBLE_VER" = "latest" ]; then pip install ansible; else pip install ansible==$ANSIBLE_VER; fi
