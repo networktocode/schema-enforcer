@@ -24,8 +24,6 @@ script:
 jobs:
   include:
     - stage: "lint"
-      env:
-        - "INVOKE_LOCAL=True"
       before_script:
         - "pip install invoke toml"
         - "invoke build-image --nocache"
