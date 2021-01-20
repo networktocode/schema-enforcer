@@ -99,15 +99,24 @@ def validate(show_pass, show_checks, strict):  # noqa D205
     "list_schemas",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["generate_invalid", "check", "schema-id"],
+    mutually_exclusive=["generate_invalid", "check", "schema-id", "dump"],
     help="List all available schemas",
+    is_flag=True,
+)
+@click.option(
+    "--dump",
+    "dump_schemas",
+    default=False,
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["generate_invalid", "check", "list"],
+    help="Dump full schema for all schemas or schema-id",
     is_flag=True,
 )
 @click.option(
     "--check",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["generate_invalid", "list"],
+    mutually_exclusive=["generate_invalid", "list", "dump"],
     help="Validates that all schemas are valid (spec and unit tests)",
     is_flag=True,
 )
@@ -115,7 +124,7 @@ def validate(show_pass, show_checks, strict):  # noqa D205
     "--generate-invalid",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["check", "list"],
+    mutually_exclusive=["check", "list", "dump"],
     help="Generates expected invalid result from a given schema [--schema-id] and data defined in a data file",
     is_flag=True,
 )
@@ -123,7 +132,7 @@ def validate(show_pass, show_checks, strict):  # noqa D205
     "--schema-id", default=None, cls=MutuallyExclusiveOption, mutually_exclusive=["list"], help="The name of a schema."
 )
 @main.command()
-def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417,D301,D205
+def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # noqa: D417,D301,D205
     """Manage your schemas.
 
     \f
@@ -134,7 +143,7 @@ def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417,D301
         list (bool): List all available schemas
         schema (str): Name of schema to evaluate
     """
-    if not check and not generate_invalid and not list_schemas and not schema_id:
+    if not check and not generate_invalid and not list_schemas and not schema_id and not dump_schemas:
         error(
             "The 'schema' command requires one or more arguments. You can run the command 'schema-enforcer schema --help' to see the arguments available."
         )
@@ -153,6 +162,10 @@ def schema(check, generate_invalid, list_schemas, schema_id):  # noqa: D417,D301
 
     if list_schemas:
         smgr.print_schemas_list()
+        sys.exit(0)
+
+    if dump_schemas:
+        smgr.dump_schema(schema_id)
         sys.exit(0)
 
     if generate_invalid:

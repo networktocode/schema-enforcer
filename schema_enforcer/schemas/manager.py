@@ -87,6 +87,20 @@ class SchemaManager:
             table.add_row(schema_id, schema.schematype, schema.root.replace(current_dir, "."), schema.filename)
         console.print(table)
 
+    def dump_schema(self, schema_id):
+        """Dump schema with references resolved
+
+        Dumps all schemas or a single schema represented by schema_id
+        """
+        if schema_id:
+            schema = self.schemas.get(schema_id, None)
+            if schema is None:
+                raise ValueError(f"Could not find schema ID {schema_id}")
+            print(json.dumps(schema.data, indent=2))
+        else:
+            for _, schema in self.iter_schemas():
+                print(json.dumps(schema.data, indent=2))
+
     def test_schemas(self):
         """Validate all schemas pass the tests defined for them.
 
