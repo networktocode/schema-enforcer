@@ -91,6 +91,11 @@ class SchemaManager:
         """Dump schema with references resolved.
 
         Dumps all schemas or a single schema represented by schema_id.
+
+        Args:
+            schema_id (str): The unique identifier of a schema.
+
+        Returns: None
         """
         if schema_id:
             schema = self.schemas.get(schema_id, None)
