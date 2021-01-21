@@ -87,7 +87,7 @@ class SchemaManager:
             table.add_row(schema_id, schema.schematype, schema.root.replace(current_dir, "."), schema.filename)
         console.print(table)
 
-    def dump_schema(self, schema_id):
+    def dump_schema(self, schema_id=None):
         """Dump schema with references resolved.
 
         Dumps all schemas or a single schema represented by schema_id.
