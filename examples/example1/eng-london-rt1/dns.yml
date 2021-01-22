@@ -1,0 +1,5 @@
+# jsonschema: schemas/dns_servers
+---
+dns_servers:
+  - address: "10.6.6.6"
+  - address: "10.7.7.7"

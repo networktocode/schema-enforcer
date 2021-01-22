@@ -1,0 +1,13 @@
+{
+    "ntp_servers": [
+        {
+            "name": "ntp-east",
+            "address": "10.1.1.1"
+        },
+        {
+            "name": "ntp-west",
+            "address": "10.2.1.1",
+            "vrf": "mgmt"
+        }
+    ]
+}

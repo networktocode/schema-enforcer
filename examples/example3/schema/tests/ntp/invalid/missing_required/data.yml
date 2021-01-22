@@ -1,0 +1,4 @@
+---
+ntp_server:
+  - name: "ntp-east"
+    address: "10.1.1.1"

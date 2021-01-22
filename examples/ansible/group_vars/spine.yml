@@ -1,0 +1,13 @@
+---
+dns_servers:
+  - address: false
+  - address: "10.2.2.2"
+interfaces:
+  swp1:
+    role: "uplink"
+  swp2:
+    role: "uplink"
+
+schema_enforcer_schema_ids:
+  - "schemas/dns_servers"
+  - "schemas/interfaces"
