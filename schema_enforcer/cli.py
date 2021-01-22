@@ -8,7 +8,6 @@ from schema_enforcer.utils import MutuallyExclusiveOption
 from schema_enforcer import config
 from schema_enforcer.schemas.manager import SchemaManager
 from schema_enforcer.instances.file import InstanceFileManager
-from schema_enforcer.ansible_inventory import AnsibleInventory
 from schema_enforcer.utils import error
 
 
@@ -230,6 +229,18 @@ def ansible(
         FAIL | [ERROR] False is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
         PASS | [HOST] spine1 [SCHEMA ID] schemas/interfaces
     """
+    # Ansible is currently always installed by schema-enforcer. This was added in the interest of making ansible an
+    # optional dependency. We decided to make two separate packages installable via PyPi, one with ansible, one without.
+    # This has been left in the code until such a time as we implement the change to two packages so code will not need
+    # to be re-written/
+    try:
+        from schema_enforcer.ansible_inventory import AnsibleInventory  # pylint: disable=import-outside-toplevel
+    except ModuleNotFoundError:
+        error(
+            "ansible package not found, you can run the command 'pip install schema-enforcer[ansible]' to install the latest schema-enforcer sanctioned version."
+        )
+        sys.exit(1)
+
     if inventory:
         config.load(config_data={"ansible_inventory": inventory})
     else:

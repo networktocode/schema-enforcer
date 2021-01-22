@@ -3,6 +3,7 @@
 stages:
   - "lint"
   - "test"
+  - "test-without-ansible"
 
 if: "type IN (pull_request)"  # Add in "branch" as an option if desired for branch testing as well
 
@@ -15,10 +16,16 @@ python:
 services:
   - "docker"
 
+# Env, before_script, and script for test stage
+env:
+  matrix:
+    - "ANSIBLE_VER=2.8.18"
+    - "ANSIBLE_VER=2.9.17"
+    - "ANSIBLE_VER=2.10.5"
 before_script:
   - "pip install invoke toml"
 script:
-  - "invoke build-image --nocache"
+  - "invoke build --nocache"
   - "invoke pytest"
 
 jobs:
@@ -26,7 +33,7 @@ jobs:
     - stage: "lint"
       before_script:
         - "pip install invoke toml"
-        - "invoke build-image --nocache"
+        - "invoke build --nocache"
       script:
         - "invoke black"
         - "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
@@ -34,3 +41,9 @@ jobs:
         - "invoke flake8"
         - "invoke yamllint"
         - "invoke pylint"
+
+    - stage: "test-without-ansible"
+      before_script:
+        - "pip install invoke toml"
+        - "invoke build --without-ansible --nocache"
+      script: "invoke pytest-without-ansible"
