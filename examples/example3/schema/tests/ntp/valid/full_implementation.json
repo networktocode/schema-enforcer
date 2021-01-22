@@ -9,7 +9,5 @@
             "address": "10.2.1.1",
             "vrf": "mgmt"
         }
-    ],
-    "authentication": false,
-    "logging": true
+    ]
 }
