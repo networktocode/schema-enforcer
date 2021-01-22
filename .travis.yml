@@ -25,7 +25,7 @@ env:
 before_script:
   - "pip install invoke toml"
 script:
-  - "invoke build-image --nocache"
+  - "invoke build --nocache"
   - "invoke pytest"
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
     - stage: "lint"
       before_script:
         - "pip install invoke toml"
-        - "invoke build-image --nocache"
+        - "invoke build --nocache"
       script:
         - "invoke black"
         - "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
@@ -45,5 +45,5 @@ jobs:
     - stage: "test-without-ansible"
       before_script:
         - "pip install invoke toml"
-        - "invoke build-image --without-ansible --nocache"
+        - "invoke build --without-ansible --nocache"
       script: "invoke pytest-without-ansible"
