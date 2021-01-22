@@ -8,11 +8,12 @@ RUN pip install --upgrade pip \
 WORKDIR /local
 COPY pyproject.toml /local
 
-ARG ANSIBLE_VER=latest
+ARG ANSIBLE_VER="ignore"
 
 RUN poetry config virtualenvs.create false \
-  && if [ "$ANSIBLE_VER" = "latest" ]; then pip install ansible; else pip install ansible==$ANSIBLE_VER; fi \
-  && poetry install --no-interaction --no-ansi
+  && poetry install --no-interaction --no-ansi \
+  # If ANSIBLE_VER is set (not default), uninstall the ansible version poetry installed and install the declared ansible version.
+  && if not [ "$ANSIBLE_VER" = "ignore" ]; then pip uninstall -yq ansible ansible-base && pip install ansible==$ANSIBLE_VER; fi
 
 FROM base as without_ansible
 

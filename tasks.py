@@ -33,6 +33,8 @@ def is_truthy(arg):
 
 # Can be set to a separate Python version to be used for launching or building image
 PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
+# Can be set to a separate ANsible version to be used for launching or building image
+ANSIBLE_VER = os.getenv("ANSIBLE_VER", None)
 # Name of the docker image/image
 NAME = os.getenv("IMAGE_NAME", f"schema-enforcer-py{PYTHON_VER}")
 # Tag for the image
@@ -68,7 +70,7 @@ def run_cmd(context, exec_cmd, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCA
 
 @task
 def build_image(
-    context, name=NAME, python_ver=PYTHON_VER, image_ver=IMAGE_VER, nocache=False, forcerm=False, without_ansible=False,
+    context, name=NAME, python_ver=PYTHON_VER, ansible_ver=ANSIBLE_VER, image_ver=IMAGE_VER, nocache=False, forcerm=False, without_ansible=False,
 ):  # pylint: disable=too-many-arguments
     """This will build an image with the provided name and python version.
 
@@ -81,16 +83,19 @@ def build_image(
         forcerm (bool): Always remove intermediate containers
         without_ansible (bool): Build image without ansible
     """
-    command = f"docker build --tag {name}:{image_ver} --build-arg PYTHON_VER={python_ver} "
-
     if without_ansible:
-        stdout_string = f"Building image {name}:{image_ver} without extras"
+        stdout_string = f"Building image {name}:{image_ver} without ansible"
+        command = f"docker build --tag {name}-without-ansible:{image_ver} --build-arg PYTHON_VER={python_ver} "
         command += "--target without_ansible "
 
     else:
-        ansible_ver = os.getenv("ANSIBLE_VER", "latest")
-        stdout_string = f"Building image {name}:{image_ver} with ansible version {ansible_ver}"
-        command += f"--build-arg ANSIBLE_VER={ansible_ver} "
+        command = f"docker build --tag {name}:{image_ver} --build-arg PYTHON_VER={python_ver} "
+        if ansible_ver:
+            stdout_string = f"Building image {name}:{image_ver} with ansible version {ansible_ver}"
+            command += f"--build-arg ANSIBLE_VER={ansible_ver} "
+        else:
+            stdout_string = f"Building image {name}:{image_ver} with ansible version specified in pyproject.toml file."
+        
         command += "--target base "
 
     command += "-f Dockerfile ."
@@ -152,7 +157,7 @@ def pytest(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
 
 
 @task
-def pytest_without_ansible(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def pytest_without_ansible(context, name=f"{NAME}-without-ansible", image_ver=IMAGE_VER, local=INVOKE_LOCAL):
     """This will run pytest only to assert the correct errors are raised when pytest is not installed.
 
     This must be run inside of a container or environment in which ansible is not installed, otherwise the test case
