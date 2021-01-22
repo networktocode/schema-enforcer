@@ -85,7 +85,6 @@ def build_image(
 
     if without_ansible:
         stdout_string = f"Building image {name}:{image_ver} without extras"
-        command = f"docker build --tag {name}:{image_ver} --build-arg PYTHON_VER={python_ver} "
         command += "--target base "
 
     else:
