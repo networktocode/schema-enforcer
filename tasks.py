@@ -85,13 +85,13 @@ def build_image(
 
     if without_ansible:
         stdout_string = f"Building image {name}:{image_ver} without extras"
-        command += "--target base "
+        command += "--target without_ansible "
 
     else:
         ansible_ver = os.getenv("ANSIBLE_VER", "latest")
         stdout_string = f"Building image {name}:{image_ver} with ansible version {ansible_ver}"
         command += f"--build-arg ANSIBLE_VER={ansible_ver} "
-        command += "--target with_ansible "
+        command += "--target base "
 
     command += "-f Dockerfile ."
 

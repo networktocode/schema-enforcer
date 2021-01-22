@@ -1,7 +1,5 @@
 # The `ansible` command
 
-> Note: In order to use the `ansible` command, ansible 2.8, 2.9, or 2.10 must be installed on the system running schema enforcer. If you do not already have ansible installed, you can install it as an extra dependency of the schema-enforcer tool by running `pip install schema-enforcer[ansible]`. 
-
 The `ansible` command is used to check ansible inventory for adherence to a schema definition. An example exists in the `examples/ansible` folder. With no flags passed in, schema-enforcer will:
 
 - display a line for each property definition that **fails** schema validation

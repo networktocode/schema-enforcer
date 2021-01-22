@@ -229,6 +229,10 @@ def ansible(
         FAIL | [ERROR] False is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
         PASS | [HOST] spine1 [SCHEMA ID] schemas/interfaces
     """
+    # Ansible is currently always installed by schema-enforcer. This was added in the interest of making ansible an
+    # optional dependency. We decided to make two separate packages installable via PyPi, one with ansible, one without.
+    # This has been left in the code until such a time as we implement the change to two packages so code will not need
+    # to be re-written/
     try:
         from schema_enforcer.ansible_inventory import AnsibleInventory  # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError:
