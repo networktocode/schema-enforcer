@@ -12,9 +12,10 @@ jsonschema = "^3.2.0"
 toml = "^0.10.0"
 "ruamel.yaml" = "^0.16.10"
 jinja2 = "^2.11.2"
-ansible = "^2.9.7"
 jsonref = "^0.2"
 pydantic = "^1.6.1"
+rich = "^9.5.1"
+ansible = "^2.8.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.1"

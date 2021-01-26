@@ -334,3 +334,104 @@ bash$ schema-enforcer ansible -h spine1
 Found 4 hosts in the inventory
 FAIL | [ERROR] Additional properties are not allowed ('bogus_property' was unexpected) [HOST] spine1 [PROPERTY]
 ```
+
+### The `magic_vars_to_evaluate` variable
+
+By default, ansible adds a few variables (called magic variables) to each host when it loads the inventory. The variables added are as follows.
+
+- `inventory_file`
+- `inventory_dir`
+- `inventory_hostname`
+- `inventory_hostname_short`
+- `group_names`
+- `ansible_facts`
+- `playbook_dir`
+- `ansible_playbook_python`
+- `groups`
+- `omit`
+- `ansible_version`
+- `ansible_config_file`
+- `schema_enforcer_schema_ids`
+- `schema_enforcer_strict`
+- `schema_enforcer_automap_default`
+
+Schema enforcer strips these variables from each host before evaluating the host variables for adherence to schema. If you would like to include any of these host vars in schema evaluation, you can do so by declaring the `magic_vars_to_evaluate` setting in the ansible host/group files.
+
+In the following example, the `inventory_hostname` ansible magic var is set to be evaluated against schema.
+
+```yaml
+bash$ cd examples/ansible2 && cat group_vars/leaf.yml
+---
+dns_servers:
+  - address: "10.1.1.1"
+  - address: "10.2.2.2"
+
+schema_enforcer_strict: true
+schema_enforcer_schema_ids:
+  - "schemas/leafs"
+magic_vars_to_evaluate: ["inventory_hostname"]
+```
+
+The schema definition doesn't include "inventory_hostname" yet, and `schema_enforcer_strict` mode is set, so when schema validation is run, schema validation fails.
+
+```yaml
+bash$ cat schema/schemas/leafs.yml
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/leafs"
+description: "Leaf Switches Schema"
+type: "object"
+properties:
+  dns_servers:
+    type: "object"
+    $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
+required:
+  - "dns_servers"
+```
+
+```cli
+bash$ schema-enforcer ansible -h leaf1
+Found 4 hosts in the inventory
+FAIL | [ERROR] Additional properties are not allowed ('inventory_hostname' was unexpected) [HOST] leaf1 [PROPERTY] 
+```
+
+If we add a property for `inventory_hostname` to the schema definition for leafs, schema validation testing passes.
+
+```yaml
+bash$ cat schema/schemas/leafs.yml
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/leafs"
+description: "Leaf Switches Schema"
+type: "object"
+properties:
+  dns_servers:
+    type: "object"
+    $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
+  inventory_hostname:
+    type: "string"
+required:
+  - "dns_servers"
+  - "inventory_hostname"
+```
+
+```cli
+schema-enforcer ansible -h leaf1
+Found 4 hosts in the inventory
+ALL SCHEMA VALIDATION CHECKS PASSED
+```
+
+Note that `inventory_hostname` is not declared as a variables defined for leaf1 -- nor is it declared as a variable defined in any of the groups to which leaf1 belongs. This is a "magic variable" which ansible adds to the host by default, and which we've told schema enforcer not to strip out before evaluating host vars against a schema definition.
+
+```yaml
+bash$ cat group_vars/leaf.yml
+---
+dns_servers:
+  - address: "10.1.1.1"
+  - address: "10.2.2.2"
+
+schema_enforcer_strict: true
+schema_enforcer_schema_ids:
+  - "schemas/leafs"
+magic_vars_to_evaluate: ["inventory_hostname"]
+```

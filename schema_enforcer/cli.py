@@ -8,7 +8,6 @@ from schema_enforcer.utils import MutuallyExclusiveOption
 from schema_enforcer import config
 from schema_enforcer.schemas.manager import SchemaManager
 from schema_enforcer.instances.file import InstanceFileManager
-from schema_enforcer.ansible_inventory import AnsibleInventory
 from schema_enforcer.utils import error
 
 
@@ -39,8 +38,8 @@ def main():
     show_default=True,
 )
 @main.command()
-def validate(show_pass, show_checks, strict):
-    r"""Validates instance files against defined schema.
+def validate(show_pass, show_checks, strict):  # noqa D205
+    """Validates instance files against defined schema.
 
     \f
 
@@ -99,15 +98,24 @@ def validate(show_pass, show_checks, strict):
     "list_schemas",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["generate_invalid", "check"],
+    mutually_exclusive=["generate_invalid", "check", "schema-id", "dump"],
     help="List all available schemas",
+    is_flag=True,
+)
+@click.option(
+    "--dump",
+    "dump_schemas",
+    default=False,
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["generate_invalid", "check", "list"],
+    help="Dump full schema for all schemas or schema-id",
     is_flag=True,
 )
 @click.option(
     "--check",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["generate_invalid", "list", "schema"],
+    mutually_exclusive=["generate_invalid", "list", "dump"],
     help="Validates that all schemas are valid (spec and unit tests)",
     is_flag=True,
 )
@@ -115,22 +123,32 @@ def validate(show_pass, show_checks, strict):
     "--generate-invalid",
     default=False,
     cls=MutuallyExclusiveOption,
-    mutually_exclusive=["check", "list"],
-    help="Generates expected invalid data from a given schema [--schema]",
+    mutually_exclusive=["check", "list", "dump"],
+    help="Generates expected invalid result from a given schema [--schema-id] and data defined in a data file",
     is_flag=True,
 )
-@click.option("--schema", help="The name of a schema.")
+@click.option(
+    "--schema-id", default=None, cls=MutuallyExclusiveOption, mutually_exclusive=["list"], help="The name of a schema."
+)
 @main.command()
-def schema(check, generate_invalid, list_schemas):  # noqa: D417
-    r"""Manage your schemas.
+def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # noqa: D417,D301,D205
+    """Manage your schemas.
 
     \f
 
     Args:
         check (bool): Validates that all schemas are valid (spec and unit tests)
         generate_invalid (bool): Generates expected invalid data from a given schema
-        list (bool): List all available schemas
+        list_schemas (bool): List all available schemas
+        schema_id (str): Name of schema to evaluate
+        dump_schemas (bool): Dump all schema data or a single schema if schema_id is provided
     """
+    if not check and not generate_invalid and not list_schemas and not schema_id and not dump_schemas:
+        error(
+            "The 'schema' command requires one or more arguments. You can run the command 'schema-enforcer schema --help' to see the arguments available."
+        )
+        sys.exit(1)
+
     config.load()
 
     # ---------------------------------------------------------------------
@@ -146,12 +164,14 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
         smgr.print_schemas_list()
         sys.exit(0)
 
+    if dump_schemas:
+        smgr.dump_schema(schema_id)
+        sys.exit(0)
+
     if generate_invalid:
-        if not schema:
-            sys.exit(
-                "Please indicate the name of the schema you'd like to generate the invalid data for using --schema"
-            )
-        smgr.generate_invalid_tests_expected(schema_id=schema)
+        if not schema_id:
+            sys.exit("Please indicate the schema you'd like to generate invalid data for using the --schema-id flag")
+        smgr.generate_invalid_tests_expected(schema_id=schema_id)
         sys.exit(0)
 
     if check:
@@ -172,8 +192,8 @@ def schema(check, generate_invalid, list_schemas):  # noqa: D417
 )
 def ansible(
     inventory, limit, show_pass, show_checks
-):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals
-    r"""Validate the hostvars for all hosts within an Ansible inventory.
+):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals  # noqa: D417,D301
+    """Validate the hostvars for all hosts within an Ansible inventory.
 
     The hostvars are dynamically rendered based on groups to which each host belongs.
     For each host, if a variable `schema_enforcer_schema_ids` is defined, it will be used
@@ -209,6 +229,18 @@ def ansible(
         FAIL | [ERROR] False is not of type 'string' [HOST] spine1 [PROPERTY] dns_servers:0:address
         PASS | [HOST] spine1 [SCHEMA ID] schemas/interfaces
     """
+    # Ansible is currently always installed by schema-enforcer. This was added in the interest of making ansible an
+    # optional dependency. We decided to make two separate packages installable via PyPi, one with ansible, one without.
+    # This has been left in the code until such a time as we implement the change to two packages so code will not need
+    # to be re-written/
+    try:
+        from schema_enforcer.ansible_inventory import AnsibleInventory  # pylint: disable=import-outside-toplevel
+    except ModuleNotFoundError:
+        error(
+            "ansible package not found, you can run the command 'pip install schema-enforcer[ansible]' to install the latest schema-enforcer sanctioned version."
+        )
+        sys.exit(1)
+
     if inventory:
         config.load(config_data={"ansible_inventory": inventory})
     else:

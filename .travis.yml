@@ -1,36 +1,49 @@
 ---
 # Add additional stages in the order of execution here, and then under the job:include: key
 stages:
-  - lint
-  - test
+  - "lint"
+  - "test"
+  - "test-without-ansible"
 
-if: type IN (pull_request) # Add in "branch" as an option if desired for branch testing as well
+if: "type IN (pull_request)"  # Add in "branch" as an option if desired for branch testing as well
+
 language: "python"
+python:
+  - 3.7
+  - 3.8
+  - 3.9
+
 services:
   - "docker"
 
+# Env, before_script, and script for test stage
 env:
   matrix:
-    - "PYTHON_VER=3.7"
-    - "PYTHON_VER=3.8"
-    - "PYTHON_VER=3.9"
+    - "ANSIBLE_VER=2.8.18"
+    - "ANSIBLE_VER=2.9.17"
+    - "ANSIBLE_VER=2.10.5"
 before_script:
-  - pip install invoke poetry toml
-  - invoke build-image --nocache
+  - "pip install invoke toml"
 script:
-  - invoke pytest
+  - "invoke build --nocache"
+  - "invoke pytest"
 
 jobs:
   include:
-    - stage: lint
-      env:
-        - INVOKE_LOCAL=True
+    - stage: "lint"
       before_script:
-        - pip install invoke toml
+        - "pip install invoke toml"
+        - "invoke build --nocache"
       script:
-        - invoke black
-        - invoke bandit # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
-        - invoke pydocstyle
-        - invoke flake8
-        - invoke yamllint
-        - invoke pylint
+        - "invoke black"
+        - "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
+        - "invoke pydocstyle"
+        - "invoke flake8"
+        - "invoke yamllint"
+        - "invoke pylint"
+
+    - stage: "test-without-ansible"
+      before_script:
+        - "pip install invoke toml"
+        - "invoke build --without-ansible --nocache"
+      script: "invoke pytest-without-ansible"

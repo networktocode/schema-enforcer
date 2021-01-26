@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 """ Tests instances.py InstanceFile class"""
 
 import os
@@ -114,8 +115,8 @@ def test_validate(if_w_matches, schema_manager):
         if_w_matches (InstanceFile): Initialized InstanceFile pytest fixture
         schema_manager (SchemaManager): Initialized SchemaManager object, needed to run "validate" method.
     """
-    errs = [err for err in if_w_matches.validate(schema_manager=schema_manager)]
-    strict_errs = [err for err in if_w_matches.validate(schema_manager=schema_manager, strict=True)]
+    errs = list(if_w_matches.validate(schema_manager=schema_manager))
+    strict_errs = list(if_w_matches.validate(schema_manager=schema_manager, strict=True))
 
     assert len(errs) == 1
     assert isinstance(errs[0], ValidationResult)

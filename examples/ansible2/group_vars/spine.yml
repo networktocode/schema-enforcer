@@ -12,3 +12,4 @@ bogus_property: true
 schema_enforcer_strict: true
 schema_enforcer_schema_ids:
   - "schemas/spines"
+magic_vars_to_evaluate: ["inventory_hostname"]
