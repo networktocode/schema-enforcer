@@ -1,0 +1,13 @@
+
+# This is a comment.
+# Each line is a file pattern followed by one or more owners.
+# See: https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/about-code-owners
+
+# These owners will be the default owners for everything in the repo.
+# Unless a later match takes precedence, these will be requested for
+# review when someone opens a pull request. Once approved, PR creators
+# are encouraged to merge their own PRs.
+* @dgarros @glennmatthews @PhillSimonds
+
+# Order is important; the last matching pattern takes the most
+# precedence.
