@@ -157,7 +157,7 @@ When a structured data file fails schema validation, `schema-enforcer` exits wit
 
 More detailed documentation can be found inside of README.md files inside of the `docs/` directory.
 - [Using a pyproject.toml file for configuration](docs/configuration.md)
-- [Mapping Structured Data Files to Schema Files](docs/mapping_schemas.md)
+- [Mapping Structured Data Files to Schema Files](docs/mapping_data_files_to_schemas.md)
 - [The `validate` command](docs/validate_command.md)
 - [The `schema` command](docs/schema_command.md)
 - [The Ansible command](docs/ansible_command.md)
