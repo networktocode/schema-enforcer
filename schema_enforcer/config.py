@@ -37,6 +37,7 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     data_file_search_directories: List[str] = ["./"]
     data_file_extensions: List[str] = [".json", ".yaml", ".yml"]
     data_file_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
+    data_file_automap: bool = True
 
     ansible_inventory: Optional[str]
     schema_mapping: Dict = dict()

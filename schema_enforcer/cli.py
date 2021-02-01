@@ -68,6 +68,9 @@ def validate(show_pass, show_checks, strict):  # noqa D205
         error("No instance files were found to validate")
         sys.exit(1)
 
+    if config.SETTINGS.data_file_automap:
+        ifm.add_matches_by_property_automap(smgr)
+
     if show_checks:
         ifm.print_schema_mapping()
         sys.exit(0)
