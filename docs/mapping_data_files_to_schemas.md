@@ -1,13 +1,15 @@
 # Mapping Schemas
 
 ## Overview
-In order to validate structured data files against schema definitions, `schema-enforcer` must have a way of mapping structured data files to the schema definition they should adhere to. This is done in three ways:
+Each schema must define an `$id` property. This is a top level key in the schema definition file. It's value is a string which uniquely identifies the schema.
+
+In order to validate structured data files against schema definitions, `schema-enforcer` must have a way of mapping structured data files to the schema ID of the schema definition(s) they should adhere to. This is done in one of several ways:
 
 1) The top level keys in a given data file will be automatically mapped to the top level property defined in a schema definition.
-2) The pyproject.toml file can map structured data filenames to the schema ID to which they should adhere.
-3) Any file containing structured data can be decorated with a comment which instructs `schema-enforcer` to check the file for compliance against the a defined schema.
+2) The pyproject.toml file can map structured data filenames to the ID of the schema(s) to which they should adhere.
+3) Any file containing structured data can be decorated with a comment which instructs `schema-enforcer` to check the file for compliance with defined schema ID(s).
 
-By default, all three methods for mapping data files to the schema IDs to which they should adhere will be used in conjunction with one another.
+By default, all methods will be used together.
 
 To check which structured data files will be examined by which schemas, the `schema-enforcer validate --show-checks` command can be run.
 
@@ -72,9 +74,9 @@ required:
   - "dns_servers"
 ```
 
-The default behavior of schema-enforcer is to construct a list of all top level keys defined in each data file then search to determine if any of these top level keys correlate to any of the top level properties defined by any schema definition. If there is a match, the schema_id is added to the list of schema ids against which the data will be checked.
+By default, `schema-enforcer` constructs a list of all top-level keys defined in a data file, then searches for schema definitions that also define the same top-level properties. The ID of any matching schema will automatically be included in the list of schemas IDs to check the data against.
 
-With this mapping mechanism, only the schema file and the data file need to be defined.
+With this mapping mechanism, data-to-schema mappings are identified automatically and you do not need to separately declare a mapping.
 
 ```cli
 bash$ tree
@@ -89,7 +91,7 @@ bash$ tree
 4 directories, 2 files
 ```
 
-By running schema-enforcer validate, we see that `./hostvars/chi-beijing-rt1/dns.yml`, which contains the data per the example above, is indeed being mapped to the `schemas/dns_servers` schema ID, which is the schema above.
+The output of the `schema-enforcer validate` command shows that `./hostvars/chi-beijing-rt1/dns.yml`, which contains the data per the example above, is indeed being mapped to the `schemas/dns_servers` schema ID, which is the schema above.
 
 ```cli
 bash$ schema-enforcer validate --show-checks
@@ -98,7 +100,7 @@ Structured Data File                               Schema ID
 ./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']
 ```
 
-While automapping is the easiest mapping mechanism to get started with, you may wish to turn it off in favor of using one of the mechanisms elucidated below. To do so, you can put the following configuration into a `pyproject.toml` file at the root of the path in which your schema files and data files exist.
+While automapping is the easiest mapping mechanism to get started with, it can be beneficial to turn it off in favor of using one of the mechanisms described below. To do so, the following configuration can be put in a `pyproject.toml` file at the root of the path in which the schema and data files exist.
 
 ```cli
 tree
@@ -121,7 +123,7 @@ bash $ cat pyproject.toml
 data_file_automap = false
 ```
 
-After toggling the `data_file_automap` setting to false, we can see that `schema-enforcer validate --show-checks` now says that the data file at `./hostvars/chi-beijing-rt1/dns.yml` will not be checked for adherence to the `schemas/dns_servers` schema
+After toggling the `data_file_automap` setting to false, `schema-enforcer validate --show-checks` now shows that the data file locatedb at `./hostvars/chi-beijing-rt1/dns.yml` will not be checked for adherence to the `schemas/dns_servers` schema
 
 ```cli
 [tool.schema_enforcer]
@@ -129,6 +131,29 @@ After toggling the `data_file_automap` setting to false, we can see that `schema
 data_file_automap = true
 ```
 
+If multiple keys are defined in the data file and only one of them is defined in the schema, the data will still be checked against the schema to ensure it is schema valid. For instance, if the dns.yml data file above is updated so that it includes another key of ntp_servers, it will still be checked for adherence to the `schemas/dns_servers` schema even though no top level property called `dns_servers2` exists in the schema definition.
+
+```yaml
+bash$ cat ./hostvars/chi-beijing-rt1/dns.yml
+---
+dns_servers:
+  - address: "10.1.1.1"
+  - address: "10.2.2.2"
+dns_servers2:
+  - address: "10.3.3.3"
+  - address: "10.4.4.4"
+```
+
+```cli
+bash$ schema-enforcer validate --show-checks
+Structured Data File                               Schema ID
+--------------------------------------------------------------------------------
+./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']
+```
+
+Similarly, if another property which does not exist in the data file is added to the schema definition, the data in `./hostvars/chi-beijing-rt1/dns.yml` will still be checked against the schema.
+
+> Note, this behavior can cause issues if `additionalProperties: False` is set or if `required` is defined in the schema. In such cases it is best to use one of the other mechanisms for mapping data files to schema definitions.
 ## Using the pyproject.toml file to map schemas
 
 In the pyproject.toml file, a `tools.schema_enforcer.schema_mapping` section can be defined which maps structured data files to schema IDs.

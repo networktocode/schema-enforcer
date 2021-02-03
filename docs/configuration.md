@@ -28,8 +28,6 @@ data_file_extensions = [".json", ".yaml", ".yml"]
 data_file_exclude_filenames = [".yamllint.yml", ".travis.yml"]
 data_file_automap = true
 
-ansible_inventory = None
-
 [tools.schema_enforcer.schema_mapping]
 ```
 
