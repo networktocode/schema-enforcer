@@ -1,0 +1,5 @@
+vrfs:
+- name: Blue
+  interfaces: []
+- name: Green
+  interfaces: []
