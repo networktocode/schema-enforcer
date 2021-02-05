@@ -10,7 +10,7 @@ class CheckPeers(ModelValidation):
     """
     Validate that peer and peer_int are defined properly on both sides of a connection
 
-    full Ansible host_vars
+    Requires full Ansible host_vars as data
     """
 
     def validate(cls, data: dict):

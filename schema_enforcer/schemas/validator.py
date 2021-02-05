@@ -41,12 +41,15 @@ class JmesPathModelValidation:
             "lte": lambda r, v: int(r) <= int(v),
             "contains": lambda r, v: v in r,
         }
-        result = jmespath.search(cls.left, data)
+        lhs = jmespath.search(cls.left, data)
         valid = True
-        if result:
-            if isinstance(result, list):
-                result = result[0]
-            valid = operators[cls.operator](result, cls.right)
+        if lhs:
+            # Check rhs for compiled jmespath expression
+            if isinstance(cls.right, jmespath.parser.ParsedResult):
+                rhs = cls.right.search(data)
+            else:
+                rhs = cls.right
+            valid = operators[cls.operator](lhs, rhs)
         if not valid:
             raise ValidationError
 
