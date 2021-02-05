@@ -3,6 +3,7 @@ Classes for custom validator plugins
 """
 from pathlib import Path
 import jmespath
+from schema_enforcer.validation import ValidationResult
 
 
 class ValidationError(Exception):
@@ -63,6 +64,7 @@ def load(validator_path: str):
         "ModelValidation": ModelValidation,
         "JmesPathModelValidation": JmesPathModelValidation,
         "ValidationError": ValidationError,
+        "ValidationResult": ValidationResult,
         "jmes": jmespath.compile,
     }
 
