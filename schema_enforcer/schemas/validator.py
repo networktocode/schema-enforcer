@@ -1,37 +1,25 @@
 """Classes for custom validator plugins."""
 # pylint: disable=E1101, R0903, W0122
-from pathlib import Path
+import pkgutil
+import inspect
+from typing import Iterable, Union
 import jmespath
 from schema_enforcer.validation import ValidationResult
 
 
-class ValidationError(Exception):
-    """Base exception for errors during validator."""
-
-
 class ModelValidation:
-    """Base class for ModelValidation classes. A singleton of each subclass will be stored in validators."""
+    """Base class for ModelValidation classes."""
 
-    validators = []
-
-    def __init_subclass__(cls, **kwargs):
-        """Register singleton of each subclass."""
-        super().__init_subclass__(**kwargs)
-        cls.validators.append(cls())
+    @classmethod
+    def validate(cls, data: dict, strict: bool) -> Iterable[ValidationResult]:
+        """Required function for custom validator."""
 
 
 class JmesPathModelValidation:
-    """Base class for JmesPathModelValidation classes. A singleton of each subclass will be stored in validators."""
-
-    validators = []
-
-    def __init_subclass__(cls, **kwargs):
-        """Register singleton of each subclass."""
-        super().__init_subclass__(**kwargs)
-        cls.validators.append(cls())
+    """Base class for JmesPathModelValidation classes."""
 
     @classmethod
-    def validate(cls, data: dict, strict: bool):  # pylint: disable=W0613
+    def validate(cls, data: dict, strict: bool) -> Iterable[ValidationResult]:  # pylint: disable=W0613
         """Validate data using custom jmespath validator plugin."""
         operators = {
             "gt": lambda r, v: int(r) > int(v),
@@ -57,20 +45,25 @@ class JmesPathModelValidation:
         return [ValidationResult(result=result, schema_id=cls.id, message=cls.error)]
 
 
-def load_validators(validator_path: str):
-    """Load all validator plugins from validator_path."""
-    # Make base class and helper functions available to validation plugins without import
-    context = {
-        "ModelValidation": ModelValidation,
-        "JmesPathModelValidation": JmesPathModelValidation,
-        "ValidationError": ValidationError,
-        "ValidationResult": ValidationResult,
-        "jmes": jmespath.compile,
-    }
+def is_validator(obj) -> bool:
+    """Returns True if the object is a ModelValidation or JmesPathModelValidation subclass."""
+    try:
+        return issubclass(obj, (JmesPathModelValidation, ModelValidation)) and obj not in (
+            JmesPathModelValidation,
+            ModelValidation,
+        )
+    except TypeError:
+        return False
 
-    validator_path = Path(validator_path).expanduser().resolve()
-    for filename in validator_path.glob("*.py"):
-        source = open(filename).read()
-        code = compile(source, filename, "exec")
-        exec(code, context)  # nosec
-    return ModelValidation.validators + JmesPathModelValidation.validators
+
+def load_validators(validator_path: str) -> Iterable[Union[ModelValidation, JmesPathModelValidation]]:
+    """Load all validator plugins from validator_path."""
+    validators = dict()
+    for importer, module_name, _ in pkgutil.iter_modules([validator_path]):
+        module = importer.find_module(module_name).load_module(module_name)
+        for name, cls in inspect.getmembers(module, is_validator):
+            if name in validators:
+                print(f"Duplicate validator name: {name}")
+            else:
+                validators[name] = cls
+    return validators

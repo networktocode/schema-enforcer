@@ -1,6 +1,9 @@
 """Example validator plugin."""
 # flake8: noqa
 # pylint: skip-file
+from schema_enforcer.schemas.validator import JmesPathModelValidation
+
+
 class CheckInterface(JmesPathModelValidation):
     """Check that each device has at least two core uplinks."""
 

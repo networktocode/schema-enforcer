@@ -29,28 +29,29 @@ def host_vars(inventory):  # pylint: disable=redefined-outer-name
     return host_vars
 
 
-def test_load():
+@pytest.fixture(scope="session")
+def validators():
     """
     Test that validator files are loaded and appended to base class validator list
     """
     validator_path = os.path.join(FIXTURE_DIR, "validators")
-    v.load_validators(validator_path)
-    assert v.JmesPathModelValidation.validators
+    return v.load_validators(validator_path)
 
 
-def test_jmespathvalidation_pass(host_vars):  # pylint: disable=W0621
-    validate = getattr(v.JmesPathModelValidation.validators[0], "validate")
+def test_jmespathvalidation_pass(host_vars, validators):  # pylint: disable=W0621
+    validate = getattr(validators["CheckInterface"], "validate")
     result = validate(host_vars["az_phx_pe01"], False)
-    assert result[0].result == "PASS"
+    assert result[0].passed()
 
 
-def test_jmespathvalidation_fail(host_vars):  # pylint: disable=W0621
-    validate = getattr(v.JmesPathModelValidation.validators[0], "validate")
+def test_jmespathvalidation_fail(host_vars, validators):  # pylint: disable=W0621
+    validate = getattr(validators["CheckInterface"], "validate")
     result = validate(host_vars["az_phx_pe02"], False)
-    assert result[0].result == "FAIL"
+    assert not result[0].passed()
 
 
-def test_modelvalidation_pass(host_vars):  # pylint: disable=W0621
-    validate = getattr(v.ModelValidation.validators[0], "validate")
-    validate(host_vars)
-    assert True
+def test_modelvalidation_pass(host_vars, validators):  # pylint: disable=W0621
+    validate = getattr(validators["CheckPeers"], "validate")
+    result = validate(host_vars, False)
+    assert result[0].passed()
+    assert result[1].passed()

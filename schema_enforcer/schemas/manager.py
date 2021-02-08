@@ -47,6 +47,7 @@ class SchemaManager:
         # Load validators
         full_validator_dir = f"{config.validator_directory}"
         validators = load_validators(full_validator_dir)
+        self.schemas.update(validators)
 
     def create_schema_from_file(self, root, filename):  # pylint: disable=no-self-use
         """Create a new JsonSchema object for a given file.

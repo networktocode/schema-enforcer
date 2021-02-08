@@ -1,5 +1,10 @@
 # flake8: noqa
 # pylint: skip-file
+from typing import Iterable
+from schema_enforcer.schemas.validator import ModelValidation
+from schema_enforcer.validation import ValidationResult
+
+
 def ansible_hostname(hostname: str):
     return hostname.replace("-", "_")
 
@@ -15,7 +20,11 @@ class CheckPeers(ModelValidation):
     Requires full Ansible host_vars as data
     """
 
-    def validate(cls, data: dict):
+    id = "CheckPeers"
+
+    @classmethod
+    def validate(cls, data: dict, strict: bool) -> Iterable[ValidationResult]:
+        results = list()
         for host in data:
             for interface, int_cfg in data[host]["interfaces"].items():
                 peer = int_cfg.get("peer", None)
@@ -28,7 +37,30 @@ class CheckPeers(ModelValidation):
                             peer_match = data[peer]["interfaces"][peer_int]["peer"] == normal_hostname(host)
                             peer_int_match = data[peer]["interfaces"][peer_int]["peer_int"] == interface
                             if not (peer_match and peer_int_match):
-                                raise ValidationError
+                                results.append(
+                                    ValidationResult(
+                                        result="FAIL",
+                                        schema_id=cls.id,
+                                        message="Peer interfaces do not match",
+                                        instance_hostname=host,
+                                        instance_name=peer,
+                                    )
+                                )
+                            else:
+                                results.append(
+                                    ValidationResult(
+                                        result="PASS", schema_id=cls.id, instance_hostname=host, instance_name=peer
+                                    )
+                                )
                     # If peer is defined, peer_int must also exist
                     else:
-                        raise ValidationError
+                        results.append(
+                            ValidationResult(
+                                result="FAIL",
+                                schema_id=cls.id,
+                                message="Peer interface is not defined",
+                                instance_hostname=host,
+                                instance_name=peer,
+                            )
+                        )
+        return results
