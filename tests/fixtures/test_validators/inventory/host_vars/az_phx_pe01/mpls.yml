@@ -1,6 +1,0 @@
-mpls:
-  interfaces:
-    GigabitEthernet0/0/0/0:
-      peer: az-phx-pe02
-    GigabitEthernet0/0/0/1:
-      peer: co-den-p01

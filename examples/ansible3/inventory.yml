@@ -1,14 +1,15 @@
+---
 all:
   vars:
-    ansible_network_os: iosxr
-    ansible_user: cisco
-    ansible_password: cisco
-    ansible_connection: netconf
+    ansible_network_os: "iosxr"
+    ansible_user: "cisco"
+    ansible_password: "cisco"
+    ansible_connection: "netconf"
     ansible_netconf_ssh_config: true
   children:
     pe_rtrs:
       hosts:
         az_phx_pe01:
-          ansible_host: 172.16.1.1
+          ansible_host: "172.16.1.1"
         az_phx_pe02:
-          ansible_host: 172.16.1.2
+          ansible_host: "172.16.1.2"

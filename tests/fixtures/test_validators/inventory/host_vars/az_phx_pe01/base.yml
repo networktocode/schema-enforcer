@@ -1,26 +1,22 @@
-hostname: az-phx-pe01
-pair_rtr: az-phx-pe02
+---
+hostname: "az-phx-pe01"
+pair_rtr: "az-phx-pe02"
 upstreams: []
 interfaces:
   MgmtEth0/0/CPU0/0:
-    ipv4: 172.16.1.1
-    ipv6:
-    peer:
-    peer_int:
+    ipv4: "172.16.1.1"
   Loopback0:
-    ipv4: 192.168.1.1
-    ipv6: 2001:db8:1::1
-    peer:
-    peer_int:
+    ipv4: "192.168.1.1"
+    ipv6: "2001:db8:1::1"
   GigabitEthernet0/0/0/0:
-    ipv4: 10.1.0.1
+    ipv4: "10.1.0.1"
     ipv6: "2001:db8::"
-    peer: az-phx-pe02
-    peer_int: GigabitEthernet0/0/0/0
+    peer: "az-phx-pe02"
+    peer_int: "GigabitEthernet0/0/0/0"
     type: "core"
   GigabitEthernet0/0/0/1:
-    ipv4: 10.1.0.37
-    ipv6: 2001:db8::12
-    peer: co-den-p01
-    peer_int: GigabitEthernet0/0/0/2
+    ipv4: "10.1.0.37"
+    ipv6: "2001:db8::12"
+    peer: "co-den-p01"
+    peer_int: "GigabitEthernet0/0/0/2"
     type: "core"
