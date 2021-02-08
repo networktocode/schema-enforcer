@@ -160,7 +160,7 @@ def pytest(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
     # pty is set to true to properly run the docker commands due to the invocation process of docker
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     # Install python module
-    exec_cmd = 'find tests/ -name "*.py" -a -not -name "test_cli_ansible_not_exists.py" | xargs pytest -vv'
+    exec_cmd = 'find tests/ -name "test_*.py" -a -not -name "test_cli_ansible_not_exists.py" | xargs pytest -vv'
     run_cmd(context, exec_cmd, name, image_ver, local)
 
 
