@@ -1,4 +1,6 @@
-class CheckInterface(JmesPathModelValidation):  # noqa: F821
+# flake8: noqa
+# pylint: skip-file
+class CheckInterface(JmesPathModelValidation):
     model = "interfaces"
     left = "interfaces.*[@.type=='core'][] | length([?@])"
     right = 2

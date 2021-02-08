@@ -1,3 +1,5 @@
+# flake8: noqa
+# pylint: skip-file
 def ansible_hostname(hostname: str):
     return hostname.replace("-", "_")
 
