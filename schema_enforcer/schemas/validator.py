@@ -1,13 +1,14 @@
 """
 Classes for custom validator plugins
 """
+# pylint: disable=E1101, R0903, W0122
 from pathlib import Path
 import jmespath
 from schema_enforcer.validation import ValidationResult
 
 
 class ValidationError(Exception):
-    pass
+    """ Base exception for errors during validator """
 
 
 class ModelValidation:
@@ -30,7 +31,7 @@ class JmesPathModelValidation:
         cls.validators.append(cls())
 
     @classmethod
-    def validate(cls, data: dict):
+    def validate(cls, data: dict, strict: bool):  # pylint: disable=W0613
         """
         Validate data using custom jmespath validator plugin
         """
@@ -51,11 +52,14 @@ class JmesPathModelValidation:
             else:
                 rhs = cls.right
             valid = operators[cls.operator](lhs, rhs)
-        if not valid:
-            raise ValidationError
+        if valid:
+            result = "PASS"
+        else:
+            result = "FAIL"
+        return [ValidationResult(result=result, schema_id=cls.id, message=cls.error)]
 
 
-def load(validator_path: str):
+def load_validators(validator_path: str):
     """
     Load all validator plugins from validator_path
     """
@@ -73,3 +77,8 @@ def load(validator_path: str):
         source = open(filename).read()
         code = compile(source, filename, "exec")
         exec(code, context)
+<<<<<<< HEAD
+=======
+
+    return ModelValidation.validators + JmesPathModelValidation.validators
+>>>>>>> b44a529... Integrate validator plugin support

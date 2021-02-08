@@ -13,6 +13,7 @@ from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAI
 from schema_enforcer.exceptions import SchemaNotDefined
 from schema_enforcer.utils import error, warn
 from schema_enforcer.schemas.jsonschema import JsonSchema
+from schema_enforcer.schemas.validator import load_validators
 
 
 class SchemaManager:
@@ -42,6 +43,14 @@ class SchemaManager:
             root = os.path.realpath(root)
             schema = self.create_schema_from_file(root, filename)
             self.schemas[schema.get_id()] = schema
+
+        # Load plugins
+        full_plugin_dir = f"{config.plugin_directory}"
+        plugins = load_validators(full_plugin_dir)
+        for plugin in plugins:
+            # Use the class name as the schema id
+            schema_id = type(plugin).__name__
+            self.schemas[schema_id] = plugin
 
     def create_schema_from_file(self, root, filename):  # pylint: disable=no-self-use
         """Create a new JsonSchema object for a given file.
