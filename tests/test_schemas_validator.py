@@ -1,3 +1,6 @@
+"""
+Tests for validator plugin support
+"""
 import os
 import pytest
 from schema_enforcer.ansible_inventory import AnsibleInventory
@@ -31,23 +34,23 @@ def test_load():
     Test that validator files are loaded and appended to base class validator list
     """
     validator_path = os.path.join(FIXTURE_DIR, "validators")
-    v.load(validator_path)
+    v.load_validators(validator_path)
     assert v.JmesPathModelValidation.validators
 
 
-def test_jmespathvalidation_pass(host_vars):
+def test_jmespathvalidation_pass(host_vars):  # pylint: disable=W0621
     validate = getattr(v.JmesPathModelValidation.validators[0], "validate")
-    validate(host_vars["az_phx_pe01"])
-    assert True
+    result = validate(host_vars["az_phx_pe01"], False)
+    assert result[0].result == "PASS"
 
 
-def test_jmespathvalidation_fail(host_vars):
+def test_jmespathvalidation_fail(host_vars):  # pylint: disable=W0621
     validate = getattr(v.JmesPathModelValidation.validators[0], "validate")
-    with pytest.raises(v.ValidationError):
-        validate(host_vars["az_phx_pe02"])
+    result = validate(host_vars["az_phx_pe02"], False)
+    assert result[0].result == "FAIL"
 
 
-def test_modelvalidation_pass(host_vars):
+def test_modelvalidation_pass(host_vars):  # pylint: disable=W0621
     validate = getattr(v.ModelValidation.validators[0], "validate")
     validate(host_vars)
     assert True
