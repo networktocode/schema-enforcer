@@ -1,5 +1,5 @@
 """Classes for custom validator plugins."""
-# pylint: disable=E1101, R0903, W0122
+# pylint: disable=no-member, too-few-public-methods
 import pkgutil
 import inspect
 from typing import Iterable, Union
