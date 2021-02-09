@@ -21,11 +21,11 @@ the following criteria:
    or ignore it if not needed.
 
 The name of your class will be used as the schema-id for mapping purposes. You can override the default schema ID
-by providing a class-level id variable.
+by providing a class-level `id` variable.
 
 ## JmesPathModelValidation
 
-Use this class for basic validation using jmespath expressions to query specific values in your data. In order to work correctly, your Python script must meet
+Use this class for basic validation using [jmespath](https://jmespath.org/) expressions to query specific values in your data. In order to work correctly, your Python script must meet
 the following criteria:
 
 1. Exist in the `validator_directory` dir.
@@ -75,3 +75,51 @@ Custom validators are run with `schema-enforcer validate` and `schema-enforcer a
 You map validators to keys in your data with `top_level_properties` in your subclass or with `schema_enforcer_schema_ids`
 in your data. Schema-enforcer uses the same process to map custom validators and schemas. Refer to the "Mapping Schemas" documentation
 for more details.
+
+### Example - top_level_properties
+
+The CheckInterface validator has a top_level_properties of "interfaces":
+
+```
+class CheckInterface(JmesPathModelValidation):
+    top_level_properties = ["interfaces"]
+```
+
+With automapping enabled, this validator will apply to any host with a top-level `interfaces` key in the Ansible host_vars data:
+
+```
+---
+hostname: "az-phx-pe01"
+pair_rtr: "az-phx-pe02"
+interfaces:
+  MgmtEth0/0/CPU0/0:
+    ipv4: "172.16.1.1"
+  Loopback0:
+    ipv4: "192.168.1.1"
+    ipv6: "2001:db8:1::1"
+  GigabitEthernet0/0/0/0:
+    ipv4: "10.1.0.1"
+    ipv6: "2001:db8::"
+    peer: "az-phx-pe02"
+    peer_int: "GigabitEthernet0/0/0/0"
+    type: "core"
+  GigabitEthernet0/0/0/1:
+    ipv4: "10.1.0.37"
+    ipv6: "2001:db8::12"
+    peer: "co-den-p01"
+    peer_int: "GigabitEthernet0/0/0/2"
+    type: "core"
+```
+
+### Example - manual mapping
+
+Alternatively, you can manually map a validator in your Ansible host vars or other data files.
+
+```
+schema_enforcer_automap_default: false
+schema_enforcer_schema_ids:
+  - "CheckInterface"
+```
+
+
+
