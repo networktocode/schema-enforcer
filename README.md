@@ -67,7 +67,7 @@ dns_servers:
   - address: "10.1.1.1"
   - address: "10.2.2.2"
 ```
-> Note: The line `# jsonschema: schemas/dns_servers` tells `schema-enforcer` the ID of the schema which the structured data defined in the file should be validated against. The schema ID is defined by the `$id` top level key in a schema definition. More information on how the structured data is mapped to a schema ID to which it should adhere can be found in the [docs/mapping_schemas.md README](./docs/mapping_schemas.md)
+> Note: The line `# jsonschema: schemas/dns_servers` tells `schema-enforcer` the ID of the schema which the structured data defined in the file should be validated against. The schema ID is defined by the `$id` top level key in a schema definition. More information on how the structured data is mapped to a schema ID to which it should adhere can be found in the [mapping_schemas README](./docs/mapping_schemas.md)
 
 The file `schema/schemas/dns.yml` is a schema definition file. It contains a schema definition for ntp servers written in JSONSchema. The data in `chi-beijing-rt1/dns.yml` and `eng-london-rt1/dns.yml` should adhere to the schema defined in this schema definition file.
 
@@ -188,7 +188,7 @@ bash$ cat pyproject.toml
 'syslog.yml' = ['schemas/syslog_servers']
 ```
 
-> More information on available configuration settings can be found in docs/configuration.md
+> More information on available configuration settings can be found in the [configuration README](docs/configuration.md)
 ### Where To Go Next
 
 Detailed documentation can be found in the README.md files inside of the `docs/` directory.
