@@ -1,6 +1,6 @@
 # Schema Enforcer
 
-Schema Enforcer provides a framework for testing structured data against schema definitions. Right now, [JSONSchema](https://json-schema.org/understanding-json-schema/index.html) is the only schema definition language supported, but we are thinkin about adding other schema definition languages at some point in the future.
+Schema Enforcer provides a framework for testing structured data against schema definitions. Right now, [JSONSchema](https://json-schema.org/understanding-json-schema/index.html) is the only schema definition language supported, but we are thinking about adding other schema definition languages at some point in the future.
 
 ## Getting Started
 
