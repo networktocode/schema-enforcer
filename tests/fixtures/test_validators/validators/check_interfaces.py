@@ -1,9 +1,10 @@
-# flake8: noqa
-# pylint: skip-file
+"""Test validator for JmesPathModelValidation class"""
 from schema_enforcer.schemas.validator import JmesPathModelValidation
 
 
-class CheckInterface(JmesPathModelValidation):
+class CheckInterface(JmesPathModelValidation):  # pylint: disable=too-few-public-methods
+    """Test validator for JmesPathModelValidation class"""
+
     top_level_properties = ["interfaces"]
     id = "CheckInterface"
     left = "interfaces.*[@.type=='core'][] | length([?@])"
