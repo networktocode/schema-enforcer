@@ -62,8 +62,11 @@ def load_validators(validator_path: str) -> Iterable[Union[ModelValidation, Jmes
     for importer, module_name, _ in pkgutil.iter_modules([validator_path]):
         module = importer.find_module(module_name).load_module(module_name)
         for name, cls in inspect.getmembers(module, is_validator):
-            if name in validators:
-                print(f"Duplicate validator name: {name}")
+            # Default to class name if id doesn't exist
+            if not hasattr(cls, "id"):
+                cls.id = name
+            if cls.id in validators:
+                print(f"Duplicate validator name: {cls.id}")
             else:
-                validators[name] = cls
+                validators[cls.id] = cls
     return validators
