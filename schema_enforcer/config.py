@@ -27,7 +27,7 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     main_directory: str = "schema"
     definition_directory: str = "definitions"
     schema_directory: str = "schemas"
-    plugin_directory: str = "validators"
+    validator_directory: str = "validators"
     test_directory: str = "tests"
 
     # Settings specific to the schema files
