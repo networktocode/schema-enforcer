@@ -2,7 +2,7 @@
 # pylint: disable=no-member, too-few-public-methods
 import pkgutil
 import inspect
-from typing import Iterable, Union
+from typing import Iterable
 import jmespath
 from schema_enforcer.validation import ValidationResult
 
@@ -15,7 +15,7 @@ class ModelValidation:
         """Required function for custom validator."""
 
 
-class JmesPathModelValidation:
+class JmesPathModelValidation(ModelValidation):
     """Base class for JmesPathModelValidation classes."""
 
     @classmethod
@@ -48,15 +48,12 @@ class JmesPathModelValidation:
 def is_validator(obj) -> bool:
     """Returns True if the object is a ModelValidation or JmesPathModelValidation subclass."""
     try:
-        return issubclass(obj, (JmesPathModelValidation, ModelValidation)) and obj not in (
-            JmesPathModelValidation,
-            ModelValidation,
-        )
+        return issubclass(obj, ModelValidation) and obj not in (JmesPathModelValidation, ModelValidation,)
     except TypeError:
         return False
 
 
-def load_validators(validator_path: str) -> Iterable[Union[ModelValidation, JmesPathModelValidation]]:
+def load_validators(validator_path: str) -> Iterable[ModelValidation]:
     """Load all validator plugins from validator_path."""
     validators = dict()
     for importer, module_name, _ in pkgutil.iter_modules([validator_path]):
