@@ -13,3 +13,7 @@ all:
           ansible_host: "172.16.1.1"
         az_phx_pe02:
           ansible_host: "172.16.1.2"
+    p_rtrs:
+      hosts:
+        co_den_p01:
+          ansible_host: "172.16.1.3"

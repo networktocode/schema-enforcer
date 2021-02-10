@@ -1,0 +1,19 @@
+---
+hostname: "co-den-p01"
+pair_rtr: "co-den-p02"
+interfaces:
+  MgmtEth0/0/CPU0/0:
+    ipv4: "172.16.1.5"
+  Loopback0:
+    ipv4: "192.168.1.5"
+    ipv6: "2001:db8:1::5"
+  GigabitEthernet0/0/0/2:
+    ipv4: "10.1.0.38"
+    ipv6: "2001:db8::13"
+    peer: "ut-slc-pe01"
+    peer_int: "GigabitEthernet0/0/0/2"
+  GigabitEthernet0/0/0/3:
+    ipv4: "10.1.0.45"
+    ipv6: "2001:db8::16"
+    peer: "ut-slc-pe01"
+    peer_int: "GigabitEthernet0/0/0/1"

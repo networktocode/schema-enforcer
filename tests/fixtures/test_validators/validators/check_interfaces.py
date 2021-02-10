@@ -9,5 +9,5 @@ class CheckInterface(JmesPathModelValidation):  # pylint: disable=too-few-public
     id = "CheckInterface"
     left = "interfaces.*[@.type=='core'][] | length([?@])"
     right = 2
-    operator = "eq"
+    operator = "gte"
     error = "Less than two core interfaces"
