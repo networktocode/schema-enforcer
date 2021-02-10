@@ -54,7 +54,9 @@ The class provides the following operators for basic use cases:
 
 If you require additional logic or need to compare other types, use the ModelValidation class.
 
-### Example:
+### Examples:
+
+#### Basic
 ```
 from schema_enforcer.schemas.validator import JmesPathModelValidation
 
@@ -66,6 +68,23 @@ class CheckInterface(JmesPathModelValidation):
     right = 2
     operator = "eq"
     error = "Less than two core interfaces"
+```
+
+#### With compiled jmespath expression
+```
+import jmespath
+from schema_enforcer.schemas.validator import JmesPathModelValidation
+
+
+class CheckInterfaceIPv4(JmesPathModelValidation):
+    top_level_properties = ["interfaces"]
+    id = "CheckInterfaceIPv4"
+    left = "interfaces.*[@.type=='core'][] | length([?@])"
+    # Schema-enforcer will check if right is a compiled jmespath expression and execute
+    # search against your data before comparing left and right
+    right = jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
+    operator = "eq"
+    error = "All core interfaces do not have IPv4 addresses"
 ```
 
 ## Running validators
