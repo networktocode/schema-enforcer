@@ -1,6 +1,6 @@
 # Schema Enforcer
 
-Schema Enforcer provides a framework for testing structured data against schema definitions. Right now, [JSONSchema](https://json-schema.org/understanding-json-schema/index.html) is the only schema definition language supported, but we intend to add support for YANG and other schema definition languages at some point in the future.
+Schema Enforcer provides a framework for testing structured data against schema definitions. Right now, [JSONSchema](https://json-schema.org/understanding-json-schema/index.html) is the only schema definition language supported, but we are thinking about adding other schema definition languages at some point in the future.
 
 ## Getting Started
 
@@ -67,7 +67,7 @@ dns_servers:
   - address: "10.1.1.1"
   - address: "10.2.2.2"
 ```
-> Note: The line `# jsonschema: schemas/dns_servers` tells `schema-enforcer` the ID of the schema which the structured data defined in the file should be validated against. More information on how the structured data is mapped to a schema ID to which it should adhere can be found in the [docs/mapping_schemas.md README](./docs/mapping_schemas.md)
+> Note: The line `# jsonschema: schemas/dns_servers` tells `schema-enforcer` the ID of the schema which the structured data defined in the file should be validated against. The schema ID is defined by the `$id` top level key in a schema definition. More information on how the structured data is mapped to a schema ID to which it should adhere can be found in the [mapping_schemas README](./docs/mapping_schemas.md)
 
 The file `schema/schemas/dns.yml` is a schema definition file. It contains a schema definition for ntp servers written in JSONSchema. The data in `chi-beijing-rt1/dns.yml` and `eng-london-rt1/dns.yml` should adhere to the schema defined in this schema definition file.
 
@@ -104,7 +104,7 @@ required:
 
 Once schema-enforcer has been installed, the `schema-enforcer validate` command can be used run schema validations of YAML/JSON instance files against the defined schema.
 
-```cli
+```shell
 bash$ schema-enforcer --help
 Usage: schema-enforcer [OPTIONS] COMMAND [ARGS]...
 
@@ -119,7 +119,7 @@ Commands:
 
 To run the schema validations, the command `schema-enforcer validate` can be run.
 
-```cli
+```shell
 bash$ schema-enforcer validate
 schema-enforcer validate            
 ALL SCHEMA VALIDATION CHECKS PASSED
@@ -127,7 +127,7 @@ ALL SCHEMA VALIDATION CHECKS PASSED
 
 To acquire more context regarding what files specifically passed schema validation, the `--show-pass` flag can be passed in.
 
-```cli
+```shell
 bash$ schema-enforcer validate --show-pass
 PASS [FILE] ./eng-london-rt1/ntp.yml
 PASS [FILE] ./eng-london-rt1/dns.yml
@@ -138,13 +138,15 @@ ALL SCHEMA VALIDATION CHECKS PASSED
 
 If we modify one of the addresses in the `chi-beijing-rt1/dns.yml` file so that it's value is the boolean `true` instead of an IP address string, then run the `schema-enforcer` tool, the validation will fail with an error message.
 
-```cli
+```yaml
 bash$ cat chi-beijing-rt1/dns.yml
 # jsonschema: schemas/dns_servers       
 ---
 dns_servers:
   - address: true
   - address: "10.2.2.2"
+```
+```shell
 bash$ test-schema validate            
 FAIL | [ERROR] True is not of type 'string' [FILE] ./chi-beijing-rt1/dns.yml [PROPERTY] dns_servers:0:address
 bash$ echo $?
@@ -153,11 +155,46 @@ bash$ echo $?
 
 When a structured data file fails schema validation, `schema-enforcer` exits with a code of 1.
 
+### Configuration Settings
+
+Schema enforcer will work with default settings, however, a `pyproject.toml` file can be placed at the root of the path in which `schema-enforcer` is run in order to override default settings or declare configuration for more advanced features. Inside of this `pyproject.toml` file, `tool.schema_enfocer` sections can be used to declare settings for schema enforcer. Take for example the `pyproject.toml` file in example 2.
+
+```shell
+bash$ cd examples/example2 && tree -L 2         
+.
+├── README.md
+├── hostvars
+│   ├── chi-beijing-rt1
+│   ├── eng-london-rt1
+│   └── ger-berlin-rt1
+├── invalid
+├── pyproject.toml
+└── schema
+    ├── definitions
+    └── schemas
+
+8 directories, 2 files
+```
+
+In this toml file, a schema mapping is declared which tells schema enforcer which structured data files should be checked by which schema IDs.
+
+
+```shell
+bash$ cat pyproject.toml
+[tool.schema_enforcer.schema_mapping]
+# Map structured data filename to schema IDs
+'dns_v1.yml' = ['schemas/dns_servers']
+'dns_v2.yml' = ['schemas/dns_servers_v2']
+'syslog.yml' = ['schemas/syslog_servers']
+```
+
+> More information on available configuration settings can be found in the [configuration README](docs/configuration.md)
 ### Where To Go Next
 
-More detailed documentation can be found inside of README.md files inside of the `docs/` directory.
+Detailed documentation can be found in the README.md files inside of the `docs/` directory.
+- ["Introducing Schema Enforcer" blog post](https://blog.networktocode.com/post/introducing_schema_enforcer/)
 - [Using a pyproject.toml file for configuration](docs/configuration.md)
-- [Mapping Structured Data Files to Schema Files](docs/mapping_schemas.md)
+- [The `ansible` command](docs/ansible_command.md)
 - [The `validate` command](docs/validate_command.md)
+- [Mapping Structured Data Files to Schema Files](docs/mapping_schemas.md)
 - [The `schema` command](docs/schema_command.md)
-- [The Ansible command](docs/ansible_command.md)
