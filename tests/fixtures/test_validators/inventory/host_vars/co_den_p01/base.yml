@@ -13,7 +13,7 @@ interfaces:
     peer: "ut-slc-pe01"
     peer_int: "GigabitEthernet0/0/0/2"
   GigabitEthernet0/0/0/3:
-    ipv4: "10.1.0.45"
     ipv6: "2001:db8::16"
     peer: "ut-slc-pe01"
     peer_int: "GigabitEthernet0/0/0/1"
+    type: "core"

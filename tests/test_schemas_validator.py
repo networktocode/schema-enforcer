@@ -65,6 +65,43 @@ def test_jmespathvalidation_fail(host_vars, validators):
     assert not result[0].passed()
 
 
+def test_jmespathvalidation_with_compile_pass(host_vars, validators):
+    """
+    Validator: "interfaces.*[@.type=='core'][] | length([?@])" eq jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
+    Test expected to pass for az_phx_pe01 where all core interfaces have IPv4 addresses:
+        GigabitEthernet0/0/0/0:
+          ipv4: "10.1.0.1"
+          ipv6: "2001:db8::"
+          peer: "az-phx-pe02"
+          peer_int: "GigabitEthernet0/0/0/0"
+          type: "core"
+        GigabitEthernet0/0/0/1:
+          ipv4: "10.1.0.37"
+          ipv6: "2001:db8::12"
+          peer: "co-den-p01"
+          peer_int: "GigabitEthernet0/0/0/2"
+          type: "core"
+    """
+    validate = getattr(validators["CheckInterfaceIPv4"], "validate")
+    result = validate(host_vars["az_phx_pe01"], False)
+    assert result[0].passed()
+
+
+def test_jmespathvalidation_with_compile_fail(host_vars, validators):
+    """
+    Validator: "interfaces.*[@.type=='core'][] | length([?@])" eq jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
+    Test expected to fail for co_den_p01 where core interface is missing an IPv4 addresses:
+        GigabitEthernet0/0/0/3:
+          ipv6: "2001:db8::16"
+          peer: "ut-slc-pe01"
+          peer_int: "GigabitEthernet0/0/0/1"
+          type: "core"
+    """
+    validate = getattr(validators["CheckInterfaceIPv4"], "validate")
+    result = validate(host_vars["co_den_p01"], False)
+    assert not result[0].passed()
+
+
 def test_modelvalidation_pass(host_vars, validators):
     """
     Validator: Checks that peer and peer_int match between peers
