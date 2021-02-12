@@ -45,8 +45,7 @@ class SchemaManager:
             self.schemas[schema.get_id()] = schema
 
         # Load validators
-        full_validator_dir = f"{config.validator_directory}"
-        validators = load_validators(full_validator_dir)
+        validators = load_validators(config.validator_directory)
         self.schemas.update(validators)
 
     def create_schema_from_file(self, root, filename):  # pylint: disable=no-self-use
