@@ -24,7 +24,7 @@ jinja2 = "^2.11.2"
 jsonref = "^0.2"
 pydantic = "^1.6.1"
 rich = "^9.5.1"
-ansible = "^2.8.0"
+ansible-base = "^2.10"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.1"
