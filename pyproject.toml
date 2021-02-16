@@ -1,8 +1,17 @@
 [tool.poetry]
-name = "schema_enforcer"
-version = "0.1.1"
-description = ""
+name = "schema-enforcer"
+version = "1.0.1"
+description = "Tool/Framework for testing structured data against schema definitions"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/networktocode/schema-enforcer"
+repository = "https://github.com/networktocode/schema-enforcer"
+include = [
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
