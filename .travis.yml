@@ -62,6 +62,8 @@ jobs:
         file_glob: true
         file: "dist/*"
         skip_cleanup: true
+        on:
+          all_branches: true
 
     - stage: "deploy-pypi"
       before_script:
