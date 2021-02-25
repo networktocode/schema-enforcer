@@ -8,7 +8,7 @@ class CheckInterface(JmesPathModelValidation):  # pylint: disable=too-few-public
     def __init__(self):
         super().__init__()
         self.top_level_properties = ["interfaces"]
-        self.id = "CheckInterface"
+        self.id = "CheckInterface"  # pylint: disable=invalid-name
         self.left = "interfaces.*[@.type=='core'][] | length([?@])"
         self.right = 2
         self.operator = "gte"

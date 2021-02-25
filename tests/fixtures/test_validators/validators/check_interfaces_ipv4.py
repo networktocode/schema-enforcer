@@ -9,7 +9,7 @@ class CheckInterfaceIPv4(JmesPathModelValidation):  # pylint: disable=too-few-pu
     def __init__(self):
         super().__init__()
         self.top_level_properties = ["interfaces"]
-        self.id = "CheckInterfaceIPv4"
+        self.id = "CheckInterfaceIPv4"  # pylint: disable=invalid-name
         self.left = "interfaces.*[@.type=='core'][] | length([?@])"
         self.right = jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
         self.operator = "eq"
