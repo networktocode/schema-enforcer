@@ -11,15 +11,27 @@ class BaseValidation:
     """Base class for Validation classes."""
 
     def __init__(self):
-        self._results = []
+        """Base init for all validation classes."""
+        self._results: Iterable[ValidationResult] = []
 
-    def add_validation_error(self, message):
-        self._results.append(ValidationResult(result="FAIL", schema_id=self.id, message=message))
+    def add_validation_error(self, message: str, **kwargs):
+        """Add validator error to results.
 
-    def add_validation_pass(self):
-        self._results.append(ValidationResult(result="PASS", schema_id=self.id))
+        Args:
+          message (str): error message
+          kwargs (optional): additional arguments to add to ValidationResult when required
+        """
+        self._results.append(ValidationResult(result="FAIL", schema_id=self.id, message=message, **kwargs))
 
-    def get_results(self):
+    def add_validation_pass(self, **kwargs):
+        """Add validator pass to results.
+
+        Args:
+          kwargs (optional): additional arguments to add to ValidationResult when required
+        """
+        self._results.append(ValidationResult(result="PASS", schema_id=self.id, **kwargs))
+
+    def get_results(self) -> Iterable[ValidationResult]:
         """Return all validation results for this validator."""
         if not self._results:
             self._results.append(ValidationResult(result="PASS", schema_id=self.id))
@@ -27,6 +39,7 @@ class BaseValidation:
         return self._results
 
     def clear_results(self):
+        """Reset results for validator instance."""
         self._results = []
 
     def validate(self, data: dict, strict: bool):
