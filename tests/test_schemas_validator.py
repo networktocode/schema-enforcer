@@ -45,9 +45,11 @@ def test_jmespathvalidation_pass(host_vars, validators):
           GigabitEthernet0/0/0/1:
               type: "core"
     """
-    validate = getattr(validators["CheckInterface"], "validate")
-    result = validate(host_vars["az_phx_pe01"], False)
+    validator = validators["CheckInterface"]
+    validator.validate(host_vars["az_phx_pe01"], False)
+    result = validator.get_results()
     assert result[0].passed()
+    validator.clear_results()
 
 
 def test_jmespathvalidation_fail(host_vars, validators):
@@ -60,9 +62,11 @@ def test_jmespathvalidation_fail(host_vars, validators):
           GigabitEthernet0/0/0/1:
               type: "access"
     """
-    validate = getattr(validators["CheckInterface"], "validate")
-    result = validate(host_vars["az_phx_pe02"], False)
+    validator = validators["CheckInterface"]
+    validator.validate(host_vars["az_phx_pe02"], False)
+    result = validator.get_results()
     assert not result[0].passed()
+    validator.clear_results()
 
 
 def test_jmespathvalidation_with_compile_pass(host_vars, validators):
@@ -82,9 +86,11 @@ def test_jmespathvalidation_with_compile_pass(host_vars, validators):
           peer_int: "GigabitEthernet0/0/0/2"
           type: "core"
     """
-    validate = getattr(validators["CheckInterfaceIPv4"], "validate")
-    result = validate(host_vars["az_phx_pe01"], False)
+    validator = validators["CheckInterfaceIPv4"]
+    validator.validate(host_vars["az_phx_pe01"], False)
+    result = validator.get_results()
     assert result[0].passed()
+    validator.clear_results()
 
 
 def test_jmespathvalidation_with_compile_fail(host_vars, validators):
@@ -97,9 +103,11 @@ def test_jmespathvalidation_with_compile_fail(host_vars, validators):
           peer_int: "GigabitEthernet0/0/0/1"
           type: "core"
     """
-    validate = getattr(validators["CheckInterfaceIPv4"], "validate")
-    result = validate(host_vars["co_den_p01"], False)
+    validator = validators["CheckInterfaceIPv4"]
+    validator.validate(host_vars["co_den_p01"], False)
+    result = validator.get_results()
     assert not result[0].passed()
+    validator.clear_results()
 
 
 def test_modelvalidation_pass(host_vars, validators):
@@ -117,10 +125,12 @@ def test_modelvalidation_pass(host_vars, validators):
         peer: "az-phx-pe01"
         peer_int: "GigabitEthernet0/0/0/0"
     """
-    validate = getattr(validators["CheckPeers"], "validate")
-    result = validate(host_vars, False)
+    validator = validators["CheckPeers"]
+    validator.validate(host_vars, False)
+    result = validator.get_results()
     assert result[0].passed()
     assert result[2].passed()
+    validator.clear_results()
 
 
 def test_modelvalidation_fail(host_vars, validators):
@@ -139,6 +149,7 @@ def test_modelvalidation_fail(host_vars, validators):
         peer: ut-slc-pe01
         peer_int: GigabitEthernet0/0/0/2
     """
-    validate = getattr(validators["CheckPeers"], "validate")
-    result = validate(host_vars, False)
+    validator = validators["CheckPeers"]
+    validator.validate(host_vars, False)
+    result = validator.get_results()
     assert not result[1].passed()
