@@ -6,15 +6,16 @@ load your plugins from the `validator_directory` and run them against your host 
 The validator plugin provides two base classes: ModelValidation and JmesPathModelValidation. The former can be used
 when you want to implement all logic and the latter can be used as a shortcut for jmespath validation.
 
-## ModelValidation
+## BaseValidation
 
 Use this class to implement arbitrary validation logic in Python. In order to work correctly, your Python script must meet
 the following criteria:
 
 1. Exist in the `validator_directory` dir.
-2. Include a subclass of the ModelValidation class to correctly register with schema-enforcer.
-3. Provide a class method in your subclass with the following signature:
-`def validate(cls, data: dict, strict: bool) -> Iterable[ValidationResult]:`
+2. Include a subclass of the BaseValidation class to correctly register with schema-enforcer.
+3. Ensure you call `super().__init__()` in your class `__init__`.
+4. Provide a class method in your subclass with the following signature:
+`def validate(data: dict, strict: bool):`
 
    * Data is a dictionary of variables on a per-host basis.
    * Strict is set to true when the strict flag is set via the CLI. You can use this to offer strict validation behavior
@@ -23,6 +24,25 @@ the following criteria:
 The name of your class will be used as the schema-id for mapping purposes. You can override the default schema ID
 by providing a class-level `id` variable.
 
+Helper functions are provided to add pass/fail results:
+
+```
+def add_validation_error(self, message: str, **kwargs):
+    """Add validator error to results.
+    Args:
+      message (str): error message
+      kwargs (optional): additional arguments to add to ValidationResult when required
+    """
+
+def add_validation_pass(self, **kwargs):
+    """Add validator pass to results.
+    Args:
+      kwargs (optional): additional arguments to add to ValidationResult when required
+    """
+```
+In most cases, you will not need to provide kwargs. However, if you find a use case that requires updating other fields
+in the ValidationResult, you can send the key/value pairs to update the result directly. This is for advanced users only.
+
 ## JmesPathModelValidation
 
 Use this class for basic validation using [jmespath](https://jmespath.org/) expressions to query specific values in your data. In order to work correctly, your Python script must meet
@@ -30,7 +50,8 @@ the following criteria:
 
 1. Exist in the `validator_directory` dir.
 2. Include a subclass of the JmesPathModelValidation class to correctly register with schema-enforcer.
-3. Provide the following class level variables (not instance):
+3. Ensure you call `super().__init__()` in your class `__init__`.
+4. Provide the following instance level variables:
 
    * `top_level_properties`: Field for mapping of validator to data
    * `id`: Schema ID to use for reporting purposes (optional - defaults to class name)
@@ -60,14 +81,15 @@ If you require additional logic or need to compare other types, use the ModelVal
 ```
 from schema_enforcer.schemas.validator import JmesPathModelValidation
 
-
-class CheckInterface(JmesPathModelValidation):
-    top_level_properties = ["interfaces"]
-    id = "CheckInterface"
-    left = "interfaces.*[@.type=='core'][] | length([?@])"
-    right = 2
-    operator = "eq"
-    error = "Less than two core interfaces"
+class CheckInterface(JmesPathModelValidation):  # pylint: disable=too-few-public-methods
+    def __init__(self):
+        super().__init__()
+        self.top_level_properties = ["interfaces"]
+        self.id = "CheckInterface"  # pylint: disable=invalid-name
+        self.left = "interfaces.*[@.type=='core'][] | length([?@])"
+        self.right = 2
+        self.operator = "gte"
+        self.error = "Less than two core interfaces"
 ```
 
 #### With compiled jmespath expression
@@ -76,15 +98,16 @@ import jmespath
 from schema_enforcer.schemas.validator import JmesPathModelValidation
 
 
-class CheckInterfaceIPv4(JmesPathModelValidation):
-    top_level_properties = ["interfaces"]
-    id = "CheckInterfaceIPv4"
-    left = "interfaces.*[@.type=='core'][] | length([?@])"
-    # Schema-enforcer will check if right is a compiled jmespath expression and execute
-    # search against your data before comparing left and right
-    right = jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
-    operator = "eq"
-    error = "All core interfaces do not have IPv4 addresses"
+class CheckInterfaceIPv4(JmesPathModelValidation):  # pylint: disable=too-few-public-methods
+    def __init__(self):
+        super().__init__()
+        self.top_level_properties = ["interfaces"]
+        self.id = "CheckInterfaceIPv4"  # pylint: disable=invalid-name
+        self.left = "interfaces.*[@.type=='core'][] | length([?@])"
+        self.right = jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
+        self.operator = "eq"
+        self.error = "All core interfaces do not have IPv4 addresses"
+
 ```
 
 ## Running validators
@@ -100,8 +123,10 @@ for more details.
 The CheckInterface validator has a top_level_properties of "interfaces":
 
 ```
-class CheckInterface(JmesPathModelValidation):
-    top_level_properties = ["interfaces"]
+class CheckInterface(JmesPathModelValidation):  # pylint: disable=too-few-public-methods
+    def __init__(self):
+        super().__init__()
+        self.top_level_properties = ["interfaces"]
 ```
 
 With automapping enabled, this validator will apply to any host with a top-level `interfaces` key in the Ansible host_vars data:
