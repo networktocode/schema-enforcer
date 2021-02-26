@@ -227,7 +227,7 @@ def pylint(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
     # pty is set to true to properly run the docker commands due to the invocation process of docker
     # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     # Examples directory excluded due to pylint duplicate-code errors
-    exec_cmd = 'find . -name "*.py" -not -path "./examples/*" | xargs pylint'
+    exec_cmd = 'find . -name "*.py" | xargs pylint'
     run_cmd(context, exec_cmd, name, image_ver, local)
 
 
