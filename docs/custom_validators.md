@@ -13,7 +13,7 @@ the following criteria:
 
 1. Exist in the `validator_directory` dir.
 2. Include a subclass of the BaseValidation class to correctly register with schema-enforcer.
-3. Ensure you call `super().__init__()` in your class `__init__`.
+3. Ensure you call `super().__init__()` in your class `__init__` if you override.
 4. Provide a class method in your subclass with the following signature:
 `def validate(data: dict, strict: bool):`
 
@@ -50,8 +50,7 @@ the following criteria:
 
 1. Exist in the `validator_directory` dir.
 2. Include a subclass of the JmesPathModelValidation class to correctly register with schema-enforcer.
-3. Ensure you call `super().__init__()` in your class `__init__`.
-4. Provide the following instance level variables:
+3. Provide the following class level variables:
 
    * `top_level_properties`: Field for mapping of validator to data
    * `id`: Schema ID to use for reporting purposes (optional - defaults to class name)
@@ -73,7 +72,7 @@ The class provides the following operators for basic use cases:
 "contains": right in left,
 ```
 
-If you require additional logic or need to compare other types, use the ModelValidation class.
+If you require additional logic or need to compare other types, use the BaseValidation class and create your own validate method.
 
 ### Examples:
 
@@ -82,14 +81,12 @@ If you require additional logic or need to compare other types, use the ModelVal
 from schema_enforcer.schemas.validator import JmesPathModelValidation
 
 class CheckInterface(JmesPathModelValidation):  # pylint: disable=too-few-public-methods
-    def __init__(self):
-        super().__init__()
-        self.top_level_properties = ["interfaces"]
-        self.id = "CheckInterface"  # pylint: disable=invalid-name
-        self.left = "interfaces.*[@.type=='core'][] | length([?@])"
-        self.right = 2
-        self.operator = "gte"
-        self.error = "Less than two core interfaces"
+    top_level_properties = ["interfaces"]
+    id = "CheckInterface"  # pylint: disable=invalid-name
+    left = "interfaces.*[@.type=='core'][] | length([?@])"
+    right = 2
+    operator = "gte"
+    error = "Less than two core interfaces"
 ```
 
 #### With compiled jmespath expression
@@ -99,15 +96,12 @@ from schema_enforcer.schemas.validator import JmesPathModelValidation
 
 
 class CheckInterfaceIPv4(JmesPathModelValidation):  # pylint: disable=too-few-public-methods
-    def __init__(self):
-        super().__init__()
-        self.top_level_properties = ["interfaces"]
-        self.id = "CheckInterfaceIPv4"  # pylint: disable=invalid-name
-        self.left = "interfaces.*[@.type=='core'][] | length([?@])"
-        self.right = jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
-        self.operator = "eq"
-        self.error = "All core interfaces do not have IPv4 addresses"
-
+    top_level_properties = ["interfaces"]
+    id = "CheckInterfaceIPv4"  # pylint: disable=invalid-name
+    left = "interfaces.*[@.type=='core'][] | length([?@])"
+    right = jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
+    operator = "eq"
+    error = "All core interfaces do not have IPv4 addresses"
 ```
 
 ## Running validators
@@ -124,9 +118,7 @@ The CheckInterface validator has a top_level_properties of "interfaces":
 
 ```
 class CheckInterface(JmesPathModelValidation):  # pylint: disable=too-few-public-methods
-    def __init__(self):
-        super().__init__()
-        self.top_level_properties = ["interfaces"]
+    top_level_properties = ["interfaces"]
 ```
 
 With automapping enabled, this validator will apply to any host with a top-level `interfaces` key in the Ansible host_vars data:
@@ -164,6 +156,3 @@ schema_enforcer_automap_default: false
 schema_enforcer_schema_ids:
   - "CheckInterface"
 ```
-
-
-

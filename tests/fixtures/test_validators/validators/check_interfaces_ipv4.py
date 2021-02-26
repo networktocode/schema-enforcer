@@ -6,11 +6,9 @@ from schema_enforcer.schemas.validator import JmesPathModelValidation
 class CheckInterfaceIPv4(JmesPathModelValidation):  # pylint: disable=too-few-public-methods
     """Test validator for JmesPathModelValidation class"""
 
-    def __init__(self):
-        super().__init__()
-        self.top_level_properties = ["interfaces"]
-        self.id = "CheckInterfaceIPv4"  # pylint: disable=invalid-name
-        self.left = "interfaces.*[@.type=='core'][] | length([?@])"
-        self.right = jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
-        self.operator = "eq"
-        self.error = "All core interfaces do not have IPv4 addresses"
+    top_level_properties = ["interfaces"]
+    id = "CheckInterfaceIPv4"  # pylint: disable=invalid-name
+    left = "interfaces.*[@.type=='core'][] | length([?@])"
+    right = jmespath.compile("interfaces.* | length([?@.type=='core'][].ipv4)")
+    operator = "eq"
+    error = "All core interfaces do not have IPv4 addresses"
