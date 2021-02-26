@@ -76,6 +76,9 @@ notes = """,
     XXX,
     """
 
+[tool.pylint.SIMILARITIES]
+min-similarity-lines = 15
+
 [tool.pytest.ini_options]
 testpaths = [
     "tests"
