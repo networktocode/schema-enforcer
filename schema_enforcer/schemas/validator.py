@@ -43,7 +43,17 @@ class BaseValidation:
         self._results = []
 
     def validate(self, data: dict, strict: bool):
-        """Required function for custom validator."""
+        """Required function for custom validator.
+
+        Args:
+          data (dict): variables to be validated by validator
+          strict (bool): true when --strict cli option is used to request strict validation (if provided)
+
+        Returns:
+          None
+
+        Use add_validation_error and add_validation_pass to report results.
+        """
         raise NotImplementedError
 
 
