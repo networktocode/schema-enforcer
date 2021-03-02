@@ -145,13 +145,9 @@ bash$ cat chi-beijing-rt1/dns.yml
 dns_servers:
   - address: true
   - address: "10.2.2.2"
-<<<<<<< HEAD
 ```
 ```shell
 bash$ test-schema validate
-=======
-bash$ test-schema validate
->>>>>>> a07ffe0... Add link to custom validator doc in README
 FAIL | [ERROR] True is not of type 'string' [FILE] ./chi-beijing-rt1/dns.yml [PROPERTY] dns_servers:0:address
 bash$ echo $?
 1
