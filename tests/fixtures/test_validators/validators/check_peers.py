@@ -1,7 +1,5 @@
 """Test validator for ModelValidation class"""
-from typing import Iterable
 from schema_enforcer.schemas.validator import BaseValidation
-from schema_enforcer.validation import ValidationResult
 
 
 def ansible_hostname(hostname: str):
@@ -23,7 +21,7 @@ class CheckPeers(BaseValidation):  # pylint: disable=too-few-public-methods
 
     id = "CheckPeers"
 
-    def validate(self, data: dict, strict: bool) -> Iterable[ValidationResult]:
+    def validate(self, data: dict, strict: bool):
         for host in data:
             for interface, int_cfg in data[host]["interfaces"].items():
                 if "peer" not in int_cfg:

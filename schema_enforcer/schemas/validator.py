@@ -1,8 +1,9 @@
 """Classes for custom validator plugins."""
 # pylint: disable=no-member, too-few-public-methods
+# See PEP585 (https://www.python.org/dev/peps/pep-0585/)
+from __future__ import annotations
 import pkgutil
 import inspect
-from typing import Iterable
 import jmespath
 from schema_enforcer.validation import ValidationResult
 
@@ -12,7 +13,7 @@ class BaseValidation:
 
     def __init__(self):
         """Base init for all validation classes."""
-        self._results: Iterable[ValidationResult] = []
+        self._results: list[ValidationResult] = []
 
     def add_validation_error(self, message: str, **kwargs):
         """Add validator error to results.
@@ -31,7 +32,7 @@ class BaseValidation:
         """
         self._results.append(ValidationResult(result="PASS", schema_id=self.id, **kwargs))
 
-    def get_results(self) -> Iterable[ValidationResult]:
+    def get_results(self) -> list[ValidationResult]:
         """Return all validation results for this validator."""
         if not self._results:
             self._results.append(ValidationResult(result="PASS", schema_id=self.id))
@@ -91,7 +92,7 @@ def is_validator(obj) -> bool:
         return False
 
 
-def load_validators(validator_path: str) -> Iterable[BaseValidation]:
+def load_validators(validator_path: str) -> dict[str, BaseValidation]:
     """Load all validator plugins from validator_path."""
     validators = dict()
     for importer, module_name, _ in pkgutil.iter_modules([validator_path]):
