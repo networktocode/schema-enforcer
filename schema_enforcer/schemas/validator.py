@@ -102,7 +102,9 @@ def load_validators(validator_path: str) -> dict[str, BaseValidation]:
             if not hasattr(cls, "id"):
                 cls.id = name
             if cls.id in validators:
-                print(f"Duplicate validator name: {cls.id}")
+                print(
+                    f"Unable to load the validator {cls.id}, there is already a validator with the same name ({name})."
+                )
             else:
                 validators[cls.id] = cls()
     return validators
