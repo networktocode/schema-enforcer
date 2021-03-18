@@ -40,6 +40,12 @@ def strict_invalid_instance_data():
     return load_file(os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1", "dns.yml"))
 
 
+@pytest.fixture
+def invalid_format_instance_data():
+    """Invalid format in instance data"""
+    return load_file(os.path.join(FIXTURES_DIR, "hostvars", "spa-madrid-rt1", "dns.yml"))
+
+
 class TestJsonSchema:
     """Tests methods relating to schema_enforcer.schemas.jsonschema.JsonSchema Class"""
 
@@ -93,6 +99,19 @@ class TestJsonSchema:
             validation_results[0].message
             == "Additional properties are not allowed ('fun_extr_attribute' was unexpected)"
         )
+
+    @staticmethod
+    def test_ipv4_format_checker(schema_instance, invalid_format_instance_data):
+        """Test ipv4 format checker
+
+        Args:
+            schema_instance (JsonSchema): Instance of JsonSchema class
+        """
+        validation_results = list(schema_instance.validate(data=invalid_format_instance_data))
+        assert len(validation_results) == 1
+        assert validation_results[0].schema_id == LOADED_SCHEMA_DATA.get("$id")
+        assert validation_results[0].result == RESULT_FAIL
+        assert validation_results[0].message == "'10.1.1.300' is not a 'ipv4'"
 
     @staticmethod
     def test_validate_to_dict(schema_instance, valid_instance_data):
