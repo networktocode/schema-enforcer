@@ -2,7 +2,7 @@
 import copy
 import pkgutil
 import json
-from jsonschema import Draft7Validator  # pylint: disable=import-self
+from jsonschema import Draft7Validator, FormatChecker  # pylint: disable=import-self
 from schema_enforcer.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
 
 # TODO do we need to catch a possible exception here ?
@@ -90,7 +90,7 @@ class JsonSchema:
         if self.validator:
             return self.validator
 
-        self.validator = Draft7Validator(self.data)
+        self.validator = Draft7Validator(self.data, format_checker=FormatChecker(formats=["ipv4"]))
 
         return self.validator
 
@@ -124,7 +124,7 @@ class JsonSchema:
                     )
                 items["additionalProperties"] = False
 
-        self.strict_validator = Draft7Validator(schema)
+        self.strict_validator = Draft7Validator(schema, format_checker=FormatChecker(formats=["ipv4"]))
         return self.strict_validator
 
     def check_if_valid(self):
@@ -133,7 +133,7 @@ class JsonSchema:
         Returns:
             List[ValidationResult]: A list of validation result objects.
         """
-        validator = Draft7Validator(v7schema)
+        validator = Draft7Validator(v7schema, format_checker=FormatChecker(formats=["ipv4"]))
 
         results = []
         has_error = False
