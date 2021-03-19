@@ -10,7 +10,7 @@ v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
 v7schema = json.loads(v7data.decode("utf-8"))
 
 
-class JsonSchema:
+class JsonSchema:  # pylint: disable=too-many-instance-attributes
     """class to manage jsonschema type schemas."""
 
     schematype = "jsonchema"
@@ -32,6 +32,7 @@ class JsonSchema:
         ]
         self.validator = None
         self.strict_validator = None
+        self.format_checker = FormatChecker(formats=["ipv4"])
 
     def get_id(self):
         """Return the unique ID of the schema."""
@@ -90,7 +91,7 @@ class JsonSchema:
         if self.validator:
             return self.validator
 
-        self.validator = Draft7Validator(self.data, format_checker=FormatChecker(formats=["ipv4"]))
+        self.validator = Draft7Validator(self.data, format_checker=self.format_checker)
 
         return self.validator
 
@@ -124,7 +125,7 @@ class JsonSchema:
                     )
                 items["additionalProperties"] = False
 
-        self.strict_validator = Draft7Validator(schema, format_checker=FormatChecker(formats=["ipv4"]))
+        self.strict_validator = Draft7Validator(schema, format_checker=self.format_checker)
         return self.strict_validator
 
     def check_if_valid(self):
@@ -133,7 +134,7 @@ class JsonSchema:
         Returns:
             List[ValidationResult]: A list of validation result objects.
         """
-        validator = Draft7Validator(v7schema, format_checker=FormatChecker(formats=["ipv4"]))
+        validator = Draft7Validator(v7schema, format_checker=self.format_checker)
 
         results = []
         has_error = False
