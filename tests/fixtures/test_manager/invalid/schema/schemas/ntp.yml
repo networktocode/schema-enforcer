@@ -1,0 +1,16 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/ntp"
+description: "NTP Configuration schema."
+type: "object"
+properties:
+  ntp_servers:
+    $ref: "../definitions/arrays/ip.yml#ipv4_hosts"
+  ntp_authentication:
+    type: "boolean"
+  ntp_logging:
+    type: "boolean"
+additionalProperties: false
+required:
+  - "ntp_servers"
+something: "extra"
