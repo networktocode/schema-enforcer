@@ -37,3 +37,20 @@ def test_dump(capsys, schema_manager, schema_id, result_file):
     schema_manager.dump_schema(schema_id)
     captured = capsys.readouterr()
     assert captured.out == expected
+
+
+def test_invalid(capsys):
+    """ Test validates that SchemaManager reports an error when an invalid schema is loaded. """
+    config = {
+        "main_directory": os.path.join(FIXTURE_DIR, "test_manager", "invalid", "schema"),
+        "data_file_search_directories": [os.path.join(FIXTURE_DIR, "hostvars")],
+        "schema_mapping": {"dns.yml": ["schemas/dns_servers"]},
+    }
+    with pytest.raises(SystemExit) as e:  # pylint: disable=invalid-name
+        schema_manager = SchemaManager(config=Settings(**config))
+        captured = capsys.readouterr()
+        schema_manager.print_schemas_list()
+        expected_error = "ERROR: File invalid.yml is not a valid jsonschema."
+        assert expected_error in captured.out
+        assert e.type == SystemExit
+        assert e.value.code == 1
