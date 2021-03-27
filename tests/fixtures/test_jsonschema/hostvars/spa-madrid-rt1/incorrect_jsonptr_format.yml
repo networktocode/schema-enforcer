@@ -1,0 +1,3 @@
+---
+dns_servers:
+  - json_ptr: "fakejsonptr"

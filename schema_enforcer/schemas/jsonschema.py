@@ -2,7 +2,7 @@
 import copy
 import pkgutil
 import json
-from jsonschema import Draft7Validator, FormatChecker  # pylint: disable=import-self
+from jsonschema import Draft7Validator, draft7_format_checker  # pylint: disable=import-self
 from schema_enforcer.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
 
 # TODO do we need to catch a possible exception here ?
@@ -32,7 +32,7 @@ class JsonSchema:  # pylint: disable=too-many-instance-attributes
         ]
         self.validator = None
         self.strict_validator = None
-        self.format_checker = FormatChecker(formats=["ipv4"])
+        self.format_checker = draft7_format_checker
 
     def get_id(self):
         """Return the unique ID of the schema."""
