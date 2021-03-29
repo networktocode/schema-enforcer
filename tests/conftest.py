@@ -17,7 +17,7 @@ FORMAT_CHECK_ERROR_MESSAGE_MAPPING = {
     "incorrect_ipv6_format": "'2001:00000:3238:DFE1:63:0000:0000:FEFB' is not a 'ipv6'",
     "incorrect_time_format": "'20:20:33333+00:00' is not a 'time'",
     "incorrect_datetime_format": "'January 29th 2021' is not a 'date-time'",
-    "incorrect_iri_format": "'fake_iri' is not a 'iri'"
+    "incorrect_iri_format": "'fake_iri' is not a 'iri'",
 }
 
 
