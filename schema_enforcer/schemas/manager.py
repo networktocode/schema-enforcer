@@ -67,7 +67,7 @@ class SchemaManager:
         base_uri = f"file:{root}/"
         schema_full = jsonref.JsonRef.replace_refs(file_data, base_uri=base_uri, jsonschema=True, loader=load_file)
         schema = JsonSchema(schema=schema_full, filename=filename, root=root)
-        # Only add valid jsonschema files and print an error if an invalid file is found
+        # Only add valid jsonschema files and raise an exception if an invalid file is found
         valid = all((result.passed() for result in schema.check_if_valid()))
         if not valid:
             raise InvalidJSONSchema(schema)
