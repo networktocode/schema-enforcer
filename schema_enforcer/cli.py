@@ -201,7 +201,7 @@ def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # n
 )
 def ansible(
     inventory, limit, show_pass, show_checks
-):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals  # noqa: D417,D301
+):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals,too-many-statements  # noqa: D417,D301
     """Validate the hostvars for all hosts within an Ansible inventory.
 
     The hostvars are dynamically rendered based on groups to which each host belongs.
