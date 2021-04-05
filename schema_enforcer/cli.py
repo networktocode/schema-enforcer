@@ -316,8 +316,9 @@ def ansible(
                 data = hostvars
 
             # Validate host vars against schema
-            for result in schema_obj.validate(data=data, strict=strict):
+            schema_obj.validate(data=data, strict=strict)
 
+            for result in schema_obj.get_results():
                 result.instance_type = "HOST"
                 result.instance_hostname = host.name
 
@@ -327,6 +328,7 @@ def ansible(
 
                 elif result.passed() and show_pass:
                     result.print()
+            schema_obj.clear_results()
 
     if not error_exists:
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
