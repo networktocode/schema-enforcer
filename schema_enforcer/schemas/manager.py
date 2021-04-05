@@ -10,7 +10,7 @@ from rich.table import Table
 
 from schema_enforcer.utils import load_file, find_file, find_files, dump_data_to_yaml
 from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
-from schema_enforcer.exceptions import SchemaNotDefined
+from schema_enforcer.exceptions import SchemaNotDefined, InvalidJSONSchema
 from schema_enforcer.utils import error, warn
 from schema_enforcer.schemas.jsonschema import JsonSchema
 
@@ -65,8 +65,7 @@ class SchemaManager:
         # Only add valid jsonschema files and print an error if an invalid file is found
         valid = all((result.passed() for result in schema.check_if_valid()))
         if not valid:
-            print(f"ERROR: File {filename} is not a valid jsonschema.")
-            sys.exit(1)
+            raise InvalidJSONSchema(schema)
         return schema
 
     def iter_schemas(self):
