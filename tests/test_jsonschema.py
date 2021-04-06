@@ -70,28 +70,36 @@ class TestJsonSchema:
         Args:
             schema_instance (JsonSchema): Instance of JsonSchema class
         """
-        validation_results = list(schema_instance.validate(data=valid_instance_data))
+        schema_instance.validate(data=valid_instance_data)
+        validation_results = schema_instance.get_results()
         assert len(validation_results) == 1
         assert validation_results[0].schema_id == LOADED_SCHEMA_DATA.get("$id")
         assert validation_results[0].result == RESULT_PASS
         assert validation_results[0].message is None
+        schema_instance.clear_results()
 
-        validation_results = list(schema_instance.validate(data=invalid_instance_data))
+        schema_instance.validate(data=invalid_instance_data)
+        validation_results = schema_instance.get_results()
         assert len(validation_results) == 1
         assert validation_results[0].schema_id == LOADED_SCHEMA_DATA.get("$id")
         assert validation_results[0].result == RESULT_FAIL
         assert validation_results[0].message == "True is not of type 'string'"
         assert validation_results[0].absolute_path == ["dns_servers", "0", "address"]
+        schema_instance.clear_results()
 
-        validation_results = list(schema_instance.validate(data=strict_invalid_instance_data, strict=False))
+        schema_instance.validate(data=strict_invalid_instance_data, strict=False)
+        validation_results = schema_instance.get_results()
         assert validation_results[0].result == RESULT_PASS
+        schema_instance.clear_results()
 
-        validation_results = list(schema_instance.validate(data=strict_invalid_instance_data, strict=True))
+        schema_instance.validate(data=strict_invalid_instance_data, strict=True)
+        validation_results = schema_instance.get_results()
         assert validation_results[0].result == RESULT_FAIL
         assert (
             validation_results[0].message
             == "Additional properties are not allowed ('fun_extr_attribute' was unexpected)"
         )
+        schema_instance.clear_results()
 
     @staticmethod
     def test_format_checkers(schema_instance, data_instance, expected_error_message):

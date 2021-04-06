@@ -2,7 +2,9 @@
 import copy
 import pkgutil
 import json
+
 from jsonschema import Draft7Validator, draft7_format_checker  # pylint: disable=import-self
+from schema_enforcer.schemas.validator import BaseValidation
 from schema_enforcer.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
 
 # TODO do we need to catch a possible exception here ?
@@ -10,7 +12,8 @@ v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
 v7schema = json.loads(v7data.decode("utf-8"))
 
 
-class JsonSchema:  # pylint: disable=too-many-instance-attributes
+
+class JsonSchema(BaseValidation):
     """class to manage jsonschema type schemas."""
 
     schematype = "jsonchema"
@@ -23,6 +26,7 @@ class JsonSchema:  # pylint: disable=too-many-instance-attributes
             filename (string): Name of the schema file on the filesystem.
             root (string): Absolute path to the directory where the schema file is located.
         """
+        super().__init__()
         self.filename = filename
         self.root = root
         self.data = schema
@@ -57,14 +61,11 @@ class JsonSchema:  # pylint: disable=too-many-instance-attributes
         for err in validator.iter_errors(data):
 
             has_error = True
-            yield ValidationResult(
-                schema_id=self.id, result=RESULT_FAIL, message=err.message, absolute_path=list(err.absolute_path)
-            )
+            self.add_validation_error(err.message, absolute_path=list(err.absolute_path))
 
         if not has_error:
-            yield ValidationResult(
-                schema_id=self.id, result=RESULT_PASS,
-            )
+            self.add_validation_pass()
+        return self.get_results()
 
     def validate_to_dict(self, data, strict=False):
         """Return a list of ValidationResult objects.
