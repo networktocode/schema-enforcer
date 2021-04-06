@@ -12,8 +12,7 @@ v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
 v7schema = json.loads(v7data.decode("utf-8"))
 
 
-
-class JsonSchema(BaseValidation):
+class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attributes
     """class to manage jsonschema type schemas."""
 
     schematype = "jsonchema"
