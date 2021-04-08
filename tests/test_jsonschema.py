@@ -1,7 +1,6 @@
 # pylint: disable=redefined-outer-name
 """Tests to validate functions defined in jsonschema.py"""
 import os
-
 import pytest
 
 from schema_enforcer.schemas.jsonschema import JsonSchema
@@ -101,6 +100,13 @@ class TestJsonSchema:
             == "Additional properties are not allowed ('fun_extr_attribute' was unexpected)"
         )
         schema_instance.clear_results()
+
+    @staticmethod
+    def test_format_checkers(schema_instance, data_instance, expected_error_message):
+        """Test format checkers"""
+        validation_results = list(schema_instance.validate(data=data_instance))
+        assert validation_results[0].result == RESULT_FAIL
+        assert validation_results[0].message == expected_error_message
 
     @staticmethod
     def test_validate_to_dict(schema_instance, valid_instance_data):

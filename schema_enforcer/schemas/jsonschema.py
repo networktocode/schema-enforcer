@@ -2,7 +2,8 @@
 import copy
 import pkgutil
 import json
-from jsonschema import Draft7Validator  # pylint: disable=import-self
+
+from jsonschema import Draft7Validator, draft7_format_checker  # pylint: disable=import-self
 from schema_enforcer.schemas.validator import BaseValidation
 from schema_enforcer.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
 
@@ -11,7 +12,7 @@ v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
 v7schema = json.loads(v7data.decode("utf-8"))
 
 
-class JsonSchema(BaseValidation):
+class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attributes
     """class to manage jsonschema type schemas."""
 
     schematype = "jsonchema"
@@ -34,6 +35,7 @@ class JsonSchema(BaseValidation):
         ]
         self.validator = None
         self.strict_validator = None
+        self.format_checker = draft7_format_checker
 
     def get_id(self):
         """Return the unique ID of the schema."""
@@ -89,7 +91,7 @@ class JsonSchema(BaseValidation):
         if self.validator:
             return self.validator
 
-        self.validator = Draft7Validator(self.data)
+        self.validator = Draft7Validator(self.data, format_checker=self.format_checker)
 
         return self.validator
 
@@ -123,7 +125,7 @@ class JsonSchema(BaseValidation):
                     )
                 items["additionalProperties"] = False
 
-        self.strict_validator = Draft7Validator(schema)
+        self.strict_validator = Draft7Validator(schema, format_checker=self.format_checker)
         return self.strict_validator
 
     def check_if_valid(self):
@@ -132,7 +134,7 @@ class JsonSchema(BaseValidation):
         Returns:
             List[ValidationResult]: A list of validation result objects.
         """
-        validator = Draft7Validator(v7schema)
+        validator = Draft7Validator(v7schema, format_checker=self.format_checker)
 
         results = []
         has_error = False

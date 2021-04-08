@@ -1,0 +1,19 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/incorrect_iri_format"
+description: "DNS Server Configuration schema."
+type: "object"
+properties:
+  dns_servers:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        iri:
+          type: "string"
+          format: "iri"
+        required:
+          - "iri"
+    uniqueItems: true
+required:
+  - "dns_servers"
