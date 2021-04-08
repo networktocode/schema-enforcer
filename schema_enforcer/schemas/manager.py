@@ -10,7 +10,7 @@ from rich.table import Table
 
 from schema_enforcer.utils import load_file, find_file, find_files, dump_data_to_yaml
 from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
-from schema_enforcer.exceptions import SchemaNotDefined
+from schema_enforcer.exceptions import SchemaNotDefined, InvalidJSONSchema
 from schema_enforcer.utils import error, warn
 from schema_enforcer.schemas.jsonschema import JsonSchema
 from schema_enforcer.schemas.validator import load_validators
@@ -66,7 +66,12 @@ class SchemaManager:
         # schema_type = "jsonschema"
         base_uri = f"file:{root}/"
         schema_full = jsonref.JsonRef.replace_refs(file_data, base_uri=base_uri, jsonschema=True, loader=load_file)
-        return JsonSchema(schema=schema_full, filename=filename, root=root)
+        schema = JsonSchema(schema=schema_full, filename=filename, root=root)
+        # Only add valid jsonschema files and raise an exception if an invalid file is found
+        valid = all((result.passed() for result in schema.check_if_valid()))
+        if not valid:
+            raise InvalidJSONSchema(schema)
+        return schema
 
     def iter_schemas(self):
         """Return an iterator of all schemas in the SchemaManager.

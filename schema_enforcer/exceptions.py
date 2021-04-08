@@ -18,3 +18,21 @@ class SchemaNotDefined(Exception):
 
     Args (Exception): Base Exception Object
     """
+
+
+class InvalidJSONSchema(Exception):
+    """Raised when a JSONschema file is invalid.
+
+    Args (Exception): Base Exception Object
+    """
+
+    def __init__(self, schema):
+        """Provide instance variables when invalid schema is detected."""
+        super().__init__(schema)
+        self.schema = schema
+
+    def __str__(self):
+        """Generate error string including validation errors."""
+        errors = [result.message for result in self.schema.check_if_valid() if not result.passed()]
+        message = f"Invalid JSONschema file: {self.schema.filename} - {errors}"
+        return message
