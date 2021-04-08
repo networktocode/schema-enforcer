@@ -1,0 +1,19 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/incorrect_jsonptr_format"
+description: "DNS Schema to test ipv6 formatter."
+type: "object"
+properties:
+  dns_servers:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        json_ptr:
+          type: "string"
+          format: "json-pointer"
+        required:
+          - "json_ptr"
+    uniqueItems: true
+required:
+  - "dns_servers"

@@ -2,7 +2,9 @@
 import copy
 import pkgutil
 import json
-from jsonschema import Draft7Validator  # pylint: disable=import-self
+
+from jsonschema import Draft7Validator, draft7_format_checker  # pylint: disable=import-self
+from schema_enforcer.schemas.validator import BaseValidation
 from schema_enforcer.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
 
 # TODO do we need to catch a possible exception here ?
@@ -10,7 +12,7 @@ v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
 v7schema = json.loads(v7data.decode("utf-8"))
 
 
-class JsonSchema:
+class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attributes
     """class to manage jsonschema type schemas."""
 
     schematype = "jsonchema"
@@ -23,6 +25,7 @@ class JsonSchema:
             filename (string): Name of the schema file on the filesystem.
             root (string): Absolute path to the directory where the schema file is located.
         """
+        super().__init__()
         self.filename = filename
         self.root = root
         self.data = schema
@@ -32,6 +35,7 @@ class JsonSchema:
         ]
         self.validator = None
         self.strict_validator = None
+        self.format_checker = draft7_format_checker
 
     def get_id(self):
         """Return the unique ID of the schema."""
@@ -56,14 +60,11 @@ class JsonSchema:
         for err in validator.iter_errors(data):
 
             has_error = True
-            yield ValidationResult(
-                schema_id=self.id, result=RESULT_FAIL, message=err.message, absolute_path=list(err.absolute_path)
-            )
+            self.add_validation_error(err.message, absolute_path=list(err.absolute_path))
 
         if not has_error:
-            yield ValidationResult(
-                schema_id=self.id, result=RESULT_PASS,
-            )
+            self.add_validation_pass()
+        return self.get_results()
 
     def validate_to_dict(self, data, strict=False):
         """Return a list of ValidationResult objects.
@@ -90,7 +91,7 @@ class JsonSchema:
         if self.validator:
             return self.validator
 
-        self.validator = Draft7Validator(self.data)
+        self.validator = Draft7Validator(self.data, format_checker=self.format_checker)
 
         return self.validator
 
@@ -124,7 +125,7 @@ class JsonSchema:
                     )
                 items["additionalProperties"] = False
 
-        self.strict_validator = Draft7Validator(schema)
+        self.strict_validator = Draft7Validator(schema, format_checker=self.format_checker)
         return self.strict_validator
 
     def check_if_valid(self):
@@ -133,7 +134,7 @@ class JsonSchema:
         Returns:
             List[ValidationResult]: A list of validation result objects.
         """
-        validator = Draft7Validator(v7schema)
+        validator = Draft7Validator(v7schema, format_checker=self.format_checker)
 
         results = []
         has_error = False
