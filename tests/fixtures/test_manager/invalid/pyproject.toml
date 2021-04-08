@@ -1,0 +1,4 @@
+[tool.schema_enforcer]
+schema_file_exclude_filenames = []
+
+schema_directory = "schemas"

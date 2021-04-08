@@ -125,6 +125,12 @@ class TestJsonSchema:
 
     @staticmethod
     def test_check_if_valid():
-        pass
+        schema_data = load_file(os.path.join(FIXTURES_DIR, "schema", "schemas", "invalid.yml"))
+        schema_instance = JsonSchema(
+            schema=schema_data, filename="invalid.yml", root=os.path.join(FIXTURES_DIR, "schema", "schemas"),
+        )
+        results = schema_instance.check_if_valid()
+        for result in results:
+            assert not result.passed()
 
     # def test_get_id():
