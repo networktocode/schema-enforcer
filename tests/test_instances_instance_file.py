@@ -40,7 +40,7 @@ def if_w_matches():
     if_instance = InstanceFile(
         root=os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1"),
         filename="dns.yaml",
-        matches={"schemas/dns_servers",},
+        matches={"schemas/dns_servers"},
     )
 
     return if_instance
@@ -106,7 +106,7 @@ def test_get_content(if_w_matches):
     Args:
         if_w_matches (InstanceFile): Initialized InstanceFile pytest fixture
     """
-    content = if_w_matches._get_content()
+    content = if_w_matches._get_content()  # pylint: disable=protected-access
     assert content["dns_servers"][0]["address"] == "10.6.6.6"
     assert content["dns_servers"][1]["address"] == "10.7.7.7"
 
