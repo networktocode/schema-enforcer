@@ -304,7 +304,6 @@ def ansible(
 
         # Acquire schemas applicable to the given host
         applicable_schemas = inv.get_applicable_schemas(hostvars, smgr, declared_schema_ids, automap)
-        # import pdb; pdb.set_trace()
         for schema_obj in applicable_schemas.values():
             # Combine host attributes into a single data structure matching to properties defined at the top level of the schema definition
             if not strict:
