@@ -181,6 +181,9 @@ class InstanceFile:
         for schema_id, schema in schema_manager.iter_schemas():
             if schema_id not in self.matches:
                 continue
-            errs = itertools.chain(errs, schema.validate(self._get_content(), strict))
+            schema.validate(self._get_content(), strict)
+            results = schema.get_results()
+            errs = itertools.chain(errs, results)
+            schema.clear_results()
 
         return errs

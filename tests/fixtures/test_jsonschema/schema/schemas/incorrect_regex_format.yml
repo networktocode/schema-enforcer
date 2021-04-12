@@ -1,0 +1,19 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/incorrect_regex_format"
+description: "DNS Server Configuration schema."
+type: "object"
+properties:
+  dns_servers:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        site_prefix:
+          type: "string"
+          format: "regex"
+        required:
+          - "site_prefix"
+    uniqueItems: true
+required:
+  - "dns_servers"

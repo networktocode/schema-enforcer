@@ -121,7 +121,7 @@ To run the schema validations, the command `schema-enforcer validate` can be run
 
 ```shell
 bash$ schema-enforcer validate
-schema-enforcer validate            
+schema-enforcer validate
 ALL SCHEMA VALIDATION CHECKS PASSED
 ```
 
@@ -140,14 +140,14 @@ If we modify one of the addresses in the `chi-beijing-rt1/dns.yml` file so that 
 
 ```yaml
 bash$ cat chi-beijing-rt1/dns.yml
-# jsonschema: schemas/dns_servers       
+# jsonschema: schemas/dns_servers
 ---
 dns_servers:
   - address: true
   - address: "10.2.2.2"
 ```
 ```shell
-bash$ test-schema validate            
+bash$ test-schema validate
 FAIL | [ERROR] True is not of type 'string' [FILE] ./chi-beijing-rt1/dns.yml [PROPERTY] dns_servers:0:address
 bash$ echo $?
 1
@@ -160,7 +160,7 @@ When a structured data file fails schema validation, `schema-enforcer` exits wit
 Schema enforcer will work with default settings, however, a `pyproject.toml` file can be placed at the root of the path in which `schema-enforcer` is run in order to override default settings or declare configuration for more advanced features. Inside of this `pyproject.toml` file, `tool.schema_enfocer` sections can be used to declare settings for schema enforcer. Take for example the `pyproject.toml` file in example 2.
 
 ```shell
-bash$ cd examples/example2 && tree -L 2         
+bash$ cd examples/example2 && tree -L 2
 .
 ├── README.md
 ├── hostvars
@@ -198,3 +198,4 @@ Detailed documentation can be found in the README.md files inside of the `docs/`
 - [The `ansible` command](docs/ansible_command.md)
 - [The `validate` command](docs/validate_command.md)
 - [The `schema` command](docs/schema_command.md)
+- [Implementing custom validators](docs/custom_validators.md)

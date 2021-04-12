@@ -1,7 +1,6 @@
 # pylint: disable=redefined-outer-name
 """Tests to validate functions defined in jsonschema.py"""
 import os
-
 import pytest
 
 from schema_enforcer.schemas.jsonschema import JsonSchema
@@ -71,28 +70,43 @@ class TestJsonSchema:
         Args:
             schema_instance (JsonSchema): Instance of JsonSchema class
         """
-        validation_results = list(schema_instance.validate(data=valid_instance_data))
+        schema_instance.validate(data=valid_instance_data)
+        validation_results = schema_instance.get_results()
         assert len(validation_results) == 1
         assert validation_results[0].schema_id == LOADED_SCHEMA_DATA.get("$id")
         assert validation_results[0].result == RESULT_PASS
         assert validation_results[0].message is None
+        schema_instance.clear_results()
 
-        validation_results = list(schema_instance.validate(data=invalid_instance_data))
+        schema_instance.validate(data=invalid_instance_data)
+        validation_results = schema_instance.get_results()
         assert len(validation_results) == 1
         assert validation_results[0].schema_id == LOADED_SCHEMA_DATA.get("$id")
         assert validation_results[0].result == RESULT_FAIL
         assert validation_results[0].message == "True is not of type 'string'"
         assert validation_results[0].absolute_path == ["dns_servers", "0", "address"]
+        schema_instance.clear_results()
 
-        validation_results = list(schema_instance.validate(data=strict_invalid_instance_data, strict=False))
+        schema_instance.validate(data=strict_invalid_instance_data, strict=False)
+        validation_results = schema_instance.get_results()
         assert validation_results[0].result == RESULT_PASS
+        schema_instance.clear_results()
 
-        validation_results = list(schema_instance.validate(data=strict_invalid_instance_data, strict=True))
+        schema_instance.validate(data=strict_invalid_instance_data, strict=True)
+        validation_results = schema_instance.get_results()
         assert validation_results[0].result == RESULT_FAIL
         assert (
             validation_results[0].message
             == "Additional properties are not allowed ('fun_extr_attribute' was unexpected)"
         )
+        schema_instance.clear_results()
+
+    @staticmethod
+    def test_format_checkers(schema_instance, data_instance, expected_error_message):
+        """Test format checkers"""
+        validation_results = list(schema_instance.validate(data=data_instance))
+        assert validation_results[0].result == RESULT_FAIL
+        assert validation_results[0].message == expected_error_message
 
     @staticmethod
     def test_validate_to_dict(schema_instance, valid_instance_data):
@@ -117,6 +131,12 @@ class TestJsonSchema:
 
     @staticmethod
     def test_check_if_valid():
-        pass
+        schema_data = load_file(os.path.join(FIXTURES_DIR, "schema", "schemas", "invalid.yml"))
+        schema_instance = JsonSchema(
+            schema=schema_data, filename="invalid.yml", root=os.path.join(FIXTURES_DIR, "schema", "schemas"),
+        )
+        results = schema_instance.check_if_valid()
+        for result in results:
+            assert not result.passed()
 
     # def test_get_id():
