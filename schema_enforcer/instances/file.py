@@ -79,7 +79,7 @@ class InstanceFile:
         self.filename = filename
 
         # Internal vars for caching data
-        self._top_level_properties = []
+        self._top_level_properties = set()
 
         if matches:
             self.matches = matches

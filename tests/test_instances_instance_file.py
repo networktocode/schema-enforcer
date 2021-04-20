@@ -6,7 +6,7 @@ import os
 import pytest
 
 from schema_enforcer.schemas.manager import SchemaManager
-from schema_enforcer.instances.file import InstanceFile
+from schema_enforcer.instances.file import InstanceFile, InstanceFileManager
 from schema_enforcer.validation import ValidationResult
 from schema_enforcer.config import Settings
 
@@ -15,7 +15,7 @@ FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtur
 CONFIG_DATA = {
     "main_directory": os.path.join(FIXTURES_DIR, "schema"),
     # "definitions_directory":
-    # "schema_directory":
+    # "schema_directory": os.path.join(FIXTURES_DIR, "schema", "schemas"),
     "data_file_search_directories": [os.path.join(FIXTURES_DIR, "hostvars")],
     "schema_mapping": {"dns.yml": ["schemas/dns_servers"]},
 }
@@ -68,6 +68,12 @@ def schema_manager():
     schema_manager = SchemaManager(config=Settings(**CONFIG_DATA))
 
     return schema_manager
+
+@pytest.fixture
+def ifm():
+    """Instance of InstanceFileManager."""
+    ifm = InstanceFileManager(config=Settings(**CONFIG_DATA))
+    return ifm
 
 
 def test_init(if_wo_matches, if_w_matches, if_w_extended_matches):
@@ -131,3 +137,10 @@ def test_validate(if_w_matches, schema_manager):
     assert isinstance(strict_errs[0], ValidationResult)
     assert strict_errs[0].result == "FAIL"
     assert strict_errs[0].message == "Additional properties are not allowed ('fun_extr_attribute' was unexpected)"
+
+def test_add_matches_by_property_automap(if_wo_matches, schema_manager):
+    """Tests add_matches_by_property_automap method of InstanceFile class."""
+    assert not if_wo_matches.matches
+    assert if_wo_matches.top_level_properties == {"syslog_servers"}
+    if_wo_matches.add_matches_by_property_automap(schema_manager)
+    assert if_wo_matches.matches == set(['schemas/syslog_servers'])
