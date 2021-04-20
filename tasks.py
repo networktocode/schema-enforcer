@@ -178,8 +178,6 @@ def clean(context):
 
     Args:
         context (obj): Used to run specific commands
-        with_ansible (bool): Remove the schema-enforcer image with ansible installed
-        with_ansible_base (bool): Remove the schema-enforcer image with ansible-base installed
     """
     clean_image(context)
     clean_image(context, with_ansible=True)
