@@ -69,6 +69,7 @@ def schema_manager():
 
     return schema_manager
 
+
 @pytest.fixture
 def ifm():
     """Instance of InstanceFileManager."""
@@ -116,9 +117,10 @@ def test_get_content(if_w_matches):
     assert content["dns_servers"][0]["address"] == "10.6.6.6"
     assert content["dns_servers"][1]["address"] == "10.7.7.7"
 
-    raw_content = if_w_matches._get_content(structured=False)
-    with open (os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1", "dns.yaml"), 'r') as fhd:
+    raw_content = if_w_matches._get_content(structured=False)  # pylint: disable=protected-access
+    with open(os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1", "dns.yaml"), "r") as fhd:
         assert raw_content == fhd.read()
+
 
 def test_validate(if_w_matches, schema_manager):
     """
@@ -141,9 +143,10 @@ def test_validate(if_w_matches, schema_manager):
     assert strict_errs[0].result == "FAIL"
     assert strict_errs[0].message == "Additional properties are not allowed ('fun_extr_attribute' was unexpected)"
 
+
 def test_add_matches_by_property_automap(if_wo_matches, schema_manager):
     """Tests add_matches_by_property_automap method of InstanceFile class."""
     assert not if_wo_matches.matches
     assert if_wo_matches.top_level_properties == {"syslog_servers"}
     if_wo_matches.add_matches_by_property_automap(schema_manager)
-    assert if_wo_matches.matches == set(['schemas/syslog_servers'])
+    assert if_wo_matches.matches == set(["schemas/syslog_servers"])
