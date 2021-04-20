@@ -11,7 +11,7 @@ COPY pyproject.toml /local
 ARG ANSIBLE_VER="ignore"
 
 RUN poetry config virtualenvs.create false \
-  && poetry install --no-interaction --no-ansi \
+  && poetry install --no-interaction --no-ansi --extras ansible \
   # If ANSIBLE_VER is set (not default), uninstall the ansible version poetry installed and install the declared ansible version.
   && if [ ! "$ANSIBLE_VER" = "ignore" ]; then pip uninstall -yq ansible ansible-base && pip install ansible==$ANSIBLE_VER; fi
 
