@@ -21,7 +21,7 @@ env:
   matrix:
     - "ANSIBLE_VER=2.8.20"
     - "ANSIBLE_VER=2.9.20"
-    - "ANSIBLE_VER=2.10.8"
+    - "ANSIBLE_VER=2.10.7"
 before_script:
   - "pip install invoke toml"
 script:
