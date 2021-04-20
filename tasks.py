@@ -117,11 +117,12 @@ def build_image(
     """
     name = _get_image_name(with_ansible, with_ansible_base)
     stdout_string = f"Building image {name}"
-
     if with_ansible:
         command = f"docker build --tag {name} --build-arg ANSIBLE_VER={ANSIBLE_VER} --target with_ansible"
     elif with_ansible_base:
-        command = f"docker build --tag {name} --build-arg ANSIBLE_VER={ANSIBLE_VER} --target with_ansible_base"
+        command = (
+            f"docker build --tag {name} --build-arg ANSIBLE_BASE_VER={ANSIBLE_BASE_VER} --target with_ansible_base"
+        )
     else:
         command = command = f"docker build --tag {name} --target base"
 
