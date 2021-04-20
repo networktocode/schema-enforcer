@@ -169,7 +169,7 @@ def build(context, cache=True, force_rm=False, hide=False):
         hide (bool): Suppress output from docker build
     """
     build_image(context, cache, force_rm, hide=hide)
-    build_image(context, cache, force_rm, hide=hide, with_ansible_base=True)
+    build_image(context, cache, force_rm, hide=hide, with_ansible=True)
 
 
 @task
@@ -182,7 +182,7 @@ def clean(context):
         with_ansible_base (bool): Remove the schema-enforcer image with ansible-base installed
     """
     clean_image(context)
-    clean_image(context, with_ansible_base=True)
+    clean_image(context, with_ansible=True)
 
 
 @task
@@ -206,7 +206,7 @@ def pytest(context):
         context (obj): Used to run specific commands
     """
     exec_cmd = 'find tests/ -name "test_*.py" -a -not -name "test_cli_ansible_not_exists.py" | xargs pytest -vv'
-    run_cmd(context, exec_cmd, with_ansible_base=True)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
@@ -231,7 +231,7 @@ def black(context):
         context (obj): Used to run specific commands
     """
     exec_cmd = "black --check --diff ."
-    run_cmd(context, exec_cmd, with_ansible_base=True)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
@@ -242,7 +242,7 @@ def flake8(context):
         context (obj): Used to run specific commands
     """
     exec_cmd = "flake8 ."
-    run_cmd(context, exec_cmd, with_ansible_base=True)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
@@ -253,7 +253,7 @@ def pylint(context):
         context (obj): Used to run specific commands
     """
     exec_cmd = 'find . -name "*.py" | xargs pylint'
-    run_cmd(context, exec_cmd, with_ansible_base=True)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
@@ -267,7 +267,7 @@ def yamllint(context):
         local (bool): Define as `True` to execute locally
     """
     exec_cmd = "yamllint ."
-    run_cmd(context, exec_cmd, with_ansible_base=True)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
@@ -278,7 +278,7 @@ def pydocstyle(context):
         context (obj): Used to run specific commands
     """
     exec_cmd = "pydocstyle ."
-    run_cmd(context, exec_cmd, with_ansible_base=True)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
@@ -289,7 +289,7 @@ def bandit(context):
         context (obj): Used to run specific commands
     """
     exec_cmd = "bandit --recursive ./ --configfile .bandit.yml"
-    run_cmd(context, exec_cmd, with_ansible_base=True)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
