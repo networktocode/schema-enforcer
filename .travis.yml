@@ -27,6 +27,7 @@ before_script:
 script:
   - "invoke build --nocache"
   - "invoke pytest"
+  - "invoke pytest-without-ansible"
 
 jobs:
   include:
@@ -36,14 +37,8 @@ jobs:
         - "invoke build --nocache"
       script:
         - "invoke black"
-        - "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
+        - "invoke bandit"
         - "invoke pydocstyle"
         - "invoke flake8"
         - "invoke yamllint"
         - "invoke pylint"
-
-    - stage: "test-without-ansible"
-      before_script:
-        - "pip install invoke toml"
-        - "invoke build --without-ansible --nocache"
-      script: "invoke pytest-without-ansible"
