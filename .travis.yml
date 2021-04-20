@@ -25,7 +25,7 @@ env:
 before_script:
   - "pip install invoke toml"
 script:
-  - "invoke build"
+  - "invoke build --no-cache"
   - "invoke pytest"
   - "invoke pytest-without-ansible"
 
@@ -34,7 +34,7 @@ jobs:
     - stage: "lint"
       before_script:
         - "pip install invoke toml"
-        - "invoke build"
+        - "invoke build --no-cache"
       script:
         - "invoke black"
         - "invoke bandit"
