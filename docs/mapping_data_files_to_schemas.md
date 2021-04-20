@@ -13,7 +13,7 @@ By default, all methods will be used together.
 
 To check which structured data files will be examined by which schemas, the `schema-enforcer validate --show-checks` command can be run.
 
-```cli
+```bash
 bash$ cd examples/example3/
 bash$ schema-enforcer validate --show-checks
 Strucutred Data File                               Schema ID
@@ -78,7 +78,7 @@ By default, `schema-enforcer` constructs a list of all top-level keys defined in
 
 With this mapping mechanism, data-to-schema mappings are identified automatically and you do not need to separately declare a mapping.
 
-```cli
+```bash
 bash$ tree
 .
 ├── hostvars
@@ -93,7 +93,7 @@ bash$ tree
 
 The output of the `schema-enforcer validate` command shows that `./hostvars/chi-beijing-rt1/dns.yml`, which contains the data per the example above, is indeed being mapped to the `schemas/dns_servers` schema ID, which is the schema above.
 
-```cli
+```bash
 bash$ schema-enforcer validate --show-checks
 Structured Data File                               Schema ID
 --------------------------------------------------------------------------------
@@ -102,20 +102,6 @@ Structured Data File                               Schema ID
 
 While automapping is the easiest mapping mechanism to get started with, it can be beneficial to turn it off in favor of using one of the mechanisms described below. To do so, the following configuration can be put in a `pyproject.toml` file at the root of the path in which the schema and data files exist.
 
-```cli
-tree
-.
-├── hostvars
-│   └── chi-beijing-rt1
-│       └── dns.yml
-├── pyproject.toml
-└── schema
-    └── schemas
-        └── dns.yml
-
-4 directories, 3 files
-```
-
 ```toml
 bash $ cat pyproject.toml
 [tool.schema_enforcer]
@@ -123,9 +109,9 @@ bash $ cat pyproject.toml
 data_file_automap = false
 ```
 
-After toggling the `data_file_automap` setting to false, `schema-enforcer validate --show-checks` now shows that the data file locatedb at `./hostvars/chi-beijing-rt1/dns.yml` will not be checked for adherence to the `schemas/dns_servers` schema
+After toggling the `data_file_automap` setting to false, `schema-enforcer validate --show-checks` now shows that the data file located at `./hostvars/chi-beijing-rt1/dns.yml` will not be checked for adherence to the `schemas/dns_servers` schema
 
-```cli
+```toml
 [tool.schema_enforcer]
 
 data_file_automap = true
@@ -144,7 +130,7 @@ dns_servers2:
   - address: "10.4.4.4"
 ```
 
-```cli
+```bash
 bash$ schema-enforcer validate --show-checks
 Structured Data File                               Schema ID
 --------------------------------------------------------------------------------
@@ -192,7 +178,7 @@ ntp_authentication: false
 ntp_logging: true
 ```
 
-```cli
+```bash
 bash$ schema-enforcer validate --show-checks
 
 Instance File                                     Schema
@@ -224,7 +210,7 @@ ntp_authentication: false
 ntp_logging: true
 ```
 
-```cli
+```bash
 bash$ schema-enforcer validate --show-checks
 Instance File                                     Schema
 --------------------------------------------------------------------------------
