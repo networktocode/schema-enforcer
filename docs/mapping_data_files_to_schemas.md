@@ -47,6 +47,8 @@ dns_servers:
 
 In the following schema definition, there is a top level property defined of the same name: `dns_servers`
 
+> NOTE | The file in example3 has a reference as the value of 'dns_servers' rather than the full schema. For the purpose of illustration, the reference below is the expansion of this reference.
+
 ```yaml
 bash$ cat ./schema/schemas/dns.yml
 ---
@@ -76,7 +78,7 @@ required:
 
 By default, `schema-enforcer` constructs a list of all top-level keys defined in a data file, then searches for schema definitions that also define the same top-level properties. The ID of any matching schema will automatically be included in the list of schemas IDs to check the data against.
 
-With this mapping mechanism, data-to-schema mappings are identified automatically and you do not need to separately declare a mapping.
+With this mapping mechanism, data-to-schema mappings are identified automatically and you do not need to separately declare mappings.
 
 ```bash
 bash$ tree
@@ -100,6 +102,8 @@ Structured Data File                               Schema ID
 ./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']
 ```
 
+> NOTE | Output omitted from the above command for brevity
+
 While automapping is the easiest mapping mechanism to get started with, it can be beneficial to turn it off in favor of using one of the mechanisms described below. To do so, the following configuration can be put in a `pyproject.toml` file at the root of the path in which the schema and data files exist.
 
 ```toml
@@ -109,13 +113,16 @@ bash $ cat pyproject.toml
 data_file_automap = false
 ```
 
-After toggling the `data_file_automap` setting to false, `schema-enforcer validate --show-checks` now shows that the data file located at `./hostvars/chi-beijing-rt1/dns.yml` will not be checked for adherence to the `schemas/dns_servers` schema
+After toggling the `data_file_automap` setting to false, `schema-enforcer validate --show-checks` now shows that the data file located at `./hostvars/chi-beijing-rt1/dns.yml` will not be checked for adherence to the `schemas/dns_servers` schema.
 
-```toml
-[tool.schema_enforcer]
-
-data_file_automap = true
+```bash
+bash$ schema-enforcer validate --show-checks
+Structured Data File                               Schema ID
+--------------------------------------------------------------------------------
+./hostvars/chi-beijing-rt1/dns.yml                 []
 ```
+
+> NOTE | If a schema mapping is defined, as exists in the example 3 folder, it will need to be removed -- otherwise the schema will be loaded per the defined mapping.
 
 If multiple keys are defined in the data file and only one of them is defined in the schema, the data will still be checked against the schema to ensure it is schema valid. For instance, if the dns.yml data file above is updated so that it includes another key of ntp_servers, it will still be checked for adherence to the `schemas/dns_servers` schema even though no top level property called `dns_servers2` exists in the schema definition.
 
