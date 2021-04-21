@@ -14,8 +14,6 @@ FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtur
 
 CONFIG_DATA = {
     "main_directory": os.path.join(FIXTURES_DIR, "schema"),
-    # "definitions_directory":
-    # "schema_directory": os.path.join(FIXTURES_DIR, "schema", "schemas"),
     "data_file_search_directories": [os.path.join(FIXTURES_DIR, "hostvars")],
     "schema_mapping": {"dns.yml": ["schemas/dns_servers"]},
 }
