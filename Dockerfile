@@ -14,15 +14,9 @@ RUN poetry config virtualenvs.create false \
   && poetry install --no-interaction --no-ansi
 
 # -----------------------------------------------------------------------------
-# Defines stage with ansible installed
-# -----------------------------------------------------------------------------
-FROM base as with_ansible
-ARG ANSIBLE_VER
-RUN pip install ansible==$ANSIBLE_VER
-
-# -----------------------------------------------------------------------------
 # Defines stage with ansible-base installed
 # -----------------------------------------------------------------------------
-FROM base as with_ansible_base
-ARG ANSIBLE_BASE_VER
-RUN pip install ansible-base==$ANSIBLE_BASE_VER
+FROM base as with_ansible
+ARG ANSIBLE_PACKAGE
+ARG ANSIBLE_VER
+RUN pip install $ANSIBLE_PACKAGE==$ANSIBLE_VER
