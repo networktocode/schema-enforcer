@@ -1,11 +1,13 @@
 ---
 # Add additional stages in the order of execution here, and then under the job:include: key
 stages:
-  - "lint"
-  - "test"
-  - "test-without-ansible"
-
-if: "type IN (pull_request)"  # Add in "branch" as an option if desired for branch testing as well
+  - name: "lint"
+  - name: "test"
+  - name: "test-without-ansible"
+  - name: "deploy-github"
+    if: "tag IS present"
+  - name: "deploy-pypi"
+    if: "tag IS present"
 
 language: "python"
 python:
@@ -47,3 +49,26 @@ jobs:
         - "pip install invoke toml"
         - "invoke build --without-ansible --nocache"
       script: "invoke pytest-without-ansible"
+
+    - stage: "deploy-github"
+      before_script:
+        - "pip install poetry"
+      script:
+        - "poetry version $TRAVIS_TAG"
+        - "poetry build"
+      deploy:
+        provider: "releases"
+        api_key: "$GITHUB_AUTH_TOKEN"
+        file_glob: true
+        file: "dist/*"
+        skip_cleanup: true
+        "on":
+          all_branches: true
+
+    - stage: "deploy-pypi"
+      before_script:
+        - "pip install poetry"
+      script:
+        - "poetry version $TRAVIS_TAG"
+        - "poetry config pypi-token.pypi $PYPI_TOKEN"
+        - "poetry publish --build"
