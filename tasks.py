@@ -22,6 +22,7 @@ def is_truthy(arg):
     Examples:
         >>> is_truthy('yes')
         True
+
     Args:
         arg (str): Truthy string (True values are y, yes, t, true, on and 1; false values are n, no,
         f, false, off and 0. Raises ValueError if val is anything else.
@@ -31,141 +32,184 @@ def is_truthy(arg):
     return bool(strtobool(arg))
 
 
+PYPROJECT_CONFIG = toml.load("pyproject.toml")
+TOOL_CONFIG = PYPROJECT_CONFIG["tool"]["poetry"]
+
 # Can be set to a separate Python version to be used for launching or building image
 PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
 # Can be set to a separate ANsible version to be used for launching or building image
-ANSIBLE_VER = os.getenv("ANSIBLE_VER", None)
+ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.10.7")
+ANSIBLE_BASE_VER = os.getenv("ANSIBLE_BASE_VER", "2.10.8")
 # Name of the docker image/image
-NAME = os.getenv("IMAGE_NAME", f"schema-enforcer-py{PYTHON_VER}")
+IMAGE_NAME = os.getenv("IMAGE_NAME", TOOL_CONFIG["name"])
 # Tag for the image
-IMAGE_VER = os.getenv("IMAGE_VER", project_ver())
+IMAGE_VER = os.getenv("IMAGE_VER", f"{TOOL_CONFIG['version']}-py{PYTHON_VER}")
 # Gather current working directory for Docker commands
 PWD = os.getcwd()
 # Local or Docker execution provide "local" to run locally without docker execution
 INVOKE_LOCAL = is_truthy(os.getenv("INVOKE_LOCAL", False))  # pylint: disable=W1508
 
 
-def run_cmd(context, exec_cmd, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def _get_image_name(with_ansible=False, with_ansible_base=False):
+    """Gets the name of the container image to use.
+
+    Args:
+        with_ansible (bool): Get 'with_ansible' container name
+        with_ansible_base (bool): Get 'with_ansible_base' container name
+
+    Returns:
+        str: Name of container image. Includes tag.
+    """
+    if with_ansible and with_ansible_base:
+        print("with_ansible and with_ansible_base arguments are mutually exclusive.")
+        sys.exit(1)
+
+    if with_ansible:
+        name = f"{IMAGE_NAME}:{IMAGE_VER}-ansible{ANSIBLE_VER}"
+
+    elif with_ansible_base:
+        name = f"{IMAGE_NAME}:{IMAGE_VER}-ansible-base{ANSIBLE_BASE_VER}"
+
+    else:
+        name = f"{IMAGE_NAME}:{IMAGE_VER}"
+
+    return name
+
+
+def run_cmd(context, exec_cmd, with_ansible=False, with_ansible_base=False):
     """Wrapper to run the invoke task commands.
 
     Args:
-        context ([invoke.task]): Invoke task object.
-        exec_cmd ([str]): Command to run.
-        name ([str], optional): Image name to use if exec_env is `docker`. Defaults to NAME.
-        image_ver ([str], optional): Version of image to use if exec_env is `docker`. Defaults to IMAGE_VER.
+        context (invoke.task): Invoke task object.
+        exec_cmd (str): Command to run.
+        name (str, optional): Image name to use if exec_env is `docker`. Defaults to NAME.
+        image_ver (str, optional): Version of image to use if exec_env is `docker`. Defaults to IMAGE_VER.
         local (bool): Define as `True` to execute locally
 
     Returns:
         result (obj): Contains Invoke result from running task.
     """
-    if is_truthy(local):
+    name = _get_image_name(with_ansible, with_ansible_base)
+
+    if INVOKE_LOCAL:
         print(f"LOCAL - Running command {exec_cmd}")
         result = context.run(exec_cmd, pty=True)
     else:
-        print(f"DOCKER - Running command: {exec_cmd} container: {name}:{image_ver}")
-        result = context.run(f"docker run -it -v {PWD}:/local {name}:{image_ver} sh -c '{exec_cmd}'", pty=True)
+        print(f"DOCKER - Running command: {exec_cmd} container: {name}")
+        result = context.run(f"docker run -it -v {PWD}:/local {name} sh -c '{exec_cmd}'", pty=True)
 
     return result
 
 
 @task
-def build(
-    context,
-    name=NAME,
-    python_ver=PYTHON_VER,
-    ansible_ver=ANSIBLE_VER,
-    image_ver=IMAGE_VER,
-    nocache=False,
-    forcerm=False,
-    without_ansible=False,
+def build_image(
+    context, cache=True, force_rm=False, hide=False, with_ansible=False, with_ansible_base=False
 ):  # pylint: disable=too-many-arguments
+    """Builds a container with schema-enforcer installed.
+
+    Args:
+        context (invoke.task): Invoke task object
+        cache (bool): Do not use cache when building the image
+        force_rm (bool): Always remove intermediate containers
+        hide: (bool): Suppress output from docker build
+        with_ansible (bool): Build a container with Ansible installed
+        with_ansible_base (bool): Build a container with ansible-base installed
+    """
+    name = _get_image_name(with_ansible, with_ansible_base)
+    stdout_string = f"Building image {name}"
+    if with_ansible:
+        command = f"docker build --tag {name} --build-arg ANSIBLE_VER={ANSIBLE_VER} --target with_ansible"
+    elif with_ansible_base:
+        command = (
+            f"docker build --tag {name} --build-arg ANSIBLE_BASE_VER={ANSIBLE_BASE_VER} --target with_ansible_base"
+        )
+    else:
+        command = command = f"docker build --tag {name} --target base"
+
+    command += f" --build-arg PYTHON_VER={PYTHON_VER} -f Dockerfile ."
+    if not cache:
+        command += " --no-cache"
+    if force_rm:
+        command += " --force-rm"
+
+    print(stdout_string)
+    result = context.run(command, hide=hide)
+
+    if result.exited != 0:
+        print(f"Failed to build image {name}\nError: {result.stderr}")
+
+
+@task
+def clean_image(context, with_ansible=False, with_ansible_base=False):
+    """Remove the schema-enforcer container.
+
+    Args:
+        context (obj): Used to run specific commands
+        with_ansible (bool): Remove schema-enforcer container with ansible installed
+        with_ansible_base (bool): Remove schema-enforcer container with ansible-base installed
+    """
+    name = _get_image_name(with_ansible, with_ansible_base)
+    print(f"Attempting to forcefully remove image {name}")
+    context.run(f"docker rmi {name} --force")
+
+
+@task(
+    help={
+        "cache": "Whether to use Docker's cache when building images (default enabled)",
+        "force_rm": "Always remove intermediate images",
+        "hide": "Suppress output from Docker",
+    }
+)
+def build(context, cache=True, force_rm=False, hide=False):
     """This will build an image with the provided name and python version.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        python_ver (str): Define the Python version docker image to build from
-        ansible_ver (str): Define the Ansible version which will be installed. Defaults to pyproject.toml definition if not specified.
-        image_ver (str): Define image version
-        nocache (bool): Do not use cache when building the image
-        forcerm (bool): Always remove intermediate containers
-        without_ansible (bool): Build image without ansible
+        cache (bool): Do not use cache when building the image
+        force_rm (bool): Always remove intermediate containers
+        hide (bool): Suppress output from docker build
     """
-    if without_ansible:
-        stdout_string = f"Building image {name}-without-ansible:{image_ver} without ansible"
-        command = f"docker build --tag {name}-without-ansible:{image_ver} --build-arg PYTHON_VER={python_ver} "
-        command += "--target without_ansible "
-
-    else:
-        command = f"docker build --tag {name}:{image_ver} --build-arg PYTHON_VER={python_ver} "
-        if ansible_ver:
-            stdout_string = f"Building image {name}:{image_ver} with ansible version {ansible_ver}"
-            command += f"--build-arg ANSIBLE_VER={ansible_ver} "
-        else:
-            stdout_string = f"Building image {name}:{image_ver} with ansible version specified in pyproject.toml file."
-
-        command += "--target base "
-
-    command += "-f Dockerfile ."
-
-    if nocache:
-        command += " --no-cache"
-    if forcerm:
-        command += " --force-rm"
-
-    print(stdout_string)
-    result = context.run(command, hide=True)
-    if result.exited != 0:
-        print(f"Failed to build image {name}:{image_ver}\nError: {result.stderr}")
+    build_image(context, cache, force_rm, hide=hide)
+    build_image(context, cache, force_rm, hide=hide, with_ansible=True)
 
 
 @task
-def clean(context, name=NAME, image_ver=IMAGE_VER):
-    """This will remove the specific image.
+def clean(context):
+    """This will remove a specific image.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Define image version
     """
-    print(f"Attempting to forcefully remove image {name}:{image_ver}")
-    context.run(f"docker rmi {name}:{image_ver} --force")
-    print(f"Successfully removed image {name}:{image_ver}")
+    clean_image(context)
+    clean_image(context, with_ansible=True)
 
 
 @task
-def rebuild(context, name=NAME, python_ver=PYTHON_VER, image_ver=IMAGE_VER):
+def rebuild(context, cache=True, force_rm=False):
     """This will clean the image and then rebuild image without using cache.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        python_ver (str): Define the Python version docker image to build from
-        image_ver (str): Define image version
+        cache (bool): Use cache for rebuild
+        force_rm (bool): Always remove intermediate containers
     """
-    clean(context, name, image_ver)
-    build(context, name, python_ver, image_ver)
+    clean(context)
+    build(context, cache=cache, force_rm=force_rm)
 
 
 @task
-def pytest(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def pytest(context):
     """This will run pytest for the specified name and Python version.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Will use the container version docker image
-        local (bool): Define as `True` to execute locally
     """
-    # pty is set to true to properly run the docker commands due to the invocation process of docker
-    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
-    # Install python module
     exec_cmd = 'find tests/ -name "test_*.py" -a -not -name "test_cli_ansible_not_exists.py" | xargs pytest -vv'
-    run_cmd(context, exec_cmd, name, image_ver, local)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
-def pytest_without_ansible(context, name=f"{NAME}-without-ansible", image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def pytest_without_ansible(context):
     """This will run pytest only to assert the correct errors are raised when pytest is not installed.
 
     This must be run inside of a container or environment in which ansible is not installed, otherwise the test case
@@ -173,66 +217,46 @@ def pytest_without_ansible(context, name=f"{NAME}-without-ansible", image_ver=IM
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Will use the container version docker image
-        local (bool): Define as `True` to execute locally
     """
     exec_cmd = 'find tests/ -name "test_cli_ansible_not_exists.py" | xargs pytest -vv'
-
-    run_cmd(context, exec_cmd, name, image_ver, local)
+    run_cmd(context, exec_cmd)
 
 
 @task
-def black(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def black(context):
     """This will run black to check that Python files adherence to black standards.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Define image version
-        local (bool): Define as `True` to execute locally
     """
-    # pty is set to true to properly run the docker commands due to the invocation process of docker
-    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     exec_cmd = "black --check --diff ."
-    run_cmd(context, exec_cmd, name, image_ver, local)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
-def flake8(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def flake8(context):
     """This will run flake8 for the specified name and Python version.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Define image version
-        local (bool): Define as `True` to execute locally
     """
-    # pty is set to true to properly run the docker commands due to the invocation process of docker
-    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     exec_cmd = "flake8 ."
-    run_cmd(context, exec_cmd, name, image_ver, local)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
-def pylint(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def pylint(context):
     """This will run pylint for the specified name and Python version.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Define image version
-        local (bool): Define as `True` to execute locally
     """
-    # pty is set to true to properly run the docker commands due to the invocation process of docker
-    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
-    # Examples directory excluded due to pylint duplicate-code errors
     exec_cmd = 'find . -name "*.py" | xargs pylint'
-    run_cmd(context, exec_cmd, name, image_ver, local)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
-def yamllint(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def yamllint(context):
     """This will run yamllint to validate formatting adheres to NTC defined YAML standards.
 
     Args:
@@ -241,92 +265,59 @@ def yamllint(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
         image_ver (str): Define image version
         local (bool): Define as `True` to execute locally
     """
-    # pty is set to true to properly run the docker commands due to the invocation process of docker
-    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     exec_cmd = "yamllint ."
-    run_cmd(context, exec_cmd, name, image_ver, local)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
-def pydocstyle(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def pydocstyle(context):
     """This will run pydocstyle to validate docstring formatting adheres to NTC defined standards.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Define image version
-        local (bool): Define as `True` to execute locally
     """
-    # pty is set to true to properly run the docker commands due to the invocation process of docker
-    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     exec_cmd = "pydocstyle ."
-    run_cmd(context, exec_cmd, name, image_ver, local)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
-def bandit(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
+def bandit(context):
     """This will run bandit to validate basic static code security analysis.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Define image version
-        local (bool): Define as `True` to execute locally
     """
-    # pty is set to true to properly run the docker commands due to the invocation process of docker
-    # https://docs.pyinvoke.org/en/latest/api/runners.html - Search for pty for more information
     exec_cmd = "bandit --recursive ./ --configfile .bandit.yml"
-    run_cmd(context, exec_cmd, name, image_ver, local)
+    run_cmd(context, exec_cmd, with_ansible=True)
 
 
 @task
-def cli(context, name=NAME, image_ver=IMAGE_VER, without_ansible=False):
+def tests(context):
+    """This will run all tests for the specified name and Python version.
+
+    Args:
+        context (obj): Used to run specific commands
+    """
+    black(context)
+    flake8(context)
+    pylint(context)
+    yamllint(context)
+    pydocstyle(context)
+    bandit(context)
+    pytest(context)
+    pytest_without_ansible(context)
+    print("All tests have passed!")
+
+
+@task
+def cli(context, with_ansible=False, with_ansible_base=False):
     """This will enter the image to perform troubleshooting or dev work.
 
     Args:
         context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Define image version
-        without_ansible (bool): Enter cli in without-ansible container
+        with_ansible (str): Attach to container with ansible version specified by the 'ANSIBLE_VER' env var
+        with_ansible_base (str): Attach to container with ansible-base version specified by the 'ANSIBLE_BASE_VER' env var
     """
-    if without_ansible:
-        name = f"{name}-without-ansible"
-
-    dev = f"docker run -it -v {PWD}:/local {name}:{image_ver} /bin/bash"
+    name = _get_image_name(with_ansible, with_ansible_base)
+    dev = f"docker run -it -v {PWD}:/local {name} /bin/bash"
     context.run(f"{dev}", pty=True)
-
-
-@task
-def tests(context, name=NAME, image_ver=IMAGE_VER, local=INVOKE_LOCAL):
-    """This will run all tests for the specified name and Python version.
-
-    Args:
-        context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Define image version
-        local (bool): Define as `True` to execute locally
-    """
-    black(context, name, image_ver, local)
-    flake8(context, name, image_ver, local)
-    pylint(context, name, image_ver, local)
-    yamllint(context, name, image_ver, local)
-    pydocstyle(context, name, image_ver, local)
-    bandit(context, name, image_ver, local)
-    pytest(context, name, image_ver, local)
-
-    print("All tests have passed!")
-
-
-@task
-def tests_without_ansible(context, name=f"{NAME}-without-ansible", image_ver=IMAGE_VER, local=INVOKE_LOCAL):
-    """This will run all tests for the specified name and Python version.
-
-    Args:
-        context (obj): Used to run specific commands
-        name (str): Used to name the docker image
-        image_ver (str): Define image version
-        local (bool): Define as `True` to execute locally
-    """
-    pytest_without_ansible(context, name, image_ver, local)
-
-    print("All tests have passed!")

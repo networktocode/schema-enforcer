@@ -6,15 +6,23 @@ RUN pip install --upgrade pip \
   && pip install poetry
 
 WORKDIR /local
-COPY pyproject.toml /local
-
-ARG ANSIBLE_VER="ignore"
+# Poetry fails install without README.md being copied.
+COPY pyproject.toml poetry.lock README.md /local/
+COPY schema_enforcer /local/schema_enforcer
 
 RUN poetry config virtualenvs.create false \
-  && poetry install --no-interaction --no-ansi \
-  # If ANSIBLE_VER is set (not default), uninstall the ansible version poetry installed and install the declared ansible version.
-  && if [ ! "$ANSIBLE_VER" = "ignore" ]; then pip uninstall -yq ansible ansible-base && pip install ansible==$ANSIBLE_VER; fi
+  && poetry install --no-interaction --no-ansi
 
-FROM base as without_ansible
+# -----------------------------------------------------------------------------
+# Defines stage with ansible installed
+# -----------------------------------------------------------------------------
+FROM base as with_ansible
+ARG ANSIBLE_VER
+RUN pip install ansible==$ANSIBLE_VER
 
-RUN pip uninstall -yq ansible ansible-base
+# -----------------------------------------------------------------------------
+# Defines stage with ansible-base installed
+# -----------------------------------------------------------------------------
+FROM base as with_ansible_base
+ARG ANSIBLE_BASE_VER
+RUN pip install ansible-base==$ANSIBLE_BASE_VER
