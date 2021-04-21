@@ -22,6 +22,7 @@ env:
   matrix:
     - "ANSIBLE_VER=2.8.20 ANSIBLE_PACKAGE=ansible"
     - "ANSIBLE_VER=2.9.20 ANSIBLE_PACKAGE=ansible"
+    - "ANSIBLE_VER=2.10.7 ANSIBLE_PACKAGE=ansible"
     - "ANSIBLE_VER=2.10.8 ANSIBLE_PACKAGE=ansible-base"
 before_script:
   - "pip install invoke toml"
