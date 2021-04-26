@@ -1,0 +1,13 @@
+{
+    "firewall": {
+        "rule": {
+            "bool": true,
+            "Text": 123,
+            "dict": {}
+        },
+        "variables": {
+            "Text": "text",
+            "array": {}
+        }
+    }
+}

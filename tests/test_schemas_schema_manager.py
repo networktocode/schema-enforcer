@@ -51,3 +51,34 @@ def test_invalid():
         schema_manager = SchemaManager(config=Settings(**config))  # noqa pylint: disable=unused-variable
         expected_error = """Invalid JSONschema file: invalid.yml - ["'bla bla bla bla' is not of type 'object', 'boolean'", "'integer' is not of type 'object', 'boolean'"]"""
         assert expected_error in str(e)
+
+
+def test_generate_invalid(capsys):
+    """ Test validates that generate_invalid_test_expected generates the correct data. """
+    config = {
+        "main_directory": os.path.join(FIXTURE_DIR, "test_manager", "invalid_generate", "schema"),
+    }
+    schema_id = "schemas/test"
+
+    schema_manager = SchemaManager(config=Settings(**config))
+    schema_manager.generate_invalid_tests_expected(schema_id)
+
+    invalid_dir = os.path.join(config["main_directory"], "tests", "test", "invalid")
+    invalid_tests = ["invalid_type1", "invalid_type2"]
+
+    for test in invalid_tests:
+        test_dir = os.path.join(invalid_dir, test)
+        with open(os.path.join(test_dir, "exp_results.yml")) as exp_file:
+            expected = exp_file.read()
+        with open(os.path.join(test_dir, "results.yml")) as gen_file:
+            generated = gen_file.read()
+        assert expected == generated
+
+    test_schema = schema_manager.schemas.get(schema_id)
+    # Clear results as these would not be carried over into subsequent run of --check
+    test_schema.clear_results()
+    # Ignore earlier output
+    capsys.readouterr()
+    schema_manager.test_schemas()
+    captured = capsys.readouterr()
+    assert "ALL SCHEMAS ARE VALID" in captured.out
