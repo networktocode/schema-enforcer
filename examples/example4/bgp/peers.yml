@@ -1,0 +1,8 @@
+---
+bgp_peers:
+  - asn: 6939
+    name: "Hurricane Electric LLC"
+  - asn: 701
+    name: "VZW"
+  - asn: 100000
+    name: "Private"

@@ -1,0 +1,2 @@
+[tool.schema_enforcer.schema_mapping]
+'peers.yml' = ['CheckARIN']
