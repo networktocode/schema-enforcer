@@ -202,6 +202,7 @@ class SchemaManager:
 
         results = []
         for test_dir in test_dirs:
+            schema.clear_results()
             data_file = find_file(os.path.join(invalid_test_dir, test_dir, "data"))
             expected_results_file = find_file(os.path.join(invalid_test_dir, test_dir, "results"))
 
@@ -263,7 +264,7 @@ class SchemaManager:
 
         # For each test, load the data file, test the data against the schema and save the results
         for test_dir in test_dirs:
-
+            schema.clear_results()
             data_file = find_file(os.path.join(invalid_test_dir, test_dir, "data"))
 
             if not data_file:
