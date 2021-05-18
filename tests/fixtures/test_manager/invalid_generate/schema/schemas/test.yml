@@ -1,0 +1,25 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/test"
+description: "NFTables Firewall Configuration schema."
+type: "object"
+properties:
+  firewall:
+    type: "object"
+    uniqueItems: true
+    additionalProperties: false
+    required:
+      - "rule"
+      - "variables"
+    properties:
+      rule:
+        type: "object"
+        properties:
+          bool:
+            type: "boolean"
+          Text:
+            type: "string"
+          dict:
+            type: "object"
+      variables:
+        type: "object"
