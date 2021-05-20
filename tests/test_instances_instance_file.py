@@ -146,5 +146,6 @@ def test_add_matches_by_property_automap(if_wo_matches, schema_manager):
     """Tests add_matches_by_property_automap method of InstanceFile class."""
     assert not if_wo_matches.matches
     assert if_wo_matches.top_level_properties == {"syslog_servers"}
+    assert if_wo_matches._top_level_properties == {"syslog_servers"}  # pylint: disable=protected-access
     if_wo_matches.add_matches_by_property_automap(schema_manager)
     assert if_wo_matches.matches == set(["schemas/syslog_servers"])
