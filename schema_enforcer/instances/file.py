@@ -125,16 +125,14 @@ class InstanceFile:
             if match:
                 matches = {x.strip() for x in match.group(1).split(",")}
 
-        matches = matches - self.matches
         self.matches.update(matches)
 
     def _get_content(self, structured=True):
-        """Return the content of the instance file.
-
-        Content returned can be either dict or list depending on the content of the file
+        """Returns the content of the instance file.
 
         Args:
-            structured (bool): Whether to return structured or unstructured data. Defaultes to true.
+            structured (bool): Return structured data if true. If false returns the string representation of the data
+            stored in the instance file. Defaults to True.
 
         Returns:
             dict or list: Content of the instance file.
@@ -156,11 +154,10 @@ class InstanceFile:
 
         for schema_id, schema_obj in schema_manager.iter_schemas():
             for top_level_property in schema_obj.top_level_properties:
-                if top_level_property in self.top_level_properties and schema_id not in matches:
+                if top_level_property in self.top_level_properties:
                     matches.add(schema_id)
 
         # Remove matches which have already been added
-        matches = matches - self.matches
         self.matches.update(matches)
 
     def validate(self, schema_manager, strict=False):
