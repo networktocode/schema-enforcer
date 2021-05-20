@@ -38,8 +38,8 @@ TOOL_CONFIG = PYPROJECT_CONFIG["tool"]["poetry"]
 # Can be set to a separate Python version to be used for launching or building image
 PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
 # Can be set to a separate ANsible version to be used for launching or building image
-ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.10.7")
-ANSIBLE_BASE_VER = os.getenv("ANSIBLE_BASE_VER", "2.10.8")
+ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.10.8")
+ANSIBLE_PACKAGE = os.getenv("ANSIBLE_PACKAGE", "ansible-base")
 # Name of the docker image/image
 IMAGE_NAME = os.getenv("IMAGE_NAME", TOOL_CONFIG["name"])
 # Tag for the image
@@ -50,46 +50,35 @@ PWD = os.getcwd()
 INVOKE_LOCAL = is_truthy(os.getenv("INVOKE_LOCAL", False))  # pylint: disable=W1508
 
 
-def _get_image_name(with_ansible=False, with_ansible_base=False):
+def _get_image_name(with_ansible=False):
     """Gets the name of the container image to use.
 
     Args:
-        with_ansible (bool): Get 'with_ansible' container name
-        with_ansible_base (bool): Get 'with_ansible_base' container name
+        with_ansible (bool): Get name of container image with Ansible installed.
 
     Returns:
         str: Name of container image. Includes tag.
     """
-    if with_ansible and with_ansible_base:
-        print("with_ansible and with_ansible_base arguments are mutually exclusive.")
-        sys.exit(1)
-
     if with_ansible:
-        name = f"{IMAGE_NAME}:{IMAGE_VER}-ansible{ANSIBLE_VER}"
-
-    elif with_ansible_base:
-        name = f"{IMAGE_NAME}:{IMAGE_VER}-ansible-base{ANSIBLE_BASE_VER}"
-
+        name = f"{IMAGE_NAME}:{IMAGE_VER}-{ANSIBLE_PACKAGE}{ANSIBLE_VER}"
     else:
         name = f"{IMAGE_NAME}:{IMAGE_VER}"
 
     return name
 
 
-def run_cmd(context, exec_cmd, with_ansible=False, with_ansible_base=False):
+def run_cmd(context, exec_cmd, with_ansible=False):
     """Wrapper to run the invoke task commands.
 
     Args:
         context (invoke.task): Invoke task object.
         exec_cmd (str): Command to run.
-        name (str, optional): Image name to use if exec_env is `docker`. Defaults to NAME.
-        image_ver (str, optional): Version of image to use if exec_env is `docker`. Defaults to IMAGE_VER.
-        local (bool): Define as `True` to execute locally
+        with_ansible (bool): Whether to run the command in a container that has ansible installed
 
     Returns:
         result (obj): Contains Invoke result from running task.
     """
-    name = _get_image_name(with_ansible, with_ansible_base)
+    name = _get_image_name(with_ansible)
 
     if INVOKE_LOCAL:
         print(f"LOCAL - Running command {exec_cmd}")
@@ -103,7 +92,7 @@ def run_cmd(context, exec_cmd, with_ansible=False, with_ansible_base=False):
 
 @task
 def build_image(
-    context, cache=True, force_rm=False, hide=False, with_ansible=False, with_ansible_base=False
+    context, cache=True, force_rm=False, hide=False, with_ansible=False
 ):  # pylint: disable=too-many-arguments
     """Builds a container with schema-enforcer installed.
 
@@ -113,16 +102,16 @@ def build_image(
         force_rm (bool): Always remove intermediate containers
         hide: (bool): Suppress output from docker build
         with_ansible (bool): Build a container with Ansible installed
-        with_ansible_base (bool): Build a container with ansible-base installed
     """
-    name = _get_image_name(with_ansible, with_ansible_base)
-    stdout_string = f"Building image {name}"
+    name = _get_image_name(with_ansible)
+    env = {"PYTHON_VER": PYTHON_VER}
+
     if with_ansible:
-        command = f"docker build --tag {name} --build-arg ANSIBLE_VER={ANSIBLE_VER} --target with_ansible"
-    elif with_ansible_base:
-        command = (
-            f"docker build --tag {name} --build-arg ANSIBLE_BASE_VER={ANSIBLE_BASE_VER} --target with_ansible_base"
-        )
+        env["ANSIBLE_VER"] = ANSIBLE_VER
+        env["ANSIBLE_PACKAGE"] = ANSIBLE_PACKAGE
+        command = f"docker build --tag {name} --target with_ansible"
+        command += f" --build-arg ANSIBLE_VER={ANSIBLE_VER} --build-arg ANSIBLE_PACKAGE={ANSIBLE_PACKAGE}"
+
     else:
         command = command = f"docker build --tag {name} --target base"
 
@@ -132,23 +121,22 @@ def build_image(
     if force_rm:
         command += " --force-rm"
 
-    print(stdout_string)
-    result = context.run(command, hide=hide)
+    print(f"Building image {name}")
+    result = context.run(command, hide=hide, env=env)
 
     if result.exited != 0:
         print(f"Failed to build image {name}\nError: {result.stderr}")
 
 
 @task
-def clean_image(context, with_ansible=False, with_ansible_base=False):
+def clean_image(context, with_ansible=False):
     """Remove the schema-enforcer container.
 
     Args:
         context (obj): Used to run specific commands
         with_ansible (bool): Remove schema-enforcer container with ansible installed
-        with_ansible_base (bool): Remove schema-enforcer container with ansible-base installed
     """
-    name = _get_image_name(with_ansible, with_ansible_base)
+    name = _get_image_name(with_ansible)
     print(f"Attempting to forcefully remove image {name}")
     context.run(f"docker rmi {name} --force")
 
@@ -310,14 +298,13 @@ def tests(context):
 
 
 @task
-def cli(context, with_ansible=False, with_ansible_base=False):
+def cli(context, with_ansible=False):
     """This will enter the image to perform troubleshooting or dev work.
 
     Args:
         context (obj): Used to run specific commands
         with_ansible (str): Attach to container with ansible version specified by the 'ANSIBLE_VER' env var
-        with_ansible_base (str): Attach to container with ansible-base version specified by the 'ANSIBLE_BASE_VER' env var
     """
-    name = _get_image_name(with_ansible, with_ansible_base)
+    name = _get_image_name(with_ansible)
     dev = f"docker run -it -v {PWD}:/local {name} /bin/bash"
     context.run(f"{dev}", pty=True)
