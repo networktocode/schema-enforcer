@@ -73,6 +73,9 @@ def validate(show_pass, show_checks, strict):  # noqa D205
         error("No instance files were found to validate")
         sys.exit(1)
 
+    if config.SETTINGS.data_file_automap:
+        ifm.add_matches_by_property_automap(smgr)
+
     if show_checks:
         ifm.print_schema_mapping()
         sys.exit(0)
@@ -301,7 +304,6 @@ def ansible(
 
         # Acquire schemas applicable to the given host
         applicable_schemas = inv.get_applicable_schemas(hostvars, smgr, declared_schema_ids, automap)
-        # import pdb; pdb.set_trace()
         for schema_obj in applicable_schemas.values():
             # Combine host attributes into a single data structure matching to properties defined at the top level of the schema definition
             if not strict:

@@ -30,9 +30,7 @@ class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attribute
         self.root = root
         self.data = schema
         self.id = self.data.get("$id")  # pylint: disable=invalid-name
-        self.top_level_properties = [
-            prop for prop in self.data.get("properties")  # pylint: disable=unnecessary-comprehension
-        ]
+        self.top_level_properties = set(self.data.get("properties"))
         self.validator = None
         self.strict_validator = None
         self.format_checker = draft7_format_checker

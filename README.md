@@ -194,8 +194,8 @@ bash$ cat pyproject.toml
 Detailed documentation can be found in the README.md files inside of the `docs/` directory.
 - ["Introducing Schema Enforcer" blog post](https://blog.networktocode.com/post/introducing_schema_enforcer/)
 - [Using a pyproject.toml file for configuration](docs/configuration.md)
+- [Mapping Structured Data Files to Schema Files](docs/mapping_data_files_to_schemas.md)
 - [The `ansible` command](docs/ansible_command.md)
 - [The `validate` command](docs/validate_command.md)
-- [Mapping Structured Data Files to Schema Files](docs/mapping_schemas.md)
 - [The `schema` command](docs/schema_command.md)
 - [Implementing custom validators](docs/custom_validators.md)
