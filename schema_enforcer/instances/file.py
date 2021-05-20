@@ -37,7 +37,7 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
         for root, filename in instance_files:
             matches = set()
             if filename in config.schema_mapping:
-                matches.update(set(config.schema_mapping[filename]))
+                matches.update(config.schema_mapping[filename])
 
             instance = InstanceFile(root=root, filename=filename, matches=matches)
             self.instances.append(instance)
