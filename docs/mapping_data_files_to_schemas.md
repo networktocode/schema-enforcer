@@ -75,7 +75,7 @@ required:
   - "dns_servers"
 ```
 
-By default, `schema-enforcer` constructs a list of all top-level keys defined in a data file, then searches for schema definitions that also define the same top-level properties. The ID of any matching schema will automatically be included in the list of schemas IDs to check the data against.
+By default, `schema-enforcer` constructs a list of all top-level keys defined in a data file, then searches for schema definitions that also define any of the same top-level properties. The ID of any matching schema will automatically be included in the list of schemas IDs to check the data against.
 
 With this mapping mechanism, data-to-schema mappings are identified automatically and you do not need to separately declare mappings.
 

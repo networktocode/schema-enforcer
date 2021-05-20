@@ -17,7 +17,7 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
         The file manager will locate all potential instance files in the search directories.
 
         Args:
-            config (pydantic.BaseSettings): The pydantec settings object.
+            config (pydantic.BaseSettings): The Pydantec settings object.
         """
         self.instances = []
         self.config = config
@@ -93,7 +93,7 @@ class InstanceFile:
         """Return a list of top level properties in the structured data defined by the data pulled from _get_content.
 
         Returns:
-            top_level_properties (set): Set of the strings of top level properties defined by the data file
+            set: Set of the strings of top level properties defined by the data file
         """
         if not self._top_level_properties:
             content = self._get_content()
@@ -152,11 +152,9 @@ class InstanceFile:
         matches = set()
 
         for schema_id, schema_obj in schema_manager.iter_schemas():
-            for top_level_property in schema_obj.top_level_properties:
-                if top_level_property in self.top_level_properties:
-                    matches.add(schema_id)
+            if schema_obj.top_level_properties.intersection(self.top_level_properties):
+                matches.add(schema_id)
 
-        # Remove matches which have already been added
         self.matches.update(matches)
 
     def validate(self, schema_manager, strict=False):
