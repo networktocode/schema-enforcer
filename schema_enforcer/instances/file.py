@@ -134,7 +134,7 @@ class InstanceFile:
             stored in the instance file. Defaults to True.
 
         Returns:
-            dict or list: Content of the instance file.
+            dict, list, or str: File Contents. Dict or list if structured is set to True. Otherwise returns a string.
         """
         file_location = os.path.join(self.full_path, self.filename)
 
