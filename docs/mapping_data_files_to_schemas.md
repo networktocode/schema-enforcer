@@ -1,12 +1,12 @@
 # Mapping Schemas
 
 ## Overview
-Each schema must define an `$id` property. This is a top level key in the schema definition file. It's value is a string which uniquely identifies the schema.
+Each schema must define an `$id` property. This is a top level key in the schema definition file. Its value is a string which uniquely identifies the schema.
 
-In order to validate structured data files against schema definitions, `schema-enforcer` must have a way of mapping structured data files to the schema ID of the schema definition(s) they should adhere to. This is done in one of several ways:
+In order to validate structured data files against schema definitions, `schema-enforcer` must have a way of mapping structured data files to the schema ID(s) of the schema definition(s) they should adhere to. This is done in one of several ways:
 
-1) The top level keys in a given data file will be automatically mapped to the top level property defined in a schema definition.
-2) The pyproject.toml file can map structured data filenames to the ID of the schema(s) to which they should adhere.
+1) If any of the top level keys in a given data file match any top level properties defined in a schema definition, the data will be automatically mapped to the corresponding schema.
+2) The `pyproject.toml` file can map structured data filenames to the ID of the schema(s) to which they should adhere.
 3) Any file containing structured data can be decorated with a comment which instructs `schema-enforcer` to check the file for compliance with defined schema ID(s).
 
 By default, all methods will be used together.
@@ -16,7 +16,9 @@ To check which structured data files will be examined by which schemas, the `sch
 ```bash
 bash$ cd examples/example3/
 bash$ schema-enforcer validate --show-checks
-Strucutred Data File                               Schema ID
+Structured Data File                               Schema ID
+--------------------------------------------------------------------------------
+Structured Data File                               Schema ID
 --------------------------------------------------------------------------------
 ./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']
 ./hostvars/chi-beijing-rt1/syslog.yml              ['schemas/syslog_servers']
@@ -25,8 +27,7 @@ Strucutred Data File                               Schema ID
 ./hostvars/fail-tests/dns.yml                      ['schemas/dns_servers']
 ./hostvars/fail-tests/ntp.yml                      ['schemas/ntp']
 ./hostvars/ger-berlin-rt1/dns.yml                  ['schemas/dns_servers']
-./hostvars/mex-mxc-rt1/dns.yml                     ['schemas/dns_servers']
-./hostvars/mex-mxc-rt1/syslog.yml                  ['schemas/syslog_servers']
+./hostvars/mex-mxc-rt1/hostvars.yml                ['schemas/syslog_servers', 'schemas/dns_servers']
 ./hostvars/usa-lax-rt1/dns.yml                     ['schemas/dns_servers']
 ./hostvars/usa-lax-rt1/syslog.yml                  ['schemas/syslog_servers']
 ./hostvars/usa-nyc-rt1/dns.yml                     ['schemas/dns_servers']
