@@ -58,7 +58,7 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
         print_strings = []
         for instance in self.instances:
             filepath = f"{instance.path}/{instance.filename}"
-            print_strings.append(f"{filepath:50} {list(instance.matches)}")
+            print_strings.append(f"{filepath:50} {sorted(instance.matches)}")
         print("\n".join(sorted(print_strings)))
 
 
@@ -95,12 +95,11 @@ class InstanceFile:
         Returns:
             top_level_properties (set): Set of the strings of top level properties defined by the data file
         """
-        if self._top_level_properties:
-            return self._top_level_properties
+        if not self._top_level_properties:
+            content = self._get_content()
+            self._top_level_properties = set(content.keys())
 
-        content = self._get_content()
-        top_level_properties = set(content.keys())
-        return top_level_properties
+        return self._top_level_properties
 
     def _add_matches_by_decorator(self, content=None):
         """Add matches which declare schema IDs they should adhere to using a decorator comment.
