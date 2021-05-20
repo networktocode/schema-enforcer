@@ -48,8 +48,6 @@ dns_servers:
 
 In the following schema definition, there is a top level property defined of the same name: `dns_servers`
 
-> NOTE | The file in example3 has a reference as the value of 'dns_servers' rather than the full schema. For the purpose of illustration, the reference below is the expansion of this reference.
-
 ```yaml
 bash$ cat ./schema/schemas/dns.yml
 ---
@@ -103,11 +101,9 @@ Structured Data File                               Schema ID
 ./hostvars/chi-beijing-rt1/dns.yml                 ['schemas/dns_servers']
 ```
 
-> NOTE | Output omitted from the above command for brevity
-
 While automapping is the easiest mapping mechanism to get started with, it can be beneficial to turn it off in favor of using one of the mechanisms described below. To do so, the following configuration can be put in a `pyproject.toml` file at the root of the path in which the schema and data files exist.
 
-```toml
+```bash
 bash $ cat pyproject.toml
 [tool.schema_enforcer]
 
@@ -122,8 +118,6 @@ Structured Data File                               Schema ID
 --------------------------------------------------------------------------------
 ./hostvars/chi-beijing-rt1/dns.yml                 []
 ```
-
-> NOTE | If a schema mapping is defined, as exists in the example 3 folder, it will need to be removed -- otherwise the schema will be loaded per the defined mapping.
 
 If multiple keys are defined in the data file and only one of them is defined in the schema, the data will still be checked against the schema to ensure it is schema valid. For instance, if the dns.yml data file above is updated so that it includes another key of ntp_servers, it will still be checked for adherence to the `schemas/dns_servers` schema even though no top level property called `dns_servers2` exists in the schema definition.
 
@@ -148,12 +142,13 @@ Structured Data File                               Schema ID
 Similarly, if another property which does not exist in the data file is added to the schema definition, the data in `./hostvars/chi-beijing-rt1/dns.yml` will still be checked against the schema.
 
 > Note, this behavior can cause issues if `additionalProperties: False` is set or if `required` is defined in the schema. In such cases it is best to use one of the other mechanisms for mapping data files to schema definitions.
+
 ## Using the pyproject.toml file to map schemas
 
-In the pyproject.toml file, a `tools.schema_enforcer.schema_mapping` section can be defined which maps structured data files to schema IDs.
+In the pyproject.toml file, a `tool.schema_enforcer.schema_mapping` section can be defined which maps structured data files to schema IDs.
 
 ```toml
-[tools.schema_enforcer.schema_mapping]
+[tool.schema_enforcer.schema_mapping]
 'dns_v1.yml' = ['schemas/dns_servers']
 'dns_v2.yml' = ['schemas/dns_servers_v2']
 ```
@@ -198,10 +193,10 @@ Instance File                                     Schema
 
 ## Multiple Definitions
 
-In the event that a configuration section exists in the pyproject.toml file **and** a decorator exists in the structured data file, `schema-enforcer` will check the structured data files for adherenece to both schema IDs. In to following case, for instance, `schema-enforcer` will ensure that the structured data file `ntp.yml` adheres to both the `schemas/ntp` and `schemas/ntp2` schema definitions.
+In the event that multiple mappings of different types exist, `schema-enforcer` will check the structured data files for adherence to all mapped schema IDs. In to following case, for instance, `schema-enforcer` will ensure that the structured data file `ntp.yml` adheres to both the `schemas/ntp` and `schemas/ntp2` schema definitions.
 
 ```toml
-[tools.schema_enforcer.schema_mapping]
+[tool.schema_enforcer.schema_mapping]
 'ntp.yml' = ['schemas/ntp2']
 ```
 
@@ -224,3 +219,5 @@ Instance File                                     Schema
 --------------------------------------------------------------------------------
 ./hostvars/eng-london-rt1/ntp.yml                  ['schemas/ntp2', 'schemas/ntp']
 ```
+
+> Note | If there were a schema definition with `ntp_servers` as its top level key, data would also be checked against that schema as well.
