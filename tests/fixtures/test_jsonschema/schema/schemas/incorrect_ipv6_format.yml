@@ -1,0 +1,19 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "schemas/incorrect_ipv6_format"
+description: "DNS Schema to test ipv6 formatter."
+type: "object"
+properties:
+  dns_servers:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        address:
+          type: "string"
+          format: "ipv6"
+        required:
+          - "address"
+    uniqueItems: true
+required:
+  - "dns_servers"

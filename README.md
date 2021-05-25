@@ -29,7 +29,7 @@ Schema Enforcer requires that two different elements be defined by the user:
 - Schema Definition Files: These are files which define the schema to which a given set of data should adhere.
 - Structured Data Files: These are files which contain data that should adhere to the schema defined in one (or multiple) of the schema definition files.
 
-> Note: Data which needs to be validated against a schema definition can come in the form of Structured Data Files or Ansible host vars. In the interest of brevity and simplicity, this README.md contains discussion only of Structured Data Files -- for more information on how to use `schema-enforcer` with ansible host vars, see [the ansible_command README](docs/ansible_command.md)
+> Note: Data which needs to be validated against a schema definition can come in the form of Structured Data Files or Ansible host vars. Ansible is not installed by default when schema-enforcer is installed. In order to use Ansible features, ansible must already be available or must be declared as an optional dependency when schema-enforcer upon installation. In the interest of brevity and simplicity, this README.md contains discussion only of Structured Data Files -- for more information on how to use `schema-enforcer` with ansible host vars, see [the ansible_command README](docs/ansible_command.md)
 
 When `schema-enforcer` runs, it assumes directory hierarchy which should be in place from the folder in which the tool is run.
 
@@ -121,7 +121,7 @@ To run the schema validations, the command `schema-enforcer validate` can be run
 
 ```shell
 bash$ schema-enforcer validate
-schema-enforcer validate            
+schema-enforcer validate
 ALL SCHEMA VALIDATION CHECKS PASSED
 ```
 
@@ -140,14 +140,14 @@ If we modify one of the addresses in the `chi-beijing-rt1/dns.yml` file so that 
 
 ```yaml
 bash$ cat chi-beijing-rt1/dns.yml
-# jsonschema: schemas/dns_servers       
+# jsonschema: schemas/dns_servers
 ---
 dns_servers:
   - address: true
   - address: "10.2.2.2"
 ```
 ```shell
-bash$ test-schema validate            
+bash$ test-schema validate
 FAIL | [ERROR] True is not of type 'string' [FILE] ./chi-beijing-rt1/dns.yml [PROPERTY] dns_servers:0:address
 bash$ echo $?
 1
@@ -160,7 +160,7 @@ When a structured data file fails schema validation, `schema-enforcer` exits wit
 Schema enforcer will work with default settings, however, a `pyproject.toml` file can be placed at the root of the path in which `schema-enforcer` is run in order to override default settings or declare configuration for more advanced features. Inside of this `pyproject.toml` file, `tool.schema_enfocer` sections can be used to declare settings for schema enforcer. Take for example the `pyproject.toml` file in example 2.
 
 ```shell
-bash$ cd examples/example2 && tree -L 2         
+bash$ cd examples/example2 && tree -L 2
 .
 ├── README.md
 ├── hostvars
@@ -194,7 +194,8 @@ bash$ cat pyproject.toml
 Detailed documentation can be found in the README.md files inside of the `docs/` directory.
 - ["Introducing Schema Enforcer" blog post](https://blog.networktocode.com/post/introducing_schema_enforcer/)
 - [Using a pyproject.toml file for configuration](docs/configuration.md)
+- [Mapping Structured Data Files to Schema Files](docs/mapping_data_files_to_schemas.md)
 - [The `ansible` command](docs/ansible_command.md)
 - [The `validate` command](docs/validate_command.md)
-- [Mapping Structured Data Files to Schema Files](docs/mapping_schemas.md)
 - [The `schema` command](docs/schema_command.md)
+- [Implementing custom validators](docs/custom_validators.md)

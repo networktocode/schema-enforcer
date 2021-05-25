@@ -17,14 +17,14 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
         The file manager will locate all potential instance files in the search directories.
 
         Args:
-            config (string): The pydantec config object.
+            config (pydantic.BaseSettings): The Pydantec settings object.
         """
         self.instances = []
         self.config = config
 
         # Find all instance files
         # TODO need to load file extensions from the config
-        files = find_files(
+        instance_files = find_files(
             file_extensions=config.data_file_extensions,
             search_directories=config.data_file_search_directories,
             excluded_filenames=config.data_file_exclude_filenames,
@@ -34,13 +34,22 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
 
         # For each instance file, check if there is a static mapping defined in the config
         # Create the InstanceFile object and save it
-        for root, filename in files:
-            matches = []
+        for root, filename in instance_files:
+            matches = set()
             if filename in config.schema_mapping:
-                matches.extend(config.schema_mapping[filename])
+                matches.update(config.schema_mapping[filename])
 
             instance = InstanceFile(root=root, filename=filename, matches=matches)
             self.instances.append(instance)
+
+    def add_matches_by_property_automap(self, schema_manager):
+        """Adds schema_ids to matches by automapping top level schema properties to top level keys in instance data.
+
+        Args:
+            schema_manager (schema_enforcer.schemas.manager.SchemaManager): Schema manager oject
+        """
+        for instance in self.instances:
+            instance.add_matches_by_property_automap(schema_manager)
 
     def print_schema_mapping(self):
         """Print in CLI the matches for all instance files."""
@@ -49,7 +58,7 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
         print_strings = []
         for instance in self.instances:
             filepath = f"{instance.path}/{instance.filename}"
-            print_strings.append(f"{filepath:50} {instance.matches}")
+            print_strings.append(f"{filepath:50} {sorted(instance.matches)}")
         print("\n".join(sorted(print_strings)))
 
 
@@ -62,53 +71,91 @@ class InstanceFile:
         Args:
             root (string): Absolute path to the directory where the schema file is located.
             filename (string): Name of the file.
-            matches (list, optional): List of schema IDs that matches with this Instance file. Defaults to None.
+            matches (set, optional): Set of schema IDs that matches with this Instance file. Defaults to None.
         """
         self.data = None
         self.path = root
         self.full_path = os.path.realpath(root)
         self.filename = filename
 
+        # Internal vars for caching data
+        self._top_level_properties = set()
+
         if matches:
             self.matches = matches
         else:
-            self.matches = []
+            self.matches = set()
 
-        self.matches.extend(self._find_matches_inline())
+        self._add_matches_by_decorator()
 
-    def _find_matches_inline(self, content=None):
-        """Find addition matches using the Schema ID decorator comment.
+    @property
+    def top_level_properties(self):
+        """Return a list of top level properties in the structured data defined by the data pulled from _get_content.
 
-        Look for a line with # jsonschema: schema_id,schema_id
+        Returns:
+            set: Set of the strings of top level properties defined by the data file
+        """
+        if not self._top_level_properties:
+            content = self._get_content()
+            self._top_level_properties = set(content.keys())
+
+        return self._top_level_properties
+
+    def _add_matches_by_decorator(self, content=None):
+        """Add matches which declare schema IDs they should adhere to using a decorator comment.
+
+        If a line of the form # jsonschema: <schema_id>,<schema_id> is defined in the data file, the
+        schema IDs will be added to the list of schema IDs the data will be checked for adherence to.
 
         Args:
             content (string, optional): Content of the file to analyze. Default to None.
 
         Returns:
-            list(string): List of matches found in the file.
+            set(string): Set of matches (strings of schema_ids) found in the file.
         """
         if not content:
-            content = Path(os.path.join(self.full_path, self.filename)).read_text()
+            content = self._get_content(structured=False)
 
-        matches = []
+        matches = set()
 
         if SCHEMA_TAG in content:
             line_regexp = r"^#.*{0}:\s*(.*)$".format(SCHEMA_TAG)
             match = re.match(line_regexp, content, re.MULTILINE)
             if match:
-                matches = [x.strip() for x in match.group(1).split(",")]
+                matches = {x.strip() for x in match.group(1).split(",")}
 
-        return matches
+        self.matches.update(matches)
 
-    def get_content(self):
-        """Return the content of the instance file in structured format.
+    def _get_content(self, structured=True):
+        """Returns the content of the instance file.
 
-        Content returned can be either dict or list depending on the content of the file
+        Args:
+            structured (bool): Return structured data if true. If false returns the string representation of the data
+            stored in the instance file. Defaults to True.
 
         Returns:
-            dict or list: Content of the instance file.
+            dict, list, or str: File Contents. Dict or list if structured is set to True. Otherwise returns a string.
         """
-        return load_file(os.path.join(self.full_path, self.filename))
+        file_location = os.path.join(self.full_path, self.filename)
+
+        if not structured:
+            return Path(file_location).read_text()
+
+        return load_file(file_location)
+
+    def add_matches_by_property_automap(self, schema_manager):
+        """Adds schema_ids to self.matches by automapping top level schema properties to top level keys in instance data.
+
+        Args:
+            schema_manager (schema_enforcer.schemas.manager.SchemaManager): Schema manager oject
+        """
+        matches = set()
+
+        for schema_id, schema_obj in schema_manager.iter_schemas():
+            if schema_obj.top_level_properties.intersection(self.top_level_properties):
+                matches.add(schema_id)
+
+        self.matches.update(matches)
 
     def validate(self, schema_manager, strict=False):
         """Validate this instance file with all matching schema in the schema manager.
@@ -128,6 +175,9 @@ class InstanceFile:
         for schema_id, schema in schema_manager.iter_schemas():
             if schema_id not in self.matches:
                 continue
-            errs = itertools.chain(errs, schema.validate(self.get_content(), strict))
+            schema.validate(self._get_content(), strict)
+            results = schema.get_results()
+            errs = itertools.chain(errs, results)
+            schema.clear_results()
 
         return errs

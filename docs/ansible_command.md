@@ -9,6 +9,8 @@ The `ansible` command is used to check ansible inventory for adherence to a sche
 
 If all checks pass, `schema-enforcer` will inform the user that all tests have passed.
 
+> NOTE | Schema enforcer does not come with ansible pre-installed, rather it is an optional dependency. The user can install schema enforcer bundled with ansible using one of `pip install schema-enforcer[ansible-base]` or `pip install schema-enforcer[ansible]`. Likewise, if ansible is already installed inside of the active python environment, the ansible package which is already installed will be used.
+
 ## How the inventory is loaded
 
 When the `schema-enforcer ansible` command is run, an ansible inventory is constructed. Each host's properties are extracted from the ansible inventory into a single data structure per host, then this data structure is validated against all applicable schemas. For instance, take a look at the following example:

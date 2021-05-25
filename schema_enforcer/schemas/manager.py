@@ -10,9 +10,10 @@ from rich.table import Table
 
 from schema_enforcer.utils import load_file, find_file, find_files, dump_data_to_yaml
 from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
-from schema_enforcer.exceptions import SchemaNotDefined
+from schema_enforcer.exceptions import SchemaNotDefined, InvalidJSONSchema
 from schema_enforcer.utils import error, warn
 from schema_enforcer.schemas.jsonschema import JsonSchema
+from schema_enforcer.schemas.validator import load_validators
 
 
 class SchemaManager:
@@ -43,6 +44,10 @@ class SchemaManager:
             schema = self.create_schema_from_file(root, filename)
             self.schemas[schema.get_id()] = schema
 
+        # Load validators
+        validators = load_validators(config.validator_directory)
+        self.schemas.update(validators)
+
     def create_schema_from_file(self, root, filename):  # pylint: disable=no-self-use
         """Create a new JsonSchema object for a given file.
 
@@ -61,7 +66,12 @@ class SchemaManager:
         # schema_type = "jsonschema"
         base_uri = f"file:{root}/"
         schema_full = jsonref.JsonRef.replace_refs(file_data, base_uri=base_uri, jsonschema=True, loader=load_file)
-        return JsonSchema(schema=schema_full, filename=filename, root=root)
+        schema = JsonSchema(schema=schema_full, filename=filename, root=root)
+        # Only add valid jsonschema files and raise an exception if an invalid file is found
+        valid = all((result.passed() for result in schema.check_if_valid()))
+        if not valid:
+            raise InvalidJSONSchema(schema)
+        return schema
 
     def iter_schemas(self):
         """Return an iterator of all schemas in the SchemaManager.
@@ -192,6 +202,7 @@ class SchemaManager:
 
         results = []
         for test_dir in test_dirs:
+            schema.clear_results()
             data_file = find_file(os.path.join(invalid_test_dir, test_dir, "data"))
             expected_results_file = find_file(os.path.join(invalid_test_dir, test_dir, "results"))
 
@@ -253,7 +264,7 @@ class SchemaManager:
 
         # For each test, load the data file, test the data against the schema and save the results
         for test_dir in test_dirs:
-
+            schema.clear_results()
             data_file = find_file(os.path.join(invalid_test_dir, test_dir, "data"))
 
             if not data_file:

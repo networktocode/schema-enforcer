@@ -1,11 +1,12 @@
 ---
 # Add additional stages in the order of execution here, and then under the job:include: key
 stages:
-  - "lint"
-  - "test"
-  - "test-without-ansible"
-
-if: "type IN (pull_request)"  # Add in "branch" as an option if desired for branch testing as well
+  - name: "lint"
+  - name: "test"
+  - name: "deploy-github"
+    if: "tag IS present"
+  - name: "deploy-pypi"
+    if: "tag IS present"
 
 language: "python"
 python:
@@ -19,31 +20,50 @@ services:
 # Env, before_script, and script for test stage
 env:
   matrix:
-    - "ANSIBLE_VER=2.8.18"
-    - "ANSIBLE_VER=2.9.17"
-    - "ANSIBLE_VER=2.10.5"
+    - "ANSIBLE_VER=2.8.20 ANSIBLE_PACKAGE=ansible"
+    - "ANSIBLE_VER=2.9.20 ANSIBLE_PACKAGE=ansible"
+    - "ANSIBLE_VER=2.10.7 ANSIBLE_PACKAGE=ansible"
+    - "ANSIBLE_VER=2.10.8 ANSIBLE_PACKAGE=ansible-base"
 before_script:
   - "pip install invoke toml"
 script:
-  - "invoke build --nocache"
+  - "invoke build --no-cache"
   - "invoke pytest"
+  - "invoke pytest-without-ansible"
 
 jobs:
   include:
     - stage: "lint"
       before_script:
         - "pip install invoke toml"
-        - "invoke build --nocache"
+        - "invoke build --no-cache"
       script:
         - "invoke black"
-        - "invoke bandit"  # Bandit fails to function on > Py3.8 https://github.com/PyCQA/bandit/issues/639
+        - "invoke bandit"
         - "invoke pydocstyle"
         - "invoke flake8"
         - "invoke yamllint"
         - "invoke pylint"
 
-    - stage: "test-without-ansible"
+    - stage: "deploy-github"
       before_script:
-        - "pip install invoke toml"
-        - "invoke build --without-ansible --nocache"
-      script: "invoke pytest-without-ansible"
+        - "pip install poetry"
+      script:
+        - "poetry version $TRAVIS_TAG"
+        - "poetry build"
+      deploy:
+        provider: "releases"
+        api_key: "$GITHUB_AUTH_TOKEN"
+        file_glob: true
+        file: "dist/*"
+        skip_cleanup: true
+        "on":
+          all_branches: true
+
+    - stage: "deploy-pypi"
+      before_script:
+        - "pip install poetry"
+      script:
+        - "poetry version $TRAVIS_TAG"
+        - "poetry config pypi-token.pypi $PYPI_TOKEN"
+        - "poetry publish --build"
