@@ -41,6 +41,7 @@ The table below enumerates each individual setting, it's expected type, it's def
 | definition_directory | string | "definitions" | The directory in which to search for schema definition references. These definitions are can be referenced by the schema files in the "schema_directory". This directory should be nested in the "main_directory" |
 | schema_directory | string | "schemas" | The directory in which to search for schemas. This directory should be nested in the "main_directory" |
 | test_directory | string | "tests" | The directory in which to search for valid and invalid unit tests for schemas |
+| validator_directory | string | "validators" | The directory in which schema-enforcer searches for custom validators |
 | schema_file_extensions | list | [".json", ".yaml", ".yml"] | The extensions to use when searching for schema definition files |
 | schema_file_exclude_filenames | list | [] | The list of filenames to exclude when searching for schema files in the `schema_directory` directory |
 | data_file_search_directories | list | ["./"] The paths at which to start searching for files with structured data in them to validate against defined schemas. This path is relative to the directory in which `schema-enforcer` is executed.
