@@ -157,7 +157,7 @@ When a structured data file fails schema validation, `schema-enforcer` exits wit
 
 ### Configuration Settings
 
-Schema enforcer will work with default settings, however, a `pyproject.toml` file can be placed at the root of the path in which `schema-enforcer` is run in order to override default settings or declare configuration for more advanced features. Inside of this `pyproject.toml` file, `tool.schema_enfocer` sections can be used to declare settings for schema enforcer. Take for example the `pyproject.toml` file in example 2.
+Schema enforcer will work with default settings, however, a `pyproject.toml` file can be placed at the root of the path in which `schema-enforcer` is run in order to override default settings or declare configuration for more advanced features. Inside of this `pyproject.toml` file, `tool.schema_enforcer` sections can be used to declare settings for schema enforcer. Take for example the `pyproject.toml` file in example 2.
 
 ```shell
 bash$ cd examples/example2 && tree -L 2
