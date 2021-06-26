@@ -11,7 +11,7 @@ The CLI tool uses a configuration section beginning with `tool.schema_enforcer` 
 The following parameters can be specified within the pyproject.toml file used to configure the `schema enforcer` tool. The below text snippet lists the default for each of these configuration parameters. If a pyproject.toml file defines a subset of the available parameters, this susbset defined will override the defaults. Any parameter not defined in the pyproject.toml file will fall back to it's default value (as listed below).
 
 ```toml
-[tools.schema_enforcer]
+[tool.schema_enforcer]
 
 # Main Directory Names
 main_directory = "schema"
@@ -28,7 +28,7 @@ data_file_extensions = [".json", ".yaml", ".yml"]
 data_file_exclude_filenames = [".yamllint.yml", ".travis.yml"]
 data_file_automap = true
 
-[tools.schema_enforcer.schema_mapping]
+[tool.schema_enforcer.schema_mapping]
 ```
 
 ### Overriding the Default Configuration
