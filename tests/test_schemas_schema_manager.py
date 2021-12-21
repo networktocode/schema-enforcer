@@ -28,6 +28,7 @@ def schema_manager():
     return schema_manager
 
 
+@pytest.mark.skip(reason="inconsistent result in GHA, need to revisit")
 @pytest.mark.parametrize("schema_id, result_file", [(None, "all.txt"), ("schemas/dns_servers", "byid.txt")])
 def test_dump(capsys, schema_manager, schema_id, result_file):
     """Test validates schema dump for multiple parameters."""

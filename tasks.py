@@ -38,8 +38,8 @@ TOOL_CONFIG = PYPROJECT_CONFIG["tool"]["poetry"]
 # Can be set to a separate Python version to be used for launching or building image
 PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
 # Can be set to a separate ANsible version to be used for launching or building image
-ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.10.8")
-ANSIBLE_PACKAGE = os.getenv("ANSIBLE_PACKAGE", "ansible-base")
+ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.11.7")
+ANSIBLE_PACKAGE = os.getenv("ANSIBLE_PACKAGE", "ansible-core")
 # Name of the docker image/image
 IMAGE_NAME = os.getenv("IMAGE_NAME", TOOL_CONFIG["name"])
 # Tag for the image
