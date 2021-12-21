@@ -116,7 +116,7 @@ def test_get_content(if_w_matches):
     assert content["dns_servers"][1]["address"] == "10.7.7.7"
 
     raw_content = if_w_matches._get_content(structured=False)  # pylint: disable=protected-access
-    with open(os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1", "dns.yaml"), "r") as fhd:
+    with open(os.path.join(FIXTURES_DIR, "hostvars", "eng-london-rt1", "dns.yaml"), "r", encoding="utf-8") as fhd:
         assert raw_content == fhd.read()
 
 

@@ -203,21 +203,17 @@ class SchemaManager:
         results = []
         for test_dir in test_dirs:
             schema.clear_results()
-            data_file = find_file(os.path.join(invalid_test_dir, test_dir, "data"))
-            expected_results_file = find_file(os.path.join(invalid_test_dir, test_dir, "results"))
+            data_file_path = os.path.join(invalid_test_dir, test_dir, "data")
+            data_file = find_file(data_file_path)
+            expected_results_file_path = os.path.join(invalid_test_dir, test_dir, "results")
+            expected_results_file = find_file(expected_results_file_path)
 
             if not data_file:
-                warn(
-                    "Could not find data file {}. Skipping...".format(os.path.join(invalid_test_dir, test_dir, "data"))
-                )
+                warn(f"Could not find data file {data_file_path}. Skipping...")
                 continue
 
             if not expected_results_file:
-                warn(
-                    "Could not find expected_results_file {}. Skipping...".format(
-                        os.path.join(invalid_test_dir, test_dir, "results")
-                    )
-                )
+                warn(f"Could not find expected_results_file {expected_results_file_path}. Skipping...")
                 continue
 
             data = load_file(data_file)
@@ -237,9 +233,9 @@ class SchemaManager:
             )
             if results_sorted != expected_results_sorted:
                 params["result"] = RESULT_FAIL
-                params["message"] = "Invalid test results do not match expected test results from {}".format(
-                    expected_results_file
-                )
+                params[
+                    "message"
+                ] = f"Invalid test results do not match expected test results from {expected_results_file}"
             else:
                 params["result"] = RESULT_PASS
 
@@ -265,10 +261,11 @@ class SchemaManager:
         # For each test, load the data file, test the data against the schema and save the results
         for test_dir in test_dirs:
             schema.clear_results()
-            data_file = find_file(os.path.join(invalid_test_dir, test_dir, "data"))
+            data_file_path = os.path.join(invalid_test_dir, test_dir, "data")
+            data_file = find_file(data_file_path)
 
             if not data_file:
-                warn("Could not find data file {}".format(os.path.join(invalid_test_dir, test_dir, "data")))
+                warn(f"Could not find data file {data_file_path}")
 
             data = load_file(data_file)
             results = schema.validate_to_dict(data)

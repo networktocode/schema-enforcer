@@ -69,7 +69,7 @@ def test_ensure_yaml_output_format():
     with open(yaml_path, encoding="utf-8") as fileh:
         actual = fileh.read()
 
-    with open("tests/mocks/utils/formatted.yml") as fileh:
+    with open("tests/mocks/utils/formatted.yml", encoding="utf-8") as fileh:
         mock = fileh.read()
 
     mock = remove_comments_from_yaml_string(mock)
@@ -84,7 +84,10 @@ def test_get_conversion_filepaths():
     json_path = yaml_path.replace("yaml", "json")
     actual = utils.get_conversion_filepaths(yaml_path, "yml", json_path, "json")
     expected_defs = [
-        (f"{yaml_path}/definitions/{subdir}/ip.yml", f"{json_path}/definitions/{subdir}/ip.json",)
+        (
+            f"{yaml_path}/definitions/{subdir}/ip.yml",
+            f"{json_path}/definitions/{subdir}/ip.json",
+        )
         for subdir in ("arrays", "objects", "properties")
     ]
     expected_schemas = [
@@ -113,7 +116,7 @@ def test_dump_data_to_yaml():
     utils.dump_data_to_yaml(TEST_DATA, test_file)
     with open(test_file, encoding="utf-8") as fileh:
         actual = fileh.read()
-    with open("tests/mocks/utils/formatted.yml") as fileh:
+    with open("tests/mocks/utils/formatted.yml", encoding="utf-8") as fileh:
         mock = fileh.read()
 
     mock = remove_comments_from_yaml_string(mock)
@@ -129,7 +132,7 @@ def test_dump_data_json():
     utils.dump_data_to_json(TEST_DATA, test_file)
     with open(test_file, encoding="utf-8") as fileh:
         actual = fileh.read()
-    with open("tests/mocks/utils/formatted.json") as fileh:
+    with open("tests/mocks/utils/formatted.json", encoding="utf-8") as fileh:
         mock = fileh.read()
     assert actual == mock
     os.remove(test_file)

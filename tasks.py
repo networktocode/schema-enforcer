@@ -12,7 +12,7 @@ except ImportError:
 
 def project_ver():
     """Find version from pyproject.toml to use for docker image tagging."""
-    with open("pyproject.toml") as config_file:
+    with open("pyproject.toml", encoding="utf-8") as config_file:
         return toml.load(config_file)["tool"]["poetry"].get("version", "latest")
 
 

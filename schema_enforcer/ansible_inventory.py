@@ -1,8 +1,8 @@
 """Ansible Inventory class to generate final hostvars based on group_vars and host_vars."""
-from ansible.inventory.manager import InventoryManager
-from ansible.parsing.dataloader import DataLoader
-from ansible.vars.manager import VariableManager
-from ansible.template import Templar
+from ansible.inventory.manager import InventoryManager  # pylint: disable=import-error
+from ansible.parsing.dataloader import DataLoader  # pylint: disable=import-error
+from ansible.vars.manager import VariableManager  # pylint: disable=import-error
+from ansible.template import Templar  # pylint: disable=import-error
 
 
 # Referenced https://github.com/fgiorgetti/qpid-dispatch-tests/ for the below class
@@ -22,7 +22,7 @@ class AnsibleInventory:
         self.var_mgr = VariableManager(loader=self.loader, inventory=self.inv_mgr)
         # TODO As of Ansible==2.8.0 the extra_vars property cannot be set to VariableManager
         #      This needs to be investigated and fixed properly
-        self.extra_vars = extra_vars or dict()
+        self.extra_vars = extra_vars or {}
 
     def get_hosts_containing(self, var=None):
         """Gets hosts that have a value for ``var``.
@@ -93,9 +93,7 @@ class AnsibleInventory:
         # Extract magic vars which should be evaluated
         magic_vars_to_evaluate = hostvars.get("magic_vars_to_evaluate", [])
         if not isinstance(magic_vars_to_evaluate, list):
-            raise TypeError(
-                "magic_vars_to_evaluate variable configured for host {} must be of type list".format(host.name,)
-            )
+            raise TypeError(f"magic_vars_to_evaluate variable configured for host {host.name} must be of type list")
 
         keys_cleanup = list(set(keys_cleanup) - set(magic_vars_to_evaluate))
 
@@ -234,7 +232,7 @@ class AnsibleInventory:
             print_dict[host.name] = list(applicable_schemas.keys())
 
         if print_dict:
-            print("{:25} Schema ID".format("Ansible Host"))
+            print("{:25} Schema ID".format("Ansible Host"))  # pylint: disable=consider-using-f-string
             print("-" * 80)
             print_strings = []
             for hostname, schema_ids in print_dict.items():

@@ -30,10 +30,10 @@ def schema_manager():
 
 @pytest.mark.parametrize("schema_id, result_file", [(None, "all.txt"), ("schemas/dns_servers", "byid.txt")])
 def test_dump(capsys, schema_manager, schema_id, result_file):
-    """ Test validates schema dump for multiple parameters. """
+    """Test validates schema dump for multiple parameters."""
 
     test_file = os.path.join(FIXTURE_DIR, "test_manager", "dump", result_file)
-    with open(test_file) as res_file:
+    with open(test_file, encoding="utf-8") as res_file:
         expected = res_file.read()
     schema_manager.dump_schema(schema_id)
     captured = capsys.readouterr()
@@ -41,7 +41,7 @@ def test_dump(capsys, schema_manager, schema_id, result_file):
 
 
 def test_invalid():
-    """ Test validates that SchemaManager reports an error when an invalid schema is loaded. """
+    """Test validates that SchemaManager reports an error when an invalid schema is loaded."""
     config = {
         "main_directory": os.path.join(FIXTURE_DIR, "test_manager", "invalid", "schema"),
         "data_file_search_directories": [os.path.join(FIXTURE_DIR, "hostvars")],
@@ -54,7 +54,7 @@ def test_invalid():
 
 
 def test_generate_invalid(capsys):
-    """ Test validates that generate_invalid_test_expected generates the correct data. """
+    """Test validates that generate_invalid_test_expected generates the correct data."""
     config = {
         "main_directory": os.path.join(FIXTURE_DIR, "test_manager", "invalid_generate", "schema"),
     }
@@ -68,9 +68,9 @@ def test_generate_invalid(capsys):
 
     for test in invalid_tests:
         test_dir = os.path.join(invalid_dir, test)
-        with open(os.path.join(test_dir, "exp_results.yml")) as exp_file:
+        with open(os.path.join(test_dir, "exp_results.yml"), encoding="utf-8") as exp_file:
             expected = exp_file.read()
-        with open(os.path.join(test_dir, "results.yml")) as gen_file:
+        with open(os.path.join(test_dir, "results.yml"), encoding="utf-8") as gen_file:
             generated = gen_file.read()
         assert expected == generated
 

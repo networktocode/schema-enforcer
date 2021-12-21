@@ -381,7 +381,7 @@ def load_file(filename, file_type=None):
         filename = filename.replace("file://", "")
 
     handler = YAML_HANDLER if file_type == "yaml" else json
-    with open(filename, "r") as fileh:
+    with open(filename, "r", encoding="utf-8") as fileh:
         file_data = handler.load(fileh)
 
     return file_data
@@ -491,8 +491,8 @@ class MutuallyExclusiveOption(Option):
         """
         if self.mutually_exclusive.intersection(opts) and self.name in opts:
             raise UsageError(
-                "Illegal usage: `{}` is mutually exclusive with "
-                "arguments `{}`.".format(self.name, ", ".join(self.mutually_exclusive))
+                f"Illegal usage: `{self.name}` is mutually exclusive with "
+                f"arguments `{', '.join(self.mutually_exclusive)}`."
             )
 
         return super().handle_parse_result(ctx, opts, args)
