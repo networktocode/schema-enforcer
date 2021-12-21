@@ -59,7 +59,7 @@ def _get_image_name(with_ansible=False):
     Returns:
         str: Name of container image. Includes tag.
     """
-    if with_ansible and not os.getenv("GITHUB_ACTION", False):
+    if with_ansible and not os.getenv("GITHUB_ACTION", None):
         name = f"{IMAGE_NAME}:{IMAGE_VER}-{ANSIBLE_PACKAGE}{ANSIBLE_VER}"
     else:
         name = f"{IMAGE_NAME}:{IMAGE_VER}"
