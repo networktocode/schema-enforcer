@@ -81,13 +81,14 @@ jobs:
     env:
       PYTHON_VER: "${{ matrix.python-version }}"
       ANSIBLE_VER: "${{ matrix.ansible-core-version }}"
+      ANSIBLE_PACKAGE: "ansible-core"
     steps:
       - name: "Check out repository code"
         uses: "actions/checkout@v2"
       - name: "Setup environment"
         uses: "networktocode/gh-action-setup-poetry-environment@v2"
       - name: "Get image version"
-        run: "echo IMAGE_VER=`poetry version -s`-py${{ matrix.python-version }} >> $GITHUB_ENV"
+        run: "echo IMAGE_VER=`poetry version -s`-py${{ matrix.python-version }}-ansible-core${{ matrix.ansible-core-version }} >> $GITHUB_ENV"
       - name: "Set up Docker Buildx"
         id: "buildx"
         uses: "docker/setup-buildx-action@v1"
@@ -100,11 +101,12 @@ jobs:
           target: "with_ansible"
           tags: "${{ env.IMAGE_NAME }}:${{ env.IMAGE_VER }}"
           file: "./Dockerfile"
-          cache-from: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}"
-          cache-to: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}"
+          cache-from: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}-ansible-core${{ matrix.ansible-core-version }}"
+          cache-to: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}-ansible-core${{ matrix.ansible-core-version }}"
           build-args: |
             PYTHON_VER=${{ env.PYTHON_VER }}
             ANSIBLE_VER=${{ env.ANSIBLE_VER }}
+            ANSIBLE_PACKAGE=${{ env.ANSIBLE_PACKAGE }}
     needs:
       - "bandit"
       - "pydocstyle"
@@ -120,13 +122,14 @@ jobs:
     env:
       PYTHON_VER: "${{ matrix.python-version }}"
       ANSIBLE_VER: "${{ matrix.ansible-core-version }}"
+      ANSIBLE_PACKAGE: "ansible-core"
     steps:
       - name: "Check out repository code"
         uses: "actions/checkout@v2"
       - name: "Setup environment"
         uses: "networktocode/gh-action-setup-poetry-environment@v2"
       - name: "Get image version"
-        run: "echo IMAGE_VER=`poetry version -s`-py${{ matrix.python-version }} >> $GITHUB_ENV"
+        run: "echo IMAGE_VER=`poetry version -s`-py${{ matrix.python-version }}-ansible-core${{ matrix.ansible-core-version }} >> $GITHUB_ENV"
       - name: "Set up Docker Buildx"
         id: "buildx"
         uses: "docker/setup-buildx-action@v1"
@@ -140,11 +143,12 @@ jobs:
           target: "with_ansible"
           tags: "${{ env.IMAGE_NAME }}:${{ env.IMAGE_VER }}"
           file: "./Dockerfile"
-          cache-from: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}"
-          cache-to: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}"
+          cache-from: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}-ansible-core${{ matrix.ansible-core-version }}"
+          cache-to: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}-ansible-core${{ matrix.ansible-core-version }}"
           build-args: |
             PYTHON_VER=${{ env.PYTHON_VER }}
             ANSIBLE_VER=${{ env.ANSIBLE_VER }}
+            ANSIBLE_PACKAGE=${{ env.ANSIBLE_PACKAGE }}
       - name: "Debug: Show docker images"
         run: "docker image ls"
       - name: "Linting: Pylint"
@@ -161,13 +165,14 @@ jobs:
     env:
       PYTHON_VER: "${{ matrix.python-version }}"
       ANSIBLE_VER: "${{ matrix.ansible-core-version }}"
+      ANSIBLE_PACKAGE: "ansible-core"
     steps:
       - name: "Check out repository code"
         uses: "actions/checkout@v2"
       - name: "Setup environment"
         uses: "networktocode/gh-action-setup-poetry-environment@v2"
       - name: "Get image version"
-        run: "echo IMAGE_VER=`poetry version -s`-py${{ matrix.python-version }} >> $GITHUB_ENV"
+        run: "echo IMAGE_VER=`poetry version -s`-py${{ matrix.python-version }}-ansible-core${{ matrix.ansible-core-version }} >> $GITHUB_ENV"
       - name: "Set up Docker Buildx"
         id: "buildx"
         uses: "docker/setup-buildx-action@v1"
@@ -181,11 +186,12 @@ jobs:
           target: "with_ansible"
           tags: "${{ env.IMAGE_NAME }}:${{ env.IMAGE_VER }}"
           file: "./Dockerfile"
-          cache-from: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}"
-          cache-to: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}"
+          cache-from: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}-ansible-core${{ matrix.ansible-core-version }}"
+          cache-to: "type=gha,scope=${{ env.IMAGE_NAME }}-${{ env.IMAGE_VER }}-py${{ matrix.python-version }}-ansible-core${{ matrix.ansible-core-version }}"
           build-args: |
             PYTHON_VER=${{ env.PYTHON_VER }}
             ANSIBLE_VER=${{ env.ANSIBLE_VER }}
+            ANSIBLE_PACKAGE=${{ env.ANSIBLE_PACKAGE }}
       - name: "Debug: Show docker images"
         run: "docker image ls"
       - name: "Run Tests"
