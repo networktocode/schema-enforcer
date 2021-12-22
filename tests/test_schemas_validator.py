@@ -21,7 +21,7 @@ def inventory():
 def host_vars(inventory):
     """Fixture for providing Ansible host_vars as a consolidated dict."""
     hosts = inventory.get_hosts_containing()
-    host_vars = dict()
+    host_vars = {}
     for host in hosts:
         hostname = host.get_vars()["inventory_hostname"]
         host_vars[hostname] = inventory.get_host_vars(host)

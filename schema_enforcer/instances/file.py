@@ -53,7 +53,7 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
 
     def print_schema_mapping(self):
         """Print in CLI the matches for all instance files."""
-        print("{:50} Schema ID".format("Structured Data File"))
+        print("{:50} Schema ID".format("Structured Data File"))  # pylint: disable=consider-using-f-string
         print("-" * 80)
         print_strings = []
         for instance in self.instances:
@@ -119,7 +119,7 @@ class InstanceFile:
         matches = set()
 
         if SCHEMA_TAG in content:
-            line_regexp = r"^#.*{0}:\s*(.*)$".format(SCHEMA_TAG)
+            line_regexp = r"^#.*{0}:\s*(.*)$".format(SCHEMA_TAG)  # pylint: disable=consider-using-f-string
             match = re.match(line_regexp, content, re.MULTILINE)
             if match:
                 matches = {x.strip() for x in match.group(1).split(",")}
@@ -139,7 +139,7 @@ class InstanceFile:
         file_location = os.path.join(self.full_path, self.filename)
 
         if not structured:
-            return Path(file_location).read_text()
+            return Path(file_location).read_text(encoding="utf-8")
 
         return load_file(file_location)
 

@@ -94,7 +94,7 @@ def is_validator(obj) -> bool:
 
 def load_validators(validator_path: str) -> dict[str, BaseValidation]:
     """Load all validator plugins from validator_path."""
-    validators = dict()
+    validators = {}
     for importer, module_name, _ in pkgutil.iter_modules([validator_path]):
         module = importer.find_module(module_name).load_module(module_name)
         for name, cls in inspect.getmembers(module, is_validator):

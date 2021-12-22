@@ -17,6 +17,6 @@ RUN poetry config virtualenvs.create false \
 # Defines stage with ansible installed
 # -----------------------------------------------------------------------------
 FROM base as with_ansible
-ARG ANSIBLE_PACKAGE
-ARG ANSIBLE_VER
+ARG ANSIBLE_PACKAGE=ansible-core
+ARG ANSIBLE_VER=2.11.7
 RUN pip install $ANSIBLE_PACKAGE==$ANSIBLE_VER

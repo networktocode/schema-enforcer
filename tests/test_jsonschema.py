@@ -16,7 +16,9 @@ LOADED_INSTANCE_DATA = load_file(os.path.join(FIXTURES_DIR, "hostvars", "chi-bei
 def schema_instance():
     """JSONSchema schema instance."""
     schema_instance = JsonSchema(
-        schema=LOADED_SCHEMA_DATA, filename="dns.yml", root=os.path.join(FIXTURES_DIR, "schema", "schemas"),
+        schema=LOADED_SCHEMA_DATA,
+        filename="dns.yml",
+        root=os.path.join(FIXTURES_DIR, "schema", "schemas"),
     )
     return schema_instance
 
@@ -133,7 +135,9 @@ class TestJsonSchema:
     def test_check_if_valid():
         schema_data = load_file(os.path.join(FIXTURES_DIR, "schema", "schemas", "invalid.yml"))
         schema_instance = JsonSchema(
-            schema=schema_data, filename="invalid.yml", root=os.path.join(FIXTURES_DIR, "schema", "schemas"),
+            schema=schema_data,
+            filename="invalid.yml",
+            root=os.path.join(FIXTURES_DIR, "schema", "schemas"),
         )
         results = schema_instance.check_if_valid()
         for result in results:

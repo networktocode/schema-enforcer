@@ -41,7 +41,7 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     data_file_automap: bool = True
 
     ansible_inventory: Optional[str]
-    schema_mapping: Dict = dict()
+    schema_mapping: Dict = {}
 
     class Config:  # pylint: disable=too-few-public-methods
         """Additional parameters to automatically map environment variable to some settings."""
@@ -75,7 +75,7 @@ def load(config_file_name="pyproject.toml", config_data=None):
         SETTINGS = Settings(**config_data)
         return
     if os.path.exists(config_file_name):
-        config_string = Path(config_file_name).read_text()
+        config_string = Path(config_file_name).read_text(encoding="utf-8")
         config_tmp = toml.loads(config_string)
 
         if "tool" in config_tmp and "schema_enforcer" in config_tmp.get("tool", {}):

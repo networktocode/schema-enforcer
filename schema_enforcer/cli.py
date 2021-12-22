@@ -307,7 +307,7 @@ def ansible(
         for schema_obj in applicable_schemas.values():
             # Combine host attributes into a single data structure matching to properties defined at the top level of the schema definition
             if not strict:
-                data = dict()
+                data = {}
                 for var in schema_obj.top_level_properties:
                     data.update({var: hostvars.get(var)})
 

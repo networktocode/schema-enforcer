@@ -12,7 +12,7 @@ except ImportError:
 
 def project_ver():
     """Find version from pyproject.toml to use for docker image tagging."""
-    with open("pyproject.toml") as config_file:
+    with open("pyproject.toml", encoding="utf-8") as config_file:
         return toml.load(config_file)["tool"]["poetry"].get("version", "latest")
 
 
@@ -38,8 +38,8 @@ TOOL_CONFIG = PYPROJECT_CONFIG["tool"]["poetry"]
 # Can be set to a separate Python version to be used for launching or building image
 PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
 # Can be set to a separate ANsible version to be used for launching or building image
-ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.10.8")
-ANSIBLE_PACKAGE = os.getenv("ANSIBLE_PACKAGE", "ansible-base")
+ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.11.7")
+ANSIBLE_PACKAGE = os.getenv("ANSIBLE_PACKAGE", "ansible-core")
 # Name of the docker image/image
 IMAGE_NAME = os.getenv("IMAGE_NAME", TOOL_CONFIG["name"])
 # Tag for the image
@@ -59,7 +59,7 @@ def _get_image_name(with_ansible=False):
     Returns:
         str: Name of container image. Includes tag.
     """
-    if with_ansible:
+    if with_ansible and not os.getenv("GITHUB_ACTION", None):
         name = f"{IMAGE_NAME}:{IMAGE_VER}-{ANSIBLE_PACKAGE}{ANSIBLE_VER}"
     else:
         name = f"{IMAGE_NAME}:{IMAGE_VER}"
