@@ -1,9 +1,9 @@
 ARG PYTHON_VER
 
-FROM python:${PYTHON_VER}-slim as base
+FROM python:${PYTHON_VER} as base
 
-RUN pip install --upgrade pip \
-  && pip install poetry
+RUN pip install --upgrade pip && \
+  pip install poetry
 
 WORKDIR /local
 # Poetry fails install without README.md being copied.
