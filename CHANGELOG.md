@@ -3,11 +3,13 @@
 ## v1.1.3 - 2022-05-31
 
 ### Changes
+
 - jinja2 version dependency specification modified such that versions in the 3.x release are supported
 
 ## v1.1.2 - 2022-01-10
 
 ### Changes
+
 - Update dependencies
 - Switch from slim to full python docker base image
 
