@@ -9,6 +9,7 @@ FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtur
 FORMAT_CHECK_ERROR_MESSAGE_MAPPING = {
     "incorrect_regex_format": "'[' is not a 'regex'",
     "incorrect_date_format": "'2021-111-28' is not a 'date'",
+    "incorrect_hostname_format": "'ntc@ntc.com' is not a 'hostname'",
     "incorrect_uri_format": "'sftp//' is not a 'uri'",
     "incorrect_jsonptr_format": "'fakejsonptr' is not a 'json-pointer'",
     "incorrect_email_format": "'networktocode.code.com' is not a 'email'",
