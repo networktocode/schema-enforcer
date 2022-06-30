@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.4 - 2022-06-16
+
+### Changes
+
+- Update jsonschema schema version dependency so that only versions greater than 4.4 are supported.
+
 ## v1.1.3 - 2022-05-31
 
 ### Changes
