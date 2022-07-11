@@ -2,6 +2,10 @@
 
 ## v1.1.4 - 2022-06-16
 
+### Adds
+
+- Add format_nongpl extra to jsonschema install. This ensures draft7 format checkers validate format adherence as expected while also ensuring GPL-Licenced transitive dependencies are not installed.
+
 ### Changes
 
 - Update jsonschema schema version dependency so that only versions greater than 4.4 are supported.
