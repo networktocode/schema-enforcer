@@ -8,7 +8,8 @@
 
 ### Changes
 
-- Update jsonschema schema version dependency so that only versions greater than 4.4 are supported.
+- Update jsonschema version dependency so that only versions greater than 4.4 are supported.
+- Update ansible version dependency so that only versions greater than 4.2 are supported. This is done to remediate CVE-2021-3583
 
 ### Removes
 
