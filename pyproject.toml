@@ -25,7 +25,7 @@ pydantic = "^1.6"
 rich = "^9.5"
 jsonpointer = "^2.1"
 jmespath = "^0.10"
-ansible = { version = "^2.10.0", optional = true }
+ansible = { version = "^4.2", optional = true }
 ansible-base = { version = "^2.10.0", optional = true }
 jsonschema = {version = "^4.7.1", extras = ["format-nongpl"]}
 
