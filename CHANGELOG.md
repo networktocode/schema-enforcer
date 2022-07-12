@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.4 - 2022-06-16
+## v1.1.4 - TBD
 
 ### Adds
 
@@ -9,6 +9,10 @@
 ### Changes
 
 - Update jsonschema schema version dependency so that only versions greater than 4.4 are supported.
+
+### Removes
+
+- Native support for `iri` and `iri-reference` format checkers. This was removed because the format is implemented per the `rfc3987` jsonschema transitive dependency which is licensed under GPL.
 
 ## v1.1.3 - 2022-05-31
 
