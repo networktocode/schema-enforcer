@@ -12,7 +12,7 @@
 
 ### Removes
 
-- Native support for `iri` and `iri-reference` format checkers. This was removed because the format is implemented per the `rfc3987` jsonschema transitive dependency which is licensed under GPL.
+- Automatic support for `iri` and `iri-reference` format checkers. This was removed because these format checkers require the `rfc3987` library, which is licensed under GPL. If you require these checkers, you can manually install `rfc3987` or install this package as `jsonschema[rfc3987]`.
 
 ## v1.1.3 - 2022-05-31
 
