@@ -189,6 +189,17 @@ bash$ cat pyproject.toml
 ```
 
 > More information on available configuration settings can be found in the [configuration README](docs/configuration.md)
+
+### Supported Formats
+
+By default, schema enforcer installs the jsonschema `format-nongpl` extra which allows the use of formats that can be used in schema definitions (e.g. ipv4, hostname...etc). The `format-nongpl` extra only installs transitive dependencies that are not licensed under GPL. The `iri` and `iri-reference` formats are defined by the `rfc3987` transitive dependency which is licensed under GPL. As such, `iri` and `iri-reference` formats are *not* supported by `format-nongpl`. If you have a need to use `iri` and/or `iri-reference` formats, you can do so by running the following pip command (or it's poetry equivalent):
+
+```
+pip install 'jsonschema[rfc3987]'
+```
+
+See the "Validating Formats" section in the [jsonschema documentation](https://github.com/python-jsonschema/jsonschema/blob/main/docs/validate.rst) for more information.
+
 ### Where To Go Next
 
 Detailed documentation can be found in the README.md files inside of the `docs/` directory.
