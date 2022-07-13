@@ -8,7 +8,7 @@
 
 ### Changes
 
-- Update jsonschema schema version dependency so that only versions greater than 4.4 are supported.
+- Update jsonschema schema version dependency so that versions in the 4.x train are supported.
 
 ### Removes
 
