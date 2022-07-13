@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.1.4 - 2022-07-13
+
+### Adds
+
+- Add format_nongpl extra to jsonschema install. This ensures draft7 format checkers validate format adherence as expected while also ensuring GPL-Licenced transitive dependencies are not installed.
+
+### Changes
+
+- Update jsonschema schema version dependency so that versions in the 4.x train are supported.
+
+### Removes
+
+- Automatic support for `iri` and `iri-reference` format checkers. This was removed because these format checkers require the `rfc3987` library, which is licensed under GPL. If you require these checkers, you can manually install `rfc3987` or install this package as `jsonschema[rfc3987]`.
+
 ## v1.1.3 - 2022-05-31
 
 ### Changes

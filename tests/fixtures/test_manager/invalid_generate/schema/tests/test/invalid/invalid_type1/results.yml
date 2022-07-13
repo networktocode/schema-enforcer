@@ -1,0 +1,9 @@
+---
+results:
+  - result: "FAIL"
+    schema_id: "schemas/test"
+    absolute_path:
+      - "firewall"
+      - "rule"
+      - "bool"
+    message: "'true' is not of type 'boolean'"
