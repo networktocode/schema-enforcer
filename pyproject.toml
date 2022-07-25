@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "schema-enforcer"
-version = "1.1.4"
+version = "1.1.5"
 description = "Tool/Framework for testing structured data against schema definitions"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 license = "Apache-2.0"
@@ -27,7 +27,7 @@ jsonpointer = "^2.1"
 jmespath = "^0.10"
 ansible = { version = "^2.10.0", optional = true }
 ansible-base = { version = "^2.10.0", optional = true }
-jsonschema = {version = ">3.2, <5", extras = ["format-nongpl"]}
+jsonschema = {version = ">3.2, <4.6", extras = ["format_nongpl"]}
 
 [tool.poetry.extras]
 ansible = ["ansible"]
