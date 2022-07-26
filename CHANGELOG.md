@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.5 - TBD
+
+### Changes
+
+- Fixes #141 - Can not install schema-enforcer in environments which require a version of jsonschema < 4.6
+
 ## v1.1.4 - 2022-07-13
 
 ### Adds
