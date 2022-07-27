@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.5 - TBD
+## v1.1.5 - 2022-07-27
 
 ### Changes
 
