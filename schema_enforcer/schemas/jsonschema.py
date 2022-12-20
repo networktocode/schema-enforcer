@@ -60,7 +60,7 @@ class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attribute
             has_error = True
 
             if 'errMessage' in err.schema:
-                message = f"{err.instance} {err.schema['errMessage']}"
+                message = err.schema['errMessage']
             else:
                 message = err.message
 
