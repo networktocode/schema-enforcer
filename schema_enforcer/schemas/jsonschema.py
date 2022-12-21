@@ -2,7 +2,6 @@
 import copy
 import pkgutil
 import json
-import re
 
 from jsonschema import Draft7Validator, draft7_format_checker  # pylint: disable=import-self
 from schema_enforcer.schemas.validator import BaseValidation
@@ -62,7 +61,7 @@ class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attribute
 
             if 'errMessage' in err.schema:
                 message = err.schema['errMessage']
-                message = re.sub(r'[s]\w+', str(err.instance), message)
+                message = message.replace("$iData", str(err.instance))
             else:
                 message = err.message
 
