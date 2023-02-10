@@ -200,6 +200,63 @@ pip install 'jsonschema[rfc3987]'
 
 See the "Validating Formats" section in the [jsonschema documentation](https://github.com/python-jsonschema/jsonschema/blob/main/docs/validate.rst) for more information.
 
+### Custom Error Message Support
+
+Schema enforcer is able to handle and return custom error messages that are defined in the JSON Schema itself using reserved keywords. These custom error messages override the default messages returned by JSON Schema. For example consider the following JSON Schema:
+
+```
+type: object
+additionalProperties: false
+properties:
+  data:
+    type: object
+    properties:
+      name:
+        $ref: "#/$defs/regex_sub_schema"
+      aliases:
+        type: array
+        items:
+          $ref: "#/$defs/regex_sub_schema"
+
+$defs:
+  regex_sub_schema:
+    type: string
+    pattern: regex
+    err_message: "'$instance' is not valid. Please see docs."
+```
+When validating against test data with invalid entries for `name` and `aliases`, the custom error is returned:
+
+```
+FAIL | [ERROR] 'host' is not valid. Please see docs. [FILE] .//test.yml [PROPERTY] data:name
+FAIL | [ERROR] 'alias-1' is not valid. Please see docs. [FILE] .//test.yml [PROPERTY] data:aliases:0
+FAIL | [ERROR] 'alias-2' is not valid. Please see docs. [FILE] .//test.yml [PROPERTY] data:aliases:1
+```
+The error messages returned contain the instance data that was being validated at the time of failure. This is achieved by using the `$instance` variable within the custom error message. All occurences of this variable will be replaced with the instance data being validated.
+
+Please bear in mind that custom errors defined at the `root` level of the schema are ignored. For example if we add a custom error at the root level:
+
+```
+type: object
+additionalProperties: false
+err_message: This error message will be ignored.
+properties:
+  data:
+    [...]
+```
+Then validate against data with an additional property at the root level, for example:
+```
+data:
+  name: host
+  aliases:
+    - etc...
+data2:
+  name: host2
+```
+The error returned will be the default JSON Schema error:
+```
+FAIL | [ERROR] Additional properties are not allowed ('data2' was unexpected) [FILE] .//test.yml [PROPERTY]
+```
+
 ### Where To Go Next
 
 Detailed documentation can be found in the README.md files inside of the `docs/` directory.
