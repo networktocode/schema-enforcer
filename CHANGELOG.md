@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.0 - 2023-06-05
+
+### Adds
+
+- Support for versions of jsonschema >= 4.6
+
+### Removes
+
+- Support for versions of jsonschema < 4.6. See #141 for details.
+
 ## v1.1.5 - 2022-07-27
 
 ### Changes
