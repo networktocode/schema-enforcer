@@ -127,7 +127,6 @@ class SchemaManager:
         error_exists = False
 
         for schema_id, schema in self.iter_schemas():
-
             schema_valid = schema.check_if_valid()
             valid_results = self.test_schema_valid(schema_id)
             invalid_results = self.test_schema_invalid(schema_id)
@@ -164,7 +163,6 @@ class SchemaManager:
         results = []
 
         for root, filename in valid_files:
-
             test_data = load_file(os.path.join(root, filename))
 
             for result in schema.validate(test_data, strict=strict):

@@ -83,7 +83,6 @@ def validate(show_pass, show_checks, strict):  # noqa D205
     error_exists = False
     for instance in ifm.instances:
         for result in instance.validate(smgr, strict):
-
             result.instance_type = "FILE"
             result.instance_name = instance.filename
             result.instance_location = instance.path
