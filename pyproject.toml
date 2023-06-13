@@ -22,7 +22,7 @@ toml = "^0.10"
 jinja2 = ">=2.11"
 jsonref = "^0.2"
 pydantic = "^1.6"
-rich = "^12.5.1"
+rich = "*"
 jsonpointer = "^2.1"
 jmespath = "^0.10"
 ansible = { version = "^2.10.0", optional = true }
