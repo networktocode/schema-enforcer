@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.1
+
+### Changes
+
+- #152 Update requirement for rich to ^12.5.1
+
 ## v1.2.0 - 2023-06-05
 
 ### Adds
