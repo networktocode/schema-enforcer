@@ -347,7 +347,6 @@ def find_files(
             search_directory = directory
 
         for root, dirs, files in os.walk(search_directory):  # pylint: disable=W0612
-
             if is_part_of_excluded_dirs(root):
                 continue
 
@@ -437,7 +436,6 @@ def find_and_load_file(filename, formats=("yml", "yaml", "json")):
         dict, list or None: content of the file in a python variable. None if no file could be found.
     """
     for ext in formats:
-
         file_ext = f"{filename}.{ext}"
         if not os.path.isfile(file_ext):
             continue
