@@ -4,7 +4,7 @@
 
 ### Changes
 
-- #152 Update requirement for rich to ^12.5.1
+- #152 Update requirement for rich to `>=9.5`
 
 ## v1.2.0 - 2023-06-05
 
