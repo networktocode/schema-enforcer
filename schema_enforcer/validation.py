@@ -28,7 +28,7 @@ class ValidationResult(BaseModel):
     message: Optional[str]
 
     @validator("result")
-    def result_must_be_pass_or_fail(cls, var):  # pylint: disable=no-self-argument, no-self-use
+    def result_must_be_pass_or_fail(cls, var):  # pylint: disable=no-self-argument
         """Validate that result either PASS or FAIL."""
         if var.upper() not in [RESULT_PASS, RESULT_FAIL]:
             raise ValueError("must be either PASS or FAIL")

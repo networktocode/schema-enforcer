@@ -10,7 +10,6 @@ from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
 from jsonschema import (  # pylint: disable=no-name-in-module
     RefResolver,
     Draft7Validator,
-    draft7_format_checker,
 )
 
 from termcolor import colored
@@ -167,7 +166,7 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
     # these references must match the full filenames currently, unless we modify the RefResolver to handle other cases.
     validator = Draft7Validator(
         schema_definition,
-        format_checker=draft7_format_checker,
+        format_checker=Draft7Validator.FORMAT_CHECKER,
         resolver=RefResolver(base_uri=base_uri, referrer=schema_definition),
     )
     return validator
