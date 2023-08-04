@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.0
+
+- #156 Add support for jsonschema 4.18
+
 ## v1.2.1
 
 ### Changes

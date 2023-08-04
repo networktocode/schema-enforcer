@@ -1,15 +1,12 @@
 """class to manage jsonschema type schema."""
 import copy
-import pkgutil
 import json
+import os
+from functools import cached_property
 
-from jsonschema import Draft7Validator, draft7_format_checker  # pylint: disable=import-self
+from jsonschema import Draft7Validator  # pylint: disable=import-self
 from schema_enforcer.schemas.validator import BaseValidation
 from schema_enforcer.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
-
-# TODO do we need to catch a possible exception here ?
-v7data = pkgutil.get_data("jsonschema", "schemas/draft7.json")
-v7schema = json.loads(v7data.decode("utf-8"))
 
 
 class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attributes
@@ -33,7 +30,16 @@ class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attribute
         self.top_level_properties = set(self.data.get("properties"))
         self.validator = None
         self.strict_validator = None
-        self.format_checker = draft7_format_checker
+        self.format_checker = Draft7Validator.FORMAT_CHECKER
+
+    @cached_property
+    def v7_schema(self):
+        """Draft7 Schema."""
+        local_dirname = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(local_dirname, "draft7_schema.json"), encoding="utf-8") as fhd:
+            v7_schema = json.loads(fhd.read())
+
+        return v7_schema
 
     def get_id(self):
         """Return the unique ID of the schema."""
@@ -131,7 +137,7 @@ class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attribute
         Returns:
             List[ValidationResult]: A list of validation result objects.
         """
-        validator = Draft7Validator(v7schema, format_checker=self.format_checker)
+        validator = Draft7Validator(self.v7_schema, format_checker=self.format_checker)
 
         results = []
         has_error = False
