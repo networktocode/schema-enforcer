@@ -1,8 +1,9 @@
 # Changelog
 
-## v1.3.0
+## v1.2.2
 
 - #156 Add support for jsonschema 4.18
+- Remove support for python version 3.7
 
 ## v1.2.1
 
