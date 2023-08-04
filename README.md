@@ -1,26 +1,16 @@
 # Schema Enforcer
 
-Schema Enforcer provides a framework for testing structured data against schema definitions. Right now, [JSONSchema](https://json-schema.org/understanding-json-schema/index.html) is the only schema definition language supported, but we are thinking about adding other schema definition languages at some point in the future.
+Schema Enforcer provides a framework for testing structured data against schema definitions using [JSONSchema](https://json-schema.org/understanding-json-schema/index.html).
 
 ## Getting Started
 
 ### Install
 
-Schema Enforcer is a python library which is available on PyPi. It requires a python version of 3.7 or greater. Once a supported version of python is installed on your machine, pip can be used to install the tool by using the command `python -m pip install schema-enforcer`.
+Schema Enforcer is a python library which is available on PyPi. It requires a python version of 3.8 or greater. Once a supported version of python is installed on your machine, pip can be used to install the tool by using the command `python -m pip install schema-enforcer`.
 
 ```cli
-bash$ python --version
-Python 3.7.9
-
-bash$ pip --version
-pip 20.1.1 from /usr/local/lib/python3.7/site-packages/pip (python 3.7)
-
 python -m pip install schema-enforcer
 ```
-
-> Note: To determine the version of python your system is using, the command `python --version` can be run from a terminal emulator
-
-> Note: Pip is a package manager for python. While most recent versions of python come with pip installed, some do not. You can determine if pip is installed on your system using the command `pip --version`. If it is not, the instructions for installing it, once python has been installed, can be found [here](https://pip.pypa.io/en/stable/installing/)
 
 ### Overview
 
