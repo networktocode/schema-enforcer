@@ -36,7 +36,7 @@ PYPROJECT_CONFIG = toml.load("pyproject.toml")
 TOOL_CONFIG = PYPROJECT_CONFIG["tool"]["poetry"]
 
 # Can be set to a separate Python version to be used for launching or building image
-PYTHON_VER = os.getenv("PYTHON_VER", "3.7")
+PYTHON_VER = os.getenv("PYTHON_VER", "3.8")
 # Can be set to a separate ANsible version to be used for launching or building image
 ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.11.7")
 ANSIBLE_PACKAGE = os.getenv("ANSIBLE_PACKAGE", "ansible-core")

@@ -48,7 +48,7 @@ class SchemaManager:
         validators = load_validators(config.validator_directory)
         self.schemas.update(validators)
 
-    def create_schema_from_file(self, root, filename):  # pylint: disable=no-self-use
+    def create_schema_from_file(self, root, filename):
         """Create a new JsonSchema object for a given file.
 
         Load the content from disk and resolve all JSONRef within the schema file.
@@ -226,9 +226,13 @@ class SchemaManager:
             results_sorted = sorted(tmp_results, key=lambda i: i.get("message", ""))
             expected_results_sorted = sorted(expected_results, key=lambda i: i.get("message", ""))
 
-            params = dict(
-                schema_id=schema_id, instance_type="TEST", instance_name=test_dir, instance_location=invalid_test_dir
-            )
+            params = {
+                "schema_id": schema_id,
+                "instance_type": "TEST",
+                "instance_name": test_dir,
+                "instance_location": invalid_test_dir,
+            }
+
             if results_sorted != expected_results_sorted:
                 params["result"] = RESULT_FAIL
                 params[
