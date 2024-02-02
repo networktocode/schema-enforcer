@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import toml
-from pydantic import BaseSettings, ValidationError
+from pydantic import ValidationError
+from pydantic_settings import BaseSettings
 
 SETTINGS = None
 
@@ -31,7 +32,11 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     test_directory: str = "tests"
 
     # Settings specific to the schema files
-    schema_file_extensions: List[str] = [".json", ".yaml", ".yml"]  # Do we still need that ?
+    schema_file_extensions: List[str] = [
+        ".json",
+        ".yaml",
+        ".yml",
+    ]  # Do we still need that ?
     schema_file_exclude_filenames: List[str] = []
 
     # settings specific to search and identify all instance file to validate
@@ -40,7 +45,7 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     data_file_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
     data_file_automap: bool = True
 
-    ansible_inventory: Optional[str]
+    ansible_inventory: Optional[str] = None
     schema_mapping: Dict = {}
 
     class Config:  # pylint: disable=too-few-public-methods
