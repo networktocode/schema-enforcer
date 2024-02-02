@@ -3,6 +3,7 @@ import os
 import re
 import itertools
 from pathlib import Path
+from ruamel.yaml.comments import CommentedMap
 from schema_enforcer.utils import find_files, load_file
 
 SCHEMA_TAG = "jsonschema"
@@ -23,7 +24,6 @@ class InstanceFileManager:  # pylint: disable=too-few-public-methods
         self.config = config
 
         # Find all instance files
-        # TODO need to load file extensions from the config
         instance_files = find_files(
             file_extensions=config.data_file_extensions,
             search_directories=config.data_file_search_directories,
@@ -97,7 +97,24 @@ class InstanceFile:
         """
         if not self._top_level_properties:
             content = self._get_content()
-            self._top_level_properties = set(content.keys())
+            # TODO: Investigate and see if we should be checking this on initialization if the file doesn't exists or is empty.
+            if not content:
+                return self._top_level_properties
+
+            if isinstance(content, CommentedMap) or hasattr(content, "keys"):
+                self._top_level_properties = set(content.keys())
+            elif isinstance(content, str):
+                self._top_level_properties = set([content])
+            elif isinstance(content, list):
+                properties = set()
+                for m in content:
+                    if isinstance(m, dict) or hasattr(m, "keys"):
+                        properties.update(m.keys())
+                    else:
+                        properties.add(m)
+                self._top_level_properties = properties
+            else:
+                self._top_level_properties = set(content)
 
         return self._top_level_properties
 

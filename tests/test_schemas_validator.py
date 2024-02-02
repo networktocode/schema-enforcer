@@ -37,10 +37,11 @@ def validators():
 
 def test_validator_load(validators):
     """Test that validators are loaded and appended to base class validator list."""
-    assert len(validators) == 3
+    assert len(validators) == 4
     assert "CheckInterfaceIPv4" in validators
     assert "CheckInterface" in validators
     assert "CheckPeers" in validators
+    assert "CheckHostname" in validators
 
 
 def test_jmespathvalidation_pass(host_vars, validators):
@@ -161,3 +162,13 @@ def test_modelvalidation_fail(host_vars, validators):
     validator.validate(host_vars, False)
     result = validator.get_results()
     assert not result[1].passed()
+
+
+def test_validator_hostname_pydantic_pass(host_vars, validators):
+    """Test the we can validate a hostname using a pydantic model."""
+    validator = validators["CheckHostname"]
+    validator.validate({"hostname": host_vars["az_phx_pe01"]["hostname"]})
+    results = validator.get_results()
+    for result in results:
+        assert result.passed(), result
+    validator.clear_results()
