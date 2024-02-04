@@ -82,7 +82,8 @@ class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attribute
             list of dictionnaries containing the results.
         """
         return [
-            result.dict(exclude_unset=True, exclude_none=True) for result in self.validate(data=data, strict=strict)
+            result.model_dump(exclude_unset=True, exclude_none=True)
+            for result in self.validate(data=data, strict=strict)
         ]
 
     def __get_validator(self):

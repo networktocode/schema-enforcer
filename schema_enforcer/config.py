@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 
 import toml
 from pydantic import ValidationError
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 SETTINGS = None
 
@@ -23,6 +23,8 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
      - definitions
      - schemas
     """
+
+    model_config = SettingsConfigDict(env_prefix="jsonschema")
 
     # Main directory names
     main_directory: str = "schema"
@@ -47,14 +49,6 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
 
     ansible_inventory: Optional[str] = None
     schema_mapping: Dict = {}
-
-    class Config:  # pylint: disable=too-few-public-methods
-        """Additional parameters to automatically map environment variable to some settings."""
-
-        fields = {
-            "main_directory": {"env": "jsonschema_directory"},
-            "definition_directory": {"env": "jsonschema_definition_directory"},
-        }
 
 
 def load(config_file_name="pyproject.toml", config_data=None):

@@ -1,6 +1,6 @@
 """Validation related classes."""
 from typing import List, Optional, Any
-from pydantic import BaseModel, ConfigDict, validator  # pylint: disable=no-name-in-module
+from pydantic import BaseModel, ConfigDict, field_validator  # pylint: disable=no-name-in-module
 from termcolor import colored
 
 RESULT_PASS = "PASS"  # nosec
@@ -30,7 +30,7 @@ class ValidationResult(BaseModel):
     absolute_path: Optional[List[str]] = []
     message: Optional[str] = None
 
-    @validator("result")
+    @field_validator("result")
     def result_must_be_pass_or_fail(cls, var):  # pylint: disable=no-self-argument
         """Validate that result either PASS or FAIL."""
         if var.upper() not in [RESULT_PASS, RESULT_FAIL]:
