@@ -153,3 +153,26 @@ def test_modelvalidation_fail(host_vars, validators):
     validator.validate(host_vars, False)
     result = validator.get_results()
     assert not result[1].passed()
+
+
+def test_validator_hostname_pydantic_pass(host_vars, validators):
+    """
+    Validator: Checks that peer and peer_int match between peers
+    Test expected to pass for az_phx_pe01/az_phx_pe02:
+
+    az_phx_pe01:
+      GigabitEthernet0/0/0/0:
+       peer: "az-phx-pe02"
+       peer_int: "GigabitEthernet0/0/0/0"
+
+    az_phx_pe02:
+      GigabitEthernet0/0/0/0:
+        peer: "az-phx-pe01"
+        peer_int: "GigabitEthernet0/0/0/0"
+    """
+    validator = validators["CheckHostname"]
+    validator.validate({"hostname": host_vars["az_phx_pe01"]["hostname"]}, strict=False)
+    results = validator.get_results()
+    for result in results:
+        assert result.passed(), result
+    validator.clear_results()

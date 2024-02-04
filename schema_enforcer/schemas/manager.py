@@ -45,7 +45,7 @@ class SchemaManager:
             self.schemas[schema.get_id()] = schema
 
         # Load validators
-        validators = load_validators(config.validator_directory)
+        validators = load_validators(config.validator_directory, config.validator_packages)
         self.schemas.update(validators)
 
     def create_schema_from_file(self, root, filename):
@@ -94,7 +94,12 @@ class SchemaManager:
         table.add_column("Location")
         table.add_column("Filename")
         for schema_id, schema in self.iter_schemas():
-            table.add_row(schema_id, schema.schematype, schema.root.replace(current_dir, "."), schema.filename)
+            table.add_row(
+                schema_id,
+                schema.schematype,
+                schema.root.replace(current_dir, "."),
+                schema.filename,
+            )
         console.print(table)
 
     def dump_schema(self, schema_id=None):
