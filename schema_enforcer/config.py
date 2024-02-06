@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import toml
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 SETTINGS = None
@@ -24,10 +24,10 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
      - schemas
     """
 
-    model_config = SettingsConfigDict(env_prefix="jsonschema")
+    model_config = SettingsConfigDict(populate_by_name=True, env_prefix="jsonschema_")
 
     # Main directory names
-    main_directory: str = "schema"
+    main_directory: str = Field("schema", alias="jsonschema_directory")
     definition_directory: str = "definitions"
     schema_directory: str = "schemas"
     validator_directory: str = "validators"
