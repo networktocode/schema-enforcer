@@ -63,6 +63,12 @@ exclude = '''
         | dist
         )/
     '''
+
+[tool.schema_enforcer]
+validator_packages = [
+    "netstor.schemas",
+]
+
 [tool.pylint.master]
 ignore=".venv"
 

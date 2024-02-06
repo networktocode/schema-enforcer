@@ -86,7 +86,7 @@ class JmesPathModelValidation(BaseValidation):
             self.add_validation_error(self.error)
 
 
-class PydanticValidator(BaseValidation):
+class PydanticValidation(BaseValidation):
     """Basic wrapper for Pydantic models to be used as validators."""
 
     def __init__(self, model: BaseModel):
@@ -110,7 +110,6 @@ class PydanticValidator(BaseValidation):
             self.model.model_validate(data, strict=strict)
             self.add_validation_pass()
         except ValidationError as err:
-            # TODO: Format the validation error from Pydantic to be more user friendly
             self.add_validation_error(str(err))
 
 
@@ -125,14 +124,51 @@ def is_validator(obj) -> bool:
         return False
 
 
-def load_config_validators(
+# def load_validators_packages(
+#     validator_packages: list,
+# ) -> dict[str, PydanticValidation]:
+#     """Load all validator plugins from validator_packages."""
+#     validators = {}
+#     for package in validator_packages:
+#         for name, cls in inspect.getmembers(module, is_validator):
+#             # Default to class name if id doesn't exist
+#             if not hasattr(cls, "id"):
+#                 cls.id = name
+# 
+#             # Skip any classes that are only BaseModel
+#             if cls == BaseModel:
+#                 continue
+# 
+#             if cls.id in validators:
+#                 print(
+#                     f"Unable to load the validator {cls.id}, there is already a validator with the same name ({name})."
+#                 )
+#                 continue
+# 
+#             validators[cls.id] = cls(**validator_kwargs)
+# 
+#     return validators
+
+
+def pydantic_validation_factory(orig_model, name) -> PydanticValidation:
+    """Create a PydanticValidation instance from a Pydantic model."""
+    model = type(
+        orig_model.__name__,
+        (PydanticValidation,),
+        {
+            "id": f"{name}",
+            "top_level_properties": set([property for property in orig_model.model_fields]),
+        },
+    )
+    return model
+
+
+def load_validators_path(
     validator_path: str,
-    validator_packages: list,
-) -> dict[str, Union[BaseValidation, PydanticValidator]]:
-    """See if we still need this specific function."""
+) -> dict[str, Union[BaseValidation, PydanticValidation]]:
+    """Load all validators from local path."""
     validators = {}
-    validator_packages.append(validator_path)
-    for importer, module_name, _ in pkgutil.iter_modules(validator_packages):
+    for importer, module_name, _ in pkgutil.iter_modules([validator_path]):
         module = importer.find_module(module_name).load_module(module_name)
         for name, cls in inspect.getmembers(module, is_validator):
             # Default to class name if id doesn't exist
@@ -144,17 +180,11 @@ def load_config_validators(
                 continue
 
             validator_kwargs = {}
-            # If we're consuming Pydantic models, we need to set kwargs to pass in the Pydantic model
-            if issubclass(cls, BaseModel):
-                validator_kwargs = {"model": cls}
-                cls = type(
-                    cls.__name__,
-                    (PydanticValidator,),
-                    {
-                        "id": name,
-                        "top_level_properties": set([property for property in validator_kwargs["model"].model_fields]),
-                    },
-                )
+            # If we're consuming Pydantic models, we need to set kwargs to pass in the Pydantic model and inherit from PydanticValidator
+            if issubclass(cls, BaseModel) and not issubclass(cls, PydanticValidation):
+                # Save original pydantic model that will be used for validation
+                validator_kwargs["model"] = cls
+                cls = pydantic_validation_factory(cls, name)
 
             if cls.id in validators:
                 print(
@@ -169,9 +199,10 @@ def load_config_validators(
 
 def load_validators(
     validator_path: str, validator_packages: list = None
-) -> dict[str, Union[BaseValidation, PydanticValidator]]:
+) -> dict[str, Union[BaseValidation, PydanticValidation]]:
     """Load all validator plugins from validator_path."""
     if not validator_packages:
         validator_packages = []
-    validators = load_config_validators(validator_path, validator_packages)
+    validators = load_validators_path(validator_path)
+    # validators.update(load_validators_packages(validator_packages))
     return validators

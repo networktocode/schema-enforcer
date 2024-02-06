@@ -37,10 +37,11 @@ def validators():
 
 def test_validator_load(validators):
     """Test that validators are loaded and appended to base class validator list."""
-    assert len(validators) == 3
+    assert len(validators) == 4
     assert "CheckInterfaceIPv4" in validators
     assert "CheckInterface" in validators
     assert "CheckPeers" in validators
+    assert "CheckHostname" in validators
 
 
 def test_jmespathvalidation_pass(host_vars, validators):
@@ -164,22 +165,9 @@ def test_modelvalidation_fail(host_vars, validators):
 
 
 def test_validator_hostname_pydantic_pass(host_vars, validators):
-    """
-    Validator: Checks that peer and peer_int match between peers
-    Test expected to pass for az_phx_pe01/az_phx_pe02:
-
-    az_phx_pe01:
-      GigabitEthernet0/0/0/0:
-       peer: "az-phx-pe02"
-       peer_int: "GigabitEthernet0/0/0/0"
-
-    az_phx_pe02:
-      GigabitEthernet0/0/0/0:
-        peer: "az-phx-pe01"
-        peer_int: "GigabitEthernet0/0/0/0"
-    """
+    """Test the we can validate a hostname using a pydantic model."""
     validator = validators["CheckHostname"]
-    validator.validate({"hostname": host_vars["az_phx_pe01"]["hostname"]}, strict=False)
+    validator.validate({"hostname": host_vars["az_phx_pe01"]["hostname"]})
     results = validator.get_results()
     for result in results:
         assert result.passed(), result

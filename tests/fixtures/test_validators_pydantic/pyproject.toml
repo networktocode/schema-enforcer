@@ -1,0 +1,5 @@
+[tool.schema_enforcer]
+validators_packages = [
+    "pydantic_validators.models",
+]
+
