@@ -72,7 +72,9 @@ def test_load_environment_vars():
     """
 
     # WWrite test to mock os.environ to test pydantic BaseSettings
-    with mock.patch.dict(os.environ, {"jsonschema_directory": "schema_env", "jsonschema_definition_directory": "definitions_env"}):   
+    with mock.patch.dict(
+        os.environ, {"jsonschema_directory": "schema_env", "jsonschema_definition_directory": "definitions_env"}
+    ):
         config.load()
 
     assert config.SETTINGS.main_directory == "schema_env"
