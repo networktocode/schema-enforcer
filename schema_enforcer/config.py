@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import toml
-from pydantic import BaseSettings, ValidationError
+from pydantic import Field, ValidationError
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 SETTINGS = None
 
@@ -23,15 +24,21 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
      - schemas
     """
 
+    model_config = SettingsConfigDict(populate_by_name=True, env_prefix="jsonschema_")
+
     # Main directory names
-    main_directory: str = "schema"
+    main_directory: str = Field("schema", alias="jsonschema_directory")
     definition_directory: str = "definitions"
     schema_directory: str = "schemas"
     validator_directory: str = "validators"
     test_directory: str = "tests"
 
     # Settings specific to the schema files
-    schema_file_extensions: List[str] = [".json", ".yaml", ".yml"]  # Do we still need that ?
+    schema_file_extensions: List[str] = [
+        ".json",
+        ".yaml",
+        ".yml",
+    ]  # Do we still need that ?
     schema_file_exclude_filenames: List[str] = []
 
     # settings specific to search and identify all instance file to validate
@@ -40,16 +47,8 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     data_file_exclude_filenames: List[str] = [".yamllint.yml", ".travis.yml"]
     data_file_automap: bool = True
 
-    ansible_inventory: Optional[str]
+    ansible_inventory: Optional[str] = None
     schema_mapping: Dict = {}
-
-    class Config:  # pylint: disable=too-few-public-methods
-        """Additional parameters to automatically map environment variable to some settings."""
-
-        fields = {
-            "main_directory": {"env": "jsonschema_directory"},
-            "definition_directory": {"env": "jsonschema_definition_directory"},
-        }
 
 
 def load(config_file_name="pyproject.toml", config_data=None):

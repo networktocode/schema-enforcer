@@ -239,7 +239,7 @@ def pylint(context):
     Args:
         context (obj): Used to run specific commands
     """
-    exec_cmd = 'find . -name "*.py" | xargs pylint'
+    exec_cmd = "pylint **/*.py"
     run_cmd(context, exec_cmd, with_ansible=True)
 
 

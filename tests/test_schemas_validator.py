@@ -35,6 +35,14 @@ def validators():
     return v.load_validators(validator_path)
 
 
+def test_validator_load(validators):
+    """Test that validators are loaded and appended to base class validator list."""
+    assert len(validators) == 3
+    assert "CheckInterfaceIPv4" in validators
+    assert "CheckInterface" in validators
+    assert "CheckPeers" in validators
+
+
 def test_jmespathvalidation_pass(host_vars, validators):
     """
     Validator: "interfaces.*[@.type=='core'][] | length([?@])" gte 2
