@@ -1,5 +1,4 @@
 """ Test Setting Configuration Parameters"""
-from re import I
 from unittest import mock
 import os
 

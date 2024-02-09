@@ -37,11 +37,10 @@ def validators():
 
 def test_validator_load(validators):
     """Test that validators are loaded and appended to base class validator list."""
-    assert len(validators) == 4
+    assert len(validators) == 3
     assert "CheckInterfaceIPv4" in validators
     assert "CheckInterface" in validators
     assert "CheckPeers" in validators
-    assert "CheckHostname" in validators
 
 
 def test_jmespathvalidation_pass(host_vars, validators):

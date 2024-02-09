@@ -21,7 +21,7 @@ toml = "^0.10"
 "ruamel.yaml" = "^0.16 || ^0.17"
 jinja2 = ">=2.11"
 jsonref = "^0.2"
-pydantic = "^2.6"
+pydantic = "^2.0"
 rich = ">=9.5"
 jsonpointer = "^2.1"
 jmespath = "^0.10"
@@ -63,6 +63,8 @@ exclude = '''
         | dist
         )/
     '''
+[tool.pylint.master]
+ignore=".venv"
 
 [tool.schema_enforcer]
 validator_packages = [
