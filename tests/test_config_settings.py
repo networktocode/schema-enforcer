@@ -1,4 +1,5 @@
 """ Test Setting Configuration Parameters"""
+from unittest import mock
 import os
 
 import pytest
@@ -62,3 +63,18 @@ def test_load_and_exit_invalid_data():
     config_file_name = FIXTURES_DIR + "/pyproject_invalid_attr.toml"
     with pytest.raises(SystemExit):
         config.load_and_exit(config_file_name=config_file_name)
+
+
+def test_load_environment_vars():
+    """
+    Test load from environment variables
+    """
+
+    # WWrite test to mock os.environ to test pydantic BaseSettings
+    with mock.patch.dict(
+        os.environ, {"jsonschema_directory": "schema_env", "jsonschema_definition_directory": "definitions_env"}
+    ):
+        config.load()
+
+    assert config.SETTINGS.main_directory == "schema_env"
+    assert config.SETTINGS.definition_directory == "definitions_env"

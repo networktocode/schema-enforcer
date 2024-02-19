@@ -1,6 +1,6 @@
 """Validation related classes."""
 from typing import List, Optional, Any
-from pydantic import BaseModel, validator  # pylint: disable=no-name-in-module
+from pydantic import BaseModel, ConfigDict, field_validator  # pylint: disable=no-name-in-module
 from termcolor import colored
 
 RESULT_PASS = "PASS"  # nosec
@@ -14,20 +14,23 @@ class ValidationResult(BaseModel):
     information about the test itself.
     """
 
+    # Added to allow coercion of numbers to strings as this doesn't appear to be a default in v2
+    model_config = ConfigDict(coerce_numbers_to_str=True)
+
     result: str
     schema_id: str
-    instance_name: Optional[str]
-    instance_location: Optional[str]
-    instance_type: Optional[str]
-    instance_hostname: Optional[str]
+    instance_name: Optional[str] = None
+    instance_location: Optional[str] = None
+    instance_type: Optional[str] = None
+    instance_hostname: Optional[str] = None
     source: Any = None
     strict: bool = False
 
     # if failed
     absolute_path: Optional[List[str]] = []
-    message: Optional[str]
+    message: Optional[str] = None
 
-    @validator("result")
+    @field_validator("result")
     def result_must_be_pass_or_fail(cls, var):  # pylint: disable=no-self-argument
         """Validate that result either PASS or FAIL."""
         if var.upper() not in [RESULT_PASS, RESULT_FAIL]:
