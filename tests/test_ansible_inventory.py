@@ -9,8 +9,8 @@ from schema_enforcer.ansible_inventory import AnsibleInventory
 INVENTORY_DIR = "tests/mocks/inventory"
 
 
-@pytest.fixture
-def ansible_inv(scope="module"):  # pylint: disable=unused-argument
+@pytest.fixture(scope="module")
+def ansible_inv():  # pylint: disable=unused-argument
     """Ansible inventory fixture."""
     return AnsibleInventory(INVENTORY_DIR)
 
@@ -18,7 +18,7 @@ def ansible_inv(scope="module"):  # pylint: disable=unused-argument
 def test_init_hosts(ansible_inv):
     """Test initialization of hosts."""
     expected = {"host3", "host4"}
-    actual = set(ansible_inv.inv_mgr.hosts.keys())
+    actual = set(ansible_inv.inv_mgr.hosts)
     assert actual == expected
 
 

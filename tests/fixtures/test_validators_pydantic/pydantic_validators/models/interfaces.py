@@ -9,11 +9,12 @@ from pydantic import BaseModel
 class InterfaceTypes(str, Enum):
     """Interface types."""
 
+    access = "access"
     core = "core"
 
 
 class Interface(BaseModel):
-    ipv4: IPv4Address
+    ipv4: Optional[IPv4Address] = None
     ipv6: Optional[IPv6Address] = None
     peer: Optional[str] = None
     peer_int: Optional[str] = None

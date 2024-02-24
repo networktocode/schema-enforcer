@@ -7,6 +7,9 @@ import jsonref
 from termcolor import colored
 from rich.console import Console
 from rich.table import Table
+from typing import List, Optional, Type
+
+from pydantic import BaseModel
 
 from schema_enforcer.utils import load_file, find_file, find_files, dump_data_to_yaml
 from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
@@ -45,7 +48,7 @@ class SchemaManager:
             self.schemas[schema.get_id()] = schema
 
         # Load validators
-        validators = load_validators(config.validator_directory, config.validator_packages)
+        validators = load_validators(config.validator_directory, config.pydantic_validators)
         self.schemas.update(validators)
 
     def create_schema_from_file(self, root, filename):
@@ -341,3 +344,10 @@ class SchemaManager:
         if "PASS" in results_pass_or_fail:
             error(f"{data_file} is schema valid, but should be schema invalid as it defines an invalid test")
             sys.exit(1)
+
+
+class PydanticManager(BaseModel):
+    """Class for managing Pydantic models and adding them to the SchemaManager."""
+
+    prefix: Optional[str] = ""
+    models: List[Type[BaseModel]]
