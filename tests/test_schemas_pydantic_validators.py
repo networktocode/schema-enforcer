@@ -75,20 +75,62 @@ def test_pydantic_manager_validate_show_pass_cli(_load):
         result = runner.invoke(cli.validate, ["--show-pass"])
     _load.assert_called_once()
     assert result.exit_code == 0
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/dns.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/dns.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml" in result.output
-    assert "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml" in result.output
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/dns.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/dns.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml"
+        in result.output
+    )
+    assert (
+        "\x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml"
+        in result.output
+    )
     assert "\x1b[32mALL SCHEMA VALIDATION CHECKS PASSED\x1b[0m" in result.output
 
 
