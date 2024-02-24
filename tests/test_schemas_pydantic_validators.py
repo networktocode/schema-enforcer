@@ -91,7 +91,7 @@ def test_pydantic_manager_validate_show_pass_cli(_load):
 \x1b[32mPASS\x1b[0m | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml
 \x1b[32mALL SCHEMA VALIDATION CHECKS PASSED\x1b[0m
 """
-    assert expected in result.output
+    assert expected == result.output
 
 
 @mock.patch("schema_enforcer.config.load")
@@ -104,7 +104,7 @@ def test_pydantic_manager_ansible_cli(_load):
     expected = """Found 3 hosts in the inventory
 \x1b[32mALL SCHEMA VALIDATION CHECKS PASSED\x1b[0m
 """
-    assert expected in result.output
+    assert expected == result.output
 
 
 @mock.patch("schema_enforcer.config.load")
@@ -131,7 +131,7 @@ def test_pydantic_manager_ansible_show_pass_cli(_load):
 \x1b[32mPASS\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] pydantic/Dns
 \x1b[32mALL SCHEMA VALIDATION CHECKS PASSED\x1b[0m
 """
-    assert expected in result.output
+    assert expected == result.output
 
 
 @mock.patch("schema_enforcer.config.load")
@@ -148,4 +148,4 @@ az_phx_pe01               ['Hostname', 'pydantic/Hostname', 'Interfaces', 'pydan
 az_phx_pe02               ['Hostname', 'pydantic/Hostname', 'Interfaces', 'pydantic/Interfaces']
 co_den_p01                ['Hostname', 'pydantic/Hostname', 'Interfaces', 'pydantic/Interfaces', 'pydantic/Dns']
 """
-    assert expected in result.output
+    assert expected == result.output
