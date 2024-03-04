@@ -3,8 +3,7 @@
 With custom validators, you can implement business logic in Python. Schema-enforcer will automatically
 load your plugins from the `validator_directory` and run them against your host data.
 
-The validator plugin provides a few base classes: BaseValidation, JmesPathModelValidation, and PydanticValidation. BaseValidation can be used
-when you want to implement all logic, JmesPathModelValidation can be used as a shortcut for jmespath validation, and PydanticValidation will validate data against a specific Pydantic model.
+The validator plugin provides a few base classes: BaseValidation, JmesPathModelValidation, and PydanticValidation. BaseValidation can be used when you want to implement all logic, JmesPathModelValidation can be used as a shortcut for jmespath validation, and PydanticValidation will validate data against a specific Pydantic model.
 
 ## BaseValidation
 
