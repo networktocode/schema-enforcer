@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.0 - 2024-02-13
+
+- #161 Migrate Schema enforcer to use pydanticv2
+
 ## v1.2.2
 
 - #156 Add support for jsonschema 4.18

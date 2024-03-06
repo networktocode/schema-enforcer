@@ -30,6 +30,7 @@ class ValidationResult(BaseModel):
     absolute_path: Optional[List[str]] = []
     message: Optional[str] = None
 
+    # TODO: I believe we can change result to be an Enum and accomplish the same result with less code.
     @field_validator("result")
     def result_must_be_pass_or_fail(cls, var):  # pylint: disable=no-self-argument
         """Validate that result either PASS or FAIL."""
@@ -58,14 +59,21 @@ class ValidationResult(BaseModel):
     def print_failed(self):
         """Print the result of the test to CLI when the test failed."""
         # Construct the message dynamically based on the instance_type
-        msg = colored("FAIL", "red") + f" | [ERROR] {self.message}"
+        msg = f"{colored('FAIL', 'red')} |"
         if self.instance_type == "FILE":
             msg += f" [{self.instance_type}] {self.instance_location}/{self.instance_name}"
 
         elif self.instance_type == "HOST":
             msg += f" [{self.instance_type}] {self.instance_hostname}"
 
-        msg += f" [PROPERTY] {':'.join(str(item) for item in self.absolute_path)}"
+        if self.schema_id:
+            msg += f" [SCHEMA ID] {self.schema_id}"
+
+        if self.absolute_path:
+            msg += f" [PROPERTY] {':'.join(str(item) for item in self.absolute_path)}"
+
+        if self.message:
+            msg += f"\n      | [ERROR] {self.message}"
 
         # print the msg
         print(msg)

@@ -1,0 +1,5 @@
+# jsonschema: pydantic/Dns
+dns_servers:
+  - "8.8.8.8"
+  - "1.1.1.1"
+  - "dns.google"

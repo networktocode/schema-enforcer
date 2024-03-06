@@ -1,4 +1,5 @@
 """Classes for custom validator plugins."""
+
 # pylint: disable=no-member, too-few-public-methods
 # See PEP585 (https://www.python.org/dev/peps/pep-0585/)
 from __future__ import annotations
@@ -24,7 +25,11 @@ class BaseValidation:
           message (str): error message
           kwargs (optional): additional arguments to add to ValidationResult when required
         """
-        self._results.append(ValidationResult(result="FAIL", schema_id=self.id, message=message, **kwargs))
+        self._results.append(
+            ValidationResult(
+                result="FAIL", schema_id=self.id, message=message, **kwargs
+            )
+        )
 
     def add_validation_pass(self, **kwargs):
         """Add validator pass to results.
@@ -32,7 +37,9 @@ class BaseValidation:
         Args:
           kwargs (optional): additional arguments to add to ValidationResult when required
         """
-        self._results.append(ValidationResult(result="PASS", schema_id=self.id, **kwargs))
+        self._results.append(
+            ValidationResult(result="PASS", schema_id=self.id, **kwargs)
+        )
 
     def get_results(self) -> list[ValidationResult]:
         """Return all validation results for this validator."""
@@ -89,10 +96,7 @@ class JmesPathModelValidation(BaseValidation):
 class PydanticValidation(BaseValidation):
     """Basic wrapper for Pydantic models to be used as validators."""
 
-    def __init__(self, model: BaseModel):
-        """Override init to include Pydantic model."""
-        super().__init__()
-        self.model = model
+    model: BaseModel
 
     def validate(self, data: dict, strict: bool = False):
         """Validate data against Pydantic model.
@@ -116,13 +120,30 @@ class PydanticValidation(BaseValidation):
 def is_validator(obj) -> bool:
     """Returns True if the object is a BaseValidation or JmesPathModelValidation subclass."""
     try:
-        return (issubclass(obj, BaseValidation) or issubclass(obj, BaseModel)) and obj not in (
+        return (
+            issubclass(obj, BaseValidation) or issubclass(obj, BaseModel)
+        ) and obj not in (
             BaseModel,
             BaseValidation,
             JmesPathModelValidation,
         )
     except TypeError:
         return False
+
+
+def pydantic_validation_factory(orig_model) -> PydanticValidation:
+    """Create a PydanticValidation instance from a Pydantic model."""
+    return type(
+        orig_model.__name__,
+        (PydanticValidation,),
+        {
+            "id": f"{orig_model.id}",
+            "top_level_properties": set(
+                [property for property in orig_model.model_fields]
+            ),
+            "model": orig_model,
+        },
+    )
 
 
 def load_pydantic_validators(
@@ -135,28 +156,22 @@ def load_pydantic_validators(
         module = __import__(module_name, fromlist=[attr])
         manager = getattr(module, attr)
         for model in manager.models:
-            model.id = f"{manager.prefix}/{model.__name__}" if manager.prefix else model.__name__
+            model.id = (
+                f"{manager.prefix}/{model.__name__}"
+                if manager.prefix
+                else model.__name__
+            )
             cls = pydantic_validation_factory(model)
 
             if cls.id in validators:
-                print(f"Unable to load the validator {cls.id}, there is already a validator with the same name.")
+                print(
+                    f"Unable to load the validator {cls.id}, there is already a validator with the same name."
+                )
                 continue
 
-            validators[cls.id] = cls(model=model)
+            validators[cls.id] = cls()
 
     return validators
-
-
-def pydantic_validation_factory(orig_model) -> PydanticValidation:
-    """Create a PydanticValidation instance from a Pydantic model."""
-    return type(
-        orig_model.__name__,
-        (PydanticValidation,),
-        {
-            "id": f"{orig_model.id}",
-            "top_level_properties": set([property for property in orig_model.model_fields]),
-        },
-    )
 
 
 def load_validators_path(
@@ -171,11 +186,8 @@ def load_validators_path(
             if not hasattr(cls, "id"):
                 cls.id = name
 
-            # If we're consuming Pydantic models, we need to set kwargs to pass in the Pydantic model and inherit from PydanticValidator
-            validator_kwargs = {}
             if issubclass(cls, BaseModel) and not issubclass(cls, PydanticValidation):
                 # Save original pydantic model that will be used for validation
-                validator_kwargs["model"] = cls
                 cls = pydantic_validation_factory(cls)
 
             if cls.id in validators:
@@ -184,7 +196,7 @@ def load_validators_path(
                 )
                 continue
 
-            validators[cls.id] = cls(**validator_kwargs)
+            validators[cls.id] = cls()
 
     return validators
 
