@@ -5,6 +5,7 @@
 from __future__ import annotations
 from typing import List, Union
 import pkgutil
+import importlib
 import inspect
 import jmespath
 from pydantic import BaseModel, ValidationError
@@ -25,11 +26,7 @@ class BaseValidation:
           message (str): error message
           kwargs (optional): additional arguments to add to ValidationResult when required
         """
-        self._results.append(
-            ValidationResult(
-                result="FAIL", schema_id=self.id, message=message, **kwargs
-            )
-        )
+        self._results.append(ValidationResult(result="FAIL", schema_id=self.id, message=message, **kwargs))
 
     def add_validation_pass(self, **kwargs):
         """Add validator pass to results.
@@ -37,9 +34,7 @@ class BaseValidation:
         Args:
           kwargs (optional): additional arguments to add to ValidationResult when required
         """
-        self._results.append(
-            ValidationResult(result="PASS", schema_id=self.id, **kwargs)
-        )
+        self._results.append(ValidationResult(result="PASS", schema_id=self.id, **kwargs))
 
     def get_results(self) -> list[ValidationResult]:
         """Return all validation results for this validator."""
@@ -120,9 +115,7 @@ class PydanticValidation(BaseValidation):
 def is_validator(obj) -> bool:
     """Returns True if the object is a BaseValidation or JmesPathModelValidation subclass."""
     try:
-        return (
-            issubclass(obj, BaseValidation) or issubclass(obj, BaseModel)
-        ) and obj not in (
+        return (issubclass(obj, BaseValidation) or issubclass(obj, BaseModel)) and obj not in (
             BaseModel,
             BaseValidation,
             JmesPathModelValidation,
@@ -138,9 +131,7 @@ def pydantic_validation_factory(orig_model) -> PydanticValidation:
         (PydanticValidation,),
         {
             "id": f"{orig_model.id}",
-            "top_level_properties": set(
-                [property for property in orig_model.model_fields]
-            ),
+            "top_level_properties": set([property for property in orig_model.model_fields]),
             "model": orig_model,
         },
     )
@@ -153,20 +144,23 @@ def load_pydantic_validators(
     validators = {}
     for package in model_packages:
         module_name, attr = package.split(":")
-        module = __import__(module_name, fromlist=[attr])
-        manager = getattr(module, attr)
+        try:
+            module = importlib.import_module(module_name)
+        except ModuleNotFoundError:
+            print(f"Unable to load the validator {package}, the module ({module_name}) does not exist.")
+            continue
+
+        manager = getattr(module, attr, None)
+        if not manager:
+            print(f"Unable to load the validator {package}, the module or attribute ({attr}) does not exist.")
+            continue
+
         for model in manager.models:
-            model.id = (
-                f"{manager.prefix}/{model.__name__}"
-                if manager.prefix
-                else model.__name__
-            )
+            model.id = f"{manager.prefix}/{model.__name__}" if manager.prefix else model.__name__
             cls = pydantic_validation_factory(model)
 
             if cls.id in validators:
-                print(
-                    f"Unable to load the validator {cls.id}, there is already a validator with the same name."
-                )
+                print(f"Unable to load the validator {cls.id}, there is already a validator with the same name.")
                 continue
 
             validators[cls.id] = cls()

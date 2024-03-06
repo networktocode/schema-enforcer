@@ -25,7 +25,7 @@ by providing a class-level `id` variable.
 
 Helper functions are provided to add pass/fail results:
 
-```
+```python
 def add_validation_error(self, message: str, **kwargs):
     """Add validator error to results.
     Args:
@@ -39,6 +39,7 @@ def add_validation_pass(self, **kwargs):
       kwargs (optional): additional arguments to add to ValidationResult when required
     """
 ```
+
 In most cases, you will not need to provide kwargs. However, if you find a use case that requires updating other fields
 in the ValidationResult, you can send the key/value pairs to update the result directly. This is for advanced users only.
 
@@ -58,7 +59,7 @@ the following criteria:
    * `operator`: Operator to use for comparison between left and right hand side of expression
    * `error`: Message to report when validation fails
 
-### Supported operators:
+### Supported operators
 
 The class provides the following operators for basic use cases:
 
@@ -73,10 +74,11 @@ The class provides the following operators for basic use cases:
 
 If you require additional logic or need to compare other types, use the BaseValidation class and create your own validate method.
 
-### Examples:
+### Examples
 
 #### Basic
-```
+
+```python
 from schema_enforcer.schemas.validator import JmesPathModelValidation
 
 class CheckInterface(JmesPathModelValidation):  # pylint: disable=too-few-public-methods
@@ -89,7 +91,8 @@ class CheckInterface(JmesPathModelValidation):  # pylint: disable=too-few-public
 ```
 
 #### With compiled jmespath expression
-```
+
+```python
 import jmespath
 from schema_enforcer.schemas.validator import JmesPathModelValidation
 
@@ -112,6 +115,8 @@ Schema Enforcer supports utilizing Pydantic models for validation. Pydantic mode
    1. `pydantic_validators` requires a list of library paths to a `PydanticManager` instance.
 
 Both methods will replace the Pydantic `BaseModel` with the `PydanticValidation` class that provides the required `validate` method that uses the `model_validate` method to validate data. The model is set to the original Pydantic model to validate data against.
+
+### Pydantic Models in External Libraries
 
 ```python
 class PydanticValidation(BaseValidation):
@@ -138,11 +143,22 @@ class PydanticValidation(BaseValidation):
             self.add_validation_error(str(err))
 ```
 
-### Storing in Validators Directory
+### Pydantic Models in Validators Directory
 
-The Pydantic models can be located in any Python file within this directory. The only requirement is these are valid Pydantic `BaseModel` subclasses.
+The Pydantic models can be located in any Python file within this directory (new or existing). The only requirement is these are valid Pydantic `BaseModel` subclasses.
 
-These will be loaded and can be referenced by their class name. For example, `Hostname` will show up as `Hostname`.
+These will be loaded and can be referenced by their class name. For example, `CheckHostname` will show up as `CheckHostname`.
+
+```python
+"""Validate hostname is valid."""
+from pydantic import BaseModel
+
+
+class CheckHostname(BaseModel):
+    """Validate hostname is valid."""
+
+    hostname: str
+```
 
 ```yaml
 # jsonschema: Hostname

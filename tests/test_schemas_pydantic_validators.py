@@ -20,9 +20,7 @@ CONFIG = {
         "pydantic_validators.models:manager1",
         "pydantic_validators.models:manager2",
     ],
-    "data_file_search_directories": [
-        f"{FIXTURE_DIR}/test_validators_pydantic/inventory"
-    ],
+    "data_file_search_directories": [f"{FIXTURE_DIR}/test_validators_pydantic/inventory"],
     "ansible_inventory": f"{FIXTURE_DIR}/test_validators_pydantic/inventory/inventory.yml",
 }
 
@@ -60,9 +58,7 @@ def instance_file_manager():
     ],
 )
 def test_pydantic_manager_validate_correct_schemas(schema, schema_manager_pydantic):
-    assert (
-        schema in schema_manager_pydantic.schemas
-    ), f"Schema {schema} not found in {schema_manager_pydantic.schemas}"
+    assert schema in schema_manager_pydantic.schemas, f"Schema {schema} not found in {schema_manager_pydantic.schemas}"
     assert len(schema_manager_pydantic.schemas) == 5, "There should be 5 schemas."
 
 
@@ -83,9 +79,7 @@ def test_pydantic_manager_validate_correct_files(file, instance_file_manager):
     paths = [f"{f.full_path}/{f.filename}" for f in instance_file_manager.instances]
     assert file in paths, f"File {file} not found in {paths}"
     # 6 includes the `inventory.yml` for now.
-    assert (
-        len(instance_file_manager.instances) == 6
-    ), "There should be 6 variable files found."
+    assert len(instance_file_manager.instances) == 6, "There should be 6 variable files found."
 
 
 @mock.patch("schema_enforcer.config.load")
@@ -244,9 +238,7 @@ FAIL_CONFIG = {
     "pydantic_validators": [
         "pydantic_validators.models:manager1",
     ],
-    "data_file_search_directories": [
-        f"{FIXTURE_DIR}/test_validators_pydantic/inventory_fail"
-    ],
+    "data_file_search_directories": [f"{FIXTURE_DIR}/test_validators_pydantic/inventory_fail"],
     "ansible_inventory": f"{FIXTURE_DIR}/test_validators_pydantic/inventory_fail/inventory.yml",
 }
 
@@ -309,5 +301,27 @@ hostname
       | [ERROR] 1 validation error for Interfaces
 interfaces.GigabitEthernet0/0/0/4.ipv6
   Input is not a valid IPv6 address [type=ip_v6_address, input_value='2001:db8:16::yo', input_type=AnsibleUnicode]
+"""
+    assert expected == result.output, result.output
+
+
+@mock.patch("schema_enforcer.config.load")
+def test_pydantic_manager_ansible_invalid_validator_package(_load):
+    runner = CliRunner()
+    with mock.patch(
+        "schema_enforcer.config.SETTINGS",
+        Settings(
+            **{
+                "pydantic_validators": [
+                    "does_not_exist.models:manager1",
+                ],
+            }
+        ),
+    ):
+        result = runner.invoke(cli.validate)
+    _load.assert_called_once()
+    assert result.exit_code == 1
+    expected = """Unable to load the validator does_not_exist.models:manager1, the module (does_not_exist.models) does not exist.
+\x1b[31m  ERROR |\x1b[0m No schemas were loaded
 """
     assert expected == result.output, result.output

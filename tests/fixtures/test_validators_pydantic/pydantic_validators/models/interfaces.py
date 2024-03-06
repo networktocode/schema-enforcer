@@ -1,4 +1,4 @@
-"""Validate hostname is valid."""
+"""Validate interfaces are valid."""
 
 from enum import Enum
 from typing import Dict, Optional
@@ -22,6 +22,6 @@ class Interface(BaseModel):
 
 
 class Interfaces(BaseModel):
-    """Validate hostname is valid."""
+    """Validate interfaces are valid."""
 
     interfaces: Dict[str, Interface]

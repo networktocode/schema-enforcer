@@ -10,7 +10,7 @@ INVENTORY_DIR = "tests/mocks/inventory"
 
 
 @pytest.fixture(scope="module")
-def ansible_inv():  # pylint: disable=unused-argument
+def ansible_inv():
     """Ansible inventory fixture."""
     return AnsibleInventory(INVENTORY_DIR)
 
@@ -55,7 +55,10 @@ def test_get_hosts_containing_var(ansible_inv):
 
 def test_get_host_vars(ansible_inv):
     expected = {
-        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
+        "dns_servers": [
+            {"address": "10.7.7.7", "vrf": "mgmt"},
+            {"address": "10.8.8.8"},
+        ],
         "group_names": ["ios", "na", "nyc"],
         "inventory_hostname": "host3",
         "ntp_servers": [{"address": "10.3.3.3"}],
@@ -80,7 +83,10 @@ def test_get_host_vars(ansible_inv):
 
 def test_get_clean_host_vars(ansible_inv):
     expected = {
-        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
+        "dns_servers": [
+            {"address": "10.7.7.7", "vrf": "mgmt"},
+            {"address": "10.8.8.8"},
+        ],
         "os_dns": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
         "region_dns": [{"address": "10.1.1.1", "vrf": "mgmt"}, {"address": "10.2.2.2"}],
         "ntp_servers": [{"address": "10.3.3.3"}],
