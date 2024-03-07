@@ -9,8 +9,8 @@ from schema_enforcer.ansible_inventory import AnsibleInventory
 INVENTORY_DIR = "tests/mocks/inventory"
 
 
-@pytest.fixture
-def ansible_inv(scope="module"):  # pylint: disable=unused-argument
+@pytest.fixture(scope="module")
+def ansible_inv():
     """Ansible inventory fixture."""
     return AnsibleInventory(INVENTORY_DIR)
 
@@ -18,7 +18,7 @@ def ansible_inv(scope="module"):  # pylint: disable=unused-argument
 def test_init_hosts(ansible_inv):
     """Test initialization of hosts."""
     expected = {"host3", "host4"}
-    actual = set(ansible_inv.inv_mgr.hosts.keys())
+    actual = set(ansible_inv.inv_mgr.hosts)
     assert actual == expected
 
 
@@ -55,7 +55,10 @@ def test_get_hosts_containing_var(ansible_inv):
 
 def test_get_host_vars(ansible_inv):
     expected = {
-        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
+        "dns_servers": [
+            {"address": "10.7.7.7", "vrf": "mgmt"},
+            {"address": "10.8.8.8"},
+        ],
         "group_names": ["ios", "na", "nyc"],
         "inventory_hostname": "host3",
         "ntp_servers": [{"address": "10.3.3.3"}],
@@ -80,7 +83,10 @@ def test_get_host_vars(ansible_inv):
 
 def test_get_clean_host_vars(ansible_inv):
     expected = {
-        "dns_servers": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
+        "dns_servers": [
+            {"address": "10.7.7.7", "vrf": "mgmt"},
+            {"address": "10.8.8.8"},
+        ],
         "os_dns": [{"address": "10.7.7.7", "vrf": "mgmt"}, {"address": "10.8.8.8"}],
         "region_dns": [{"address": "10.1.1.1", "vrf": "mgmt"}, {"address": "10.2.2.2"}],
         "ntp_servers": [{"address": "10.3.3.3"}],

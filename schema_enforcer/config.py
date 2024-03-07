@@ -4,6 +4,7 @@ import os.path
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
+from typing_extensions import Annotated
 
 import toml
 from pydantic import Field, ValidationError
@@ -31,6 +32,7 @@ class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
     definition_directory: str = "definitions"
     schema_directory: str = "schemas"
     validator_directory: str = "validators"
+    pydantic_validators: Optional[List[Annotated[str, Field(pattern="^.*:.*$")]]] = Field(default_factory=list)
     test_directory: str = "tests"
 
     # Settings specific to the schema files
