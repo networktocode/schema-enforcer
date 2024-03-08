@@ -63,7 +63,14 @@ class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attribute
         has_error = False
         for err in validator.iter_errors(data):
             has_error = True
-            self.add_validation_error(err.message, absolute_path=list(err.absolute_path))
+            err_message = err.message
+
+            # Custom error message handling
+            if len(err.absolute_path) > 0 and 'err_message' in err.schema:
+                err_message = str(err.schema['err_message'])
+                err_message = err_message.replace('$instance', str(err.instance))
+
+            self.add_validation_error(err_message, absolute_path=list(err.absolute_path))
 
         if not has_error:
             self.add_validation_pass()

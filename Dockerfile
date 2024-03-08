@@ -9,6 +9,7 @@ WORKDIR /local
 # Poetry fails install without README.md being copied.
 COPY pyproject.toml poetry.lock README.md /local/
 COPY schema_enforcer /local/schema_enforcer
+COPY tests/ /local/tests/
 
 RUN poetry config virtualenvs.create false \
   && poetry install --no-interaction --no-ansi
