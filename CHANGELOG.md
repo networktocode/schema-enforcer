@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.3.1 - 2024-03-11
+## v1.4.0 - 2024-03-11
 
 - #165 Support Pydantic Models for Validation
 
