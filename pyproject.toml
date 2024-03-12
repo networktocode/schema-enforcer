@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "schema-enforcer"
-version = "1.3.0"
+version = "1.4.0"
 description = "Tool/Framework for testing structured data against schema definitions"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 license = "Apache-2.0"
@@ -63,6 +63,7 @@ exclude = '''
         | dist
         )/
     '''
+
 [tool.pylint.master]
 ignore=".venv"
 

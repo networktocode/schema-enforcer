@@ -23,7 +23,13 @@ def main():
     """
 
 
-@click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
+@click.option(
+    "--show-pass",
+    default=False,
+    help="Shows validation checks that passed",
+    is_flag=True,
+    show_default=True,
+)
 @click.option(
     "--strict",
     default=False,
@@ -135,7 +141,11 @@ def validate(show_pass, show_checks, strict):  # noqa D205
     is_flag=True,
 )
 @click.option(
-    "--schema-id", default=None, cls=MutuallyExclusiveOption, mutually_exclusive=["list"], help="The name of a schema."
+    "--schema-id",
+    default=None,
+    cls=MutuallyExclusiveOption,
+    mutually_exclusive=["list"],
+    help="The name of a schema.",
 )
 @main.command()
 def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # noqa: D417,D301,D205
@@ -192,8 +202,20 @@ def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # n
 
 @main.command()
 @click.option("--inventory", "-i", help="Ansible inventory file.", required=False)
-@click.option("--host", "-h", "limit", help="Limit the execution to a single host.", required=False)
-@click.option("--show-pass", default=False, help="Shows validation checks that passed", is_flag=True, show_default=True)
+@click.option(
+    "--host",
+    "-h",
+    "limit",
+    help="Limit the execution to a single host.",
+    required=False,
+)
+@click.option(
+    "--show-pass",
+    default=False,
+    help="Shows validation checks that passed",
+    is_flag=True,
+    show_default=True,
+)
 @click.option(
     "--show-checks",
     default=False,

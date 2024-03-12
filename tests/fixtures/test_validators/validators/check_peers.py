@@ -20,6 +20,7 @@ class CheckPeers(BaseValidation):  # pylint: disable=too-few-public-methods
     """
 
     id = "CheckPeers"
+    top_level_properties = set()
 
     def validate(self, data: dict, strict: bool):
         for host in data:
