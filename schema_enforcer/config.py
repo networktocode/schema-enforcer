@@ -15,7 +15,7 @@ except ImportError:
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-SETTINGS = None
+SETTINGS = None  # pylint: disable=invalid-name
 
 
 class Settings(BaseSettings):  # pylint: disable=too-few-public-methods
