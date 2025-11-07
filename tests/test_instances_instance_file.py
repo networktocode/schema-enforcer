@@ -1,5 +1,5 @@
 # pylint: disable=redefined-outer-name
-""" Tests instances.py InstanceFile class"""
+"""Tests instances.py InstanceFile class"""
 
 import os
 

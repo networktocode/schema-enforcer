@@ -1,4 +1,5 @@
 """Example validator plugin."""
+
 from schema_enforcer.schemas.validator import JmesPathModelValidation
 
 

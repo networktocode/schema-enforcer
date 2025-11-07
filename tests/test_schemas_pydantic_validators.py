@@ -20,9 +20,7 @@ CONFIG = {
         "pydantic_validators.models:manager1",
         "pydantic_validators.models:manager2",
     ],
-    "data_file_search_directories": [
-        f"{FIXTURE_DIR}/test_validators_pydantic/inventory"
-    ],
+    "data_file_search_directories": [f"{FIXTURE_DIR}/test_validators_pydantic/inventory"],
     "ansible_inventory": f"{FIXTURE_DIR}/test_validators_pydantic/inventory/inventory.yml",
 }
 
@@ -60,9 +58,7 @@ def instance_file_manager():
     ],
 )
 def test_pydantic_manager_validate_correct_schemas(schema, schema_manager_pydantic):
-    assert schema in schema_manager_pydantic.schemas, (
-        f"Schema {schema} not found in {schema_manager_pydantic.schemas}"
-    )
+    assert schema in schema_manager_pydantic.schemas, f"Schema {schema} not found in {schema_manager_pydantic.schemas}"
     assert len(schema_manager_pydantic.schemas) == 5, "There should be 5 schemas."
 
 
@@ -83,9 +79,7 @@ def test_pydantic_manager_validate_correct_files(file, instance_file_manager):
     paths = [f"{f.full_path}/{f.filename}" for f in instance_file_manager.instances]
     assert file in paths, f"File {file} not found in {paths}"
     # 6 includes the `inventory.yml` for now.
-    assert len(instance_file_manager.instances) == 6, (
-        "There should be 6 variable files found."
-    )
+    assert len(instance_file_manager.instances) == 6, "There should be 6 variable files found."
 
 
 @mock.patch("schema_enforcer.config.load")
@@ -217,9 +211,7 @@ FAIL_CONFIG = {
     "pydantic_validators": [
         "pydantic_validators.models:manager1",
     ],
-    "data_file_search_directories": [
-        f"{FIXTURE_DIR}/test_validators_pydantic/inventory_fail"
-    ],
+    "data_file_search_directories": [f"{FIXTURE_DIR}/test_validators_pydantic/inventory_fail"],
     "ansible_inventory": f"{FIXTURE_DIR}/test_validators_pydantic/inventory_fail/inventory.yml",
 }
 

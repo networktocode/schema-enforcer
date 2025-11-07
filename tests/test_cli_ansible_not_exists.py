@@ -1,4 +1,5 @@
 """Unit tests for cli.py ansible when ansible is not installed"""
+
 from click.testing import CliRunner
 
 from schema_enforcer import cli

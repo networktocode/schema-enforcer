@@ -1,4 +1,5 @@
 """Test validator functions."""
+
 import pytest
 from schema_enforcer.schemas.validator import (
     BaseModel,

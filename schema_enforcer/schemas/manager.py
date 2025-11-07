@@ -1,4 +1,5 @@
 """Schema manager."""
+
 import os
 import sys
 import json
@@ -243,9 +244,9 @@ class SchemaManager:
 
             if results_sorted != expected_results_sorted:
                 params["result"] = RESULT_FAIL
-                params[
-                    "message"
-                ] = f"Invalid test results do not match expected test results from {expected_results_file}"
+                params["message"] = (
+                    f"Invalid test results do not match expected test results from {expected_results_file}"
+                )
             else:
                 params["result"] = RESULT_PASS
 
