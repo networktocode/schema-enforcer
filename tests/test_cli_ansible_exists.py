@@ -13,4 +13,4 @@ def test_ansible_import_when_exists():
     # effectively accomplishes the same thing.
     assert str(raised_error.exception) == str(SystemExit(1))
     assert raised_error.exit_code == 1
-    assert raised_error.output == "\x1b[31m  ERROR |\x1b[0m No schemas were loaded\n"
+    assert raised_error.output == "  ERROR | No schemas were loaded\n"

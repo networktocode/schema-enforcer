@@ -124,22 +124,11 @@ def test_pydantic_manager_validate_show_pass_cli(_load):
         result = runner.invoke(cli.validate, ["--show-pass"])
     _load.assert_called_once()
     assert result.exit_code == 0
-    # TODO: Figure out if the non-colorized output is what's now expected
-    # TODO: Fix searching for the lines that are repeated multiple times
     assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml"
-        in result.output
-    )
-    assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml"
-        in result.output
-    )
-    assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml"
-        in result.output
-    )
-    assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
         in result.output
     )
     assert (
@@ -147,19 +136,10 @@ def test_pydantic_manager_validate_show_pass_cli(_load):
         in result.output
     )
     assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml"
-        in result.output
-    )
-    assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml"
-        in result.output
-    )
-    assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml"
-        in result.output
-    )
-    assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
         in result.output
     )
     assert (
@@ -167,19 +147,10 @@ def test_pydantic_manager_validate_show_pass_cli(_load):
         in result.output
     )
     assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml"
-        in result.output
-    )
-    assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml"
-        in result.output
-    )
-    assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml"
-        in result.output
-    )
-    assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
+        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
         in result.output
     )
     assert "ALL SCHEMA VALIDATION CHECKS PASSED" in result.output
@@ -193,7 +164,7 @@ def test_pydantic_manager_ansible_cli(_load):
     _load.assert_called_once()
     assert result.exit_code == 0
     expected = """Found 3 hosts in the inventory
-\x1b[32mALL SCHEMA VALIDATION CHECKS PASSED\x1b[0m
+ALL SCHEMA VALIDATION CHECKS PASSED
 """
     assert expected == result.output
 
@@ -206,21 +177,21 @@ def test_pydantic_manager_ansible_show_pass_cli(_load):
     _load.assert_called_once()
     assert result.exit_code == 0
     expected = """Found 3 hosts in the inventory
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe01 [SCHEMA ID] Hostname
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe01 [SCHEMA ID] pydantic/Hostname
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe01 [SCHEMA ID] Interfaces
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe01 [SCHEMA ID] pydantic/Interfaces
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe01 [SCHEMA ID] pydantic/Dns
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe02 [SCHEMA ID] Hostname
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe02 [SCHEMA ID] pydantic/Hostname
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe02 [SCHEMA ID] Interfaces
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe02 [SCHEMA ID] pydantic/Interfaces
-\x1b[32mPASS\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] Hostname
-\x1b[32mPASS\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] pydantic/Hostname
-\x1b[32mPASS\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] Interfaces
-\x1b[32mPASS\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] pydantic/Interfaces
-\x1b[32mPASS\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] pydantic/Dns
-\x1b[32mALL SCHEMA VALIDATION CHECKS PASSED\x1b[0m
+PASS | [HOST] az_phx_pe01 [SCHEMA ID] Hostname
+PASS | [HOST] az_phx_pe01 [SCHEMA ID] pydantic/Hostname
+PASS | [HOST] az_phx_pe01 [SCHEMA ID] Interfaces
+PASS | [HOST] az_phx_pe01 [SCHEMA ID] pydantic/Interfaces
+PASS | [HOST] az_phx_pe01 [SCHEMA ID] pydantic/Dns
+PASS | [HOST] az_phx_pe02 [SCHEMA ID] Hostname
+PASS | [HOST] az_phx_pe02 [SCHEMA ID] pydantic/Hostname
+PASS | [HOST] az_phx_pe02 [SCHEMA ID] Interfaces
+PASS | [HOST] az_phx_pe02 [SCHEMA ID] pydantic/Interfaces
+PASS | [HOST] co_den_p01 [SCHEMA ID] Hostname
+PASS | [HOST] co_den_p01 [SCHEMA ID] pydantic/Hostname
+PASS | [HOST] co_den_p01 [SCHEMA ID] Interfaces
+PASS | [HOST] co_den_p01 [SCHEMA ID] pydantic/Interfaces
+PASS | [HOST] co_den_p01 [SCHEMA ID] pydantic/Dns
+ALL SCHEMA VALIDATION CHECKS PASSED
 """
     assert expected == result.output
 
@@ -261,21 +232,21 @@ def test_pydantic_manager_ansible_cli_failure(_load):
     _load.assert_called_once()
     assert result.exit_code == 1
     expected = """Found 3 hosts in the inventory
-\x1b[31mFAIL\x1b[0m | [HOST] az_phx_pe01 [SCHEMA ID] Interfaces
+FAIL | [HOST] az_phx_pe01 [SCHEMA ID] Interfaces
       | [ERROR] 1 validation error for Interfaces
 interfaces.GigabitEthernet0/0/0/2.ipv4
   Input is not a valid IPv4 address [type=ip_v4_address, input_value='300.123.178.41', input_type=AnsibleUnicode]
-\x1b[31mFAIL\x1b[0m | [HOST] az_phx_pe02 [SCHEMA ID] Hostname
+FAIL | [HOST] az_phx_pe02 [SCHEMA ID] Hostname
       | [ERROR] 1 validation error for Hostname
 hostname
   String should match pattern '^[a-z]{2}-[a-z]{3}-[a-z]{1,2}[0-9]{2}$' [type=string_pattern_mismatch, input_value='az-phoenix-pe02', input_type=AnsibleUnicode]
-    For further information visit https://errors.pydantic.dev/2.6/v/string_pattern_mismatch
-\x1b[31mFAIL\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] Hostname
+    For further information visit https://errors.pydantic.dev/2.12/v/string_pattern_mismatch
+FAIL | [HOST] co_den_p01 [SCHEMA ID] Hostname
       | [ERROR] 1 validation error for Hostname
 hostname
   String should match pattern '^[a-z]{2}-[a-z]{3}-[a-z]{1,2}[0-9]{2}$' [type=string_pattern_mismatch, input_value='co-denver-p01', input_type=AnsibleUnicode]
-    For further information visit https://errors.pydantic.dev/2.6/v/string_pattern_mismatch
-\x1b[31mFAIL\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] Interfaces
+    For further information visit https://errors.pydantic.dev/2.12/v/string_pattern_mismatch
+FAIL | [HOST] co_den_p01 [SCHEMA ID] Interfaces
       | [ERROR] 1 validation error for Interfaces
 interfaces.GigabitEthernet0/0/0/4.ipv6
   Input is not a valid IPv6 address [type=ip_v6_address, input_value='2001:db8:16::yo', input_type=AnsibleUnicode]
@@ -291,23 +262,23 @@ def test_pydantic_manager_ansible_show_pass_cli_failure(_load):
     _load.assert_called_once()
     assert result.exit_code == 1
     expected = """Found 3 hosts in the inventory
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe01 [SCHEMA ID] Hostname
-\x1b[31mFAIL\x1b[0m | [HOST] az_phx_pe01 [SCHEMA ID] Interfaces
+PASS | [HOST] az_phx_pe01 [SCHEMA ID] Hostname
+FAIL | [HOST] az_phx_pe01 [SCHEMA ID] Interfaces
       | [ERROR] 1 validation error for Interfaces
 interfaces.GigabitEthernet0/0/0/2.ipv4
   Input is not a valid IPv4 address [type=ip_v4_address, input_value='300.123.178.41', input_type=AnsibleUnicode]
-\x1b[31mFAIL\x1b[0m | [HOST] az_phx_pe02 [SCHEMA ID] Hostname
+FAIL | [HOST] az_phx_pe02 [SCHEMA ID] Hostname
       | [ERROR] 1 validation error for Hostname
 hostname
   String should match pattern '^[a-z]{2}-[a-z]{3}-[a-z]{1,2}[0-9]{2}$' [type=string_pattern_mismatch, input_value='az-phoenix-pe02', input_type=AnsibleUnicode]
-    For further information visit https://errors.pydantic.dev/2.6/v/string_pattern_mismatch
-\x1b[32mPASS\x1b[0m | [HOST] az_phx_pe02 [SCHEMA ID] Interfaces
-\x1b[31mFAIL\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] Hostname
+    For further information visit https://errors.pydantic.dev/2.12/v/string_pattern_mismatch
+PASS | [HOST] az_phx_pe02 [SCHEMA ID] Interfaces
+FAIL | [HOST] co_den_p01 [SCHEMA ID] Hostname
       | [ERROR] 1 validation error for Hostname
 hostname
   String should match pattern '^[a-z]{2}-[a-z]{3}-[a-z]{1,2}[0-9]{2}$' [type=string_pattern_mismatch, input_value='co-denver-p01', input_type=AnsibleUnicode]
-    For further information visit https://errors.pydantic.dev/2.6/v/string_pattern_mismatch
-\x1b[31mFAIL\x1b[0m | [HOST] co_den_p01 [SCHEMA ID] Interfaces
+    For further information visit https://errors.pydantic.dev/2.12/v/string_pattern_mismatch
+FAIL | [HOST] co_den_p01 [SCHEMA ID] Interfaces
       | [ERROR] 1 validation error for Interfaces
 interfaces.GigabitEthernet0/0/0/4.ipv6
   Input is not a valid IPv6 address [type=ip_v6_address, input_value='2001:db8:16::yo', input_type=AnsibleUnicode]
@@ -332,6 +303,6 @@ def test_pydantic_manager_ansible_invalid_validator_package(_load):
     _load.assert_called_once()
     assert result.exit_code == 1
     expected = """Unable to load the validator does_not_exist.models:manager1, the module (does_not_exist.models) does not exist.
-\x1b[31m  ERROR |\x1b[0m No schemas were loaded
+  ERROR | No schemas were loaded
 """
     assert expected == result.output, result.output

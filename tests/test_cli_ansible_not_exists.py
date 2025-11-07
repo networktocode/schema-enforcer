@@ -15,5 +15,5 @@ def test_ansible_import_when_not_exists():
     assert raised_error.exit_code == 1
     assert (
         raised_error.output
-        == "\x1b[31m  ERROR |\x1b[0m ansible package not found, you can run the command 'pip install schema-enforcer[ansible]' to install the latest schema-enforcer sanctioned version.\n"
+        == "  ERROR | ansible package not found, you can run the command 'pip install schema-enforcer[ansible]' to install the latest schema-enforcer sanctioned version.\n"
     )
