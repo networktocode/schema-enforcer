@@ -45,14 +45,14 @@ class SchemaManager:
         # Create and save a JsonSchema object for each file
         for root, filename in files:
             root = os.path.realpath(root)
-            schema = self.create_schema_from_file(root, filename)
+            schema = self.create_schema_from_file(root, filename, config)
             self.schemas[schema.get_id()] = schema
 
         # Load validators
         validators = load_validators(config.validator_directory, config.pydantic_validators)
         self.schemas.update(validators)
 
-    def create_schema_from_file(self, root, filename):
+    def create_schema_from_file(self, root, filename, config):
         """Create a new JsonSchema object for a given file.
 
         Load the content from disk and resolve all JSONRef within the schema file.
@@ -68,7 +68,7 @@ class SchemaManager:
 
         # TODO Find the type of Schema based on the Type, currently only jsonschema is supported
         # schema_type = "jsonschema"
-        base_uri = f"file:{root}/"
+        base_uri = f"file:{config.main_directory}/"
         schema_full = jsonref.JsonRef.replace_refs(file_data, base_uri=base_uri, jsonschema=True, loader=load_file)
         schema = JsonSchema(schema=schema_full, filename=filename, root=root)
         # Only add valid jsonschema files and raise an exception if an invalid file is found
