@@ -50,7 +50,6 @@ pydocstyle = "*"
 yamllint = "*"
 bandit = "*"
 invoke = "*"
-toml = "*"
 flake8 = "*"
 
 [tool.poetry.scripts]
