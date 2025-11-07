@@ -1,4 +1,5 @@
 """Tasks for use with Invoke."""
+
 import os
 import sys
 from distutils.util import strtobool
@@ -36,9 +37,9 @@ PYPROJECT_CONFIG = toml.load("pyproject.toml")
 TOOL_CONFIG = PYPROJECT_CONFIG["tool"]["poetry"]
 
 # Can be set to a separate Python version to be used for launching or building image
-PYTHON_VER = os.getenv("PYTHON_VER", "3.8")
+PYTHON_VER = os.getenv("PYTHON_VER", "3.10")
 # Can be set to a separate ANsible version to be used for launching or building image
-ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.11.7")
+ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.16.14")
 ANSIBLE_PACKAGE = os.getenv("ANSIBLE_PACKAGE", "ansible-core")
 # Name of the docker image/image
 IMAGE_NAME = os.getenv("IMAGE_NAME", TOOL_CONFIG["name"])

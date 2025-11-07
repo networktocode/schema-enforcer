@@ -1,4 +1,5 @@
 """Tests config Settings class."""
+
 import os
 import os.path
 import sys
@@ -6,7 +7,11 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from typing_extensions import Annotated
 
-import toml
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
+
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -77,7 +82,7 @@ def load(config_file_name="pyproject.toml", config_data=None):
         return
     if os.path.exists(config_file_name):
         config_string = Path(config_file_name).read_text(encoding="utf-8")
-        config_tmp = toml.loads(config_string)
+        config_tmp = tomllib.loads(config_string)
 
         if "tool" in config_tmp and "schema_enforcer" in config_tmp.get("tool", {}):
             SETTINGS = Settings(**config_tmp["tool"]["schema_enforcer"])

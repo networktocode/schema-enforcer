@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "schema-enforcer"
-version = "1.3.0"
+version = "1.4.0a0"
 description = "Tool/Framework for testing structured data against schema definitions"
 authors = ["Network to Code, LLC <info@networktocode.com>"]
 license = "Apache-2.0"
@@ -12,29 +12,35 @@ include = [
     "LICENSE",
     "README.md",
 ]
+packages = [
+    { include = "schema_enforcer" },
+]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-click = "^7.1 || ^8.0"
-termcolor = "^1.1"
-toml = "^0.10"
-"ruamel.yaml" = "^0.16 || ^0.17"
-jinja2 = ">=2.11"
-jsonref = "^0.2"
-pydantic = "^2.0"
-rich = ">=9.5"
-jsonpointer = "^2.1"
-jmespath = "^0.10"
-ansible = { version = "^2.10.0", optional = true }
-ansible-base = { version = "^2.10.0", optional = true }
+python = ">=3.10,<3.13"
+# Packages
+click = ">=8.2.0"
+jinja2 = ">=3.1.6,<4.0.0"
+jmespath = ">=1.0.1,<2.0.0"
+jsonpointer = ">=2.1.0,<3.0.0"
+jsonref = ">=1.1.0,<2.0.0"
 jsonschema = {version = "^4.6", extras = ["format-nongpl"]}
-pydantic-settings = "^2.1"
+pydantic = ">=2.0.0,<3.0.0"
+pydantic-settings = ">=2.1,<3.0"
+rich = ">=9.5"
+"ruamel.yaml" = ">=0.18,<0.19"
+termcolor = ">=3.2.0"
+tomli = { version = "*", markers = "python_version < '3.11'" }  # tomli is included in the stdlib as of Python 3.11
+# Match minimum python for ansible-core and ansible packages
+# https://docs.ansible.com/ansible-core/devel/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
+ansible-core = { version = ">=2.16.0", optional = true }
+ansible = { version = ">=9.0.0", optional = true }
 
 [tool.poetry.extras]
 ansible = ["ansible"]
-ansible-base = ["ansible-base"]
+ansible-core = ["ansible-core"]
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "*"
 requests_mock = "*"
 pyyaml = "*"
@@ -49,6 +55,7 @@ flake8 = "*"
 
 [tool.poetry.scripts]
 schema-enforcer = "schema_enforcer.cli:main"
+
 [tool.black]
 line-length = 120
 include = '\.pyi?$'
@@ -95,5 +102,5 @@ testpaths = [
 addopts = "-vv --doctest-modules"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

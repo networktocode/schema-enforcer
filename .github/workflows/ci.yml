@@ -9,7 +9,7 @@ env:
 
 jobs:
   black:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-latest"
     env:
       INVOKE_LOCAL: "True"
     steps:
@@ -20,7 +20,7 @@ jobs:
       - name: "Linting: black"
         run: "poetry run invoke black"
   bandit:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-latest"
     env:
       INVOKE_LOCAL: "True"
     steps:
@@ -33,7 +33,7 @@ jobs:
     needs:
       - "black"
   pydocstyle:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-latest"
     env:
       INVOKE_LOCAL: "True"
     steps:
@@ -46,7 +46,7 @@ jobs:
     needs:
       - "black"
   flake8:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-latest"
     env:
       INVOKE_LOCAL: "True"
     steps:
@@ -59,7 +59,7 @@ jobs:
     needs:
       - "black"
   yamllint:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-latest"
     env:
       INVOKE_LOCAL: "True"
     steps:
@@ -75,9 +75,9 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        ansible-core-version: ["2.11.7"]
-    runs-on: "ubuntu-24.04"
+        python-version: ["3.10", "3.11", "3.12"]
+        ansible-core-version: ["2.16.14"]
+    runs-on: "ubuntu-latest"
     env:
       PYTHON_VER: "${{ matrix.python-version }}"
       ANSIBLE_VER: "${{ matrix.ansible-core-version }}"
@@ -113,12 +113,12 @@ jobs:
       - "flake8"
       - "yamllint"
   pylint:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8"]
-        ansible-core-version: ["2.11.7"]
+        python-version: ["3.10"]
+        ansible-core-version: ["2.16.14"]
     env:
       PYTHON_VER: "${{ matrix.python-version }}"
       ANSIBLE_VER: "${{ matrix.ansible-core-version }}"
@@ -159,9 +159,9 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        ansible-core-version: ["2.11.7"]
-    runs-on: "ubuntu-24.04"
+        python-version: ["3.10", "3.11", "3.12"]
+        ansible-core-version: ["2.16.14"]
+    runs-on: "ubuntu-latest"
     env:
       PYTHON_VER: "${{ matrix.python-version }}"
       ANSIBLE_VER: "${{ matrix.ansible-core-version }}"
@@ -200,7 +200,7 @@ jobs:
       - "pylint"
   publish_gh:
     name: "Publish to GitHub"
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-latest"
     if: "startsWith(github.ref, 'refs/tags/v')"
     steps:
       - name: "Check out repository code"
@@ -208,7 +208,7 @@ jobs:
       - name: "Set up Python"
         uses: "actions/setup-python@v2"
         with:
-          python-version: "3.9"
+          python-version: "3.12"
       - name: "Install Python Packages"
         run: "pip install poetry"
       - name: "Set env"
@@ -229,7 +229,7 @@ jobs:
       - "pytest"
   publish_pypi:
     name: "Push Package to PyPI"
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-latest"
     if: "startsWith(github.ref, 'refs/tags/v')"
     steps:
       - name: "Check out repository code"
@@ -237,7 +237,7 @@ jobs:
       - name: "Set up Python"
         uses: "actions/setup-python@v2"
         with:
-          python-version: "3.9"
+          python-version: "3.12"
       - name: "Install Python Packages"
         run: "pip install poetry"
       - name: "Set env"
