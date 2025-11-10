@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.0 - 2024-03-11
+
+- #165 Support Pydantic Models for Validation
+
 ## v1.3.0 - 2024-02-13
 
 - #161 Migrate Schema enforcer to use pydanticv2
