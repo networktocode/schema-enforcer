@@ -7,6 +7,14 @@ license = "Apache-2.0"
 readme = "README.md"
 homepage = "https://github.com/networktocode/schema-enforcer"
 repository = "https://github.com/networktocode/schema-enforcer"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 include = [
     "CHANGELOG.md",
     "LICENSE",
