@@ -1,6 +1,7 @@
 """
 Tests instances.py InstanceFileManager class
 """
+
 # pylint: disable=redefined-outer-name,unnecessary-comprehension
 
 import os

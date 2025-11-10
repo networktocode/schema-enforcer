@@ -1,4 +1,5 @@
 """conftest file for pytest"""
+
 import glob
 import os
 from schema_enforcer.utils import load_file

@@ -1,4 +1,5 @@
-""" Test Setting Configuration Parameters"""
+"""Test Setting Configuration Parameters"""
+
 from unittest import mock
 import os
 

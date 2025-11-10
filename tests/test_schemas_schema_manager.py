@@ -1,5 +1,5 @@
 # pylint: disable=redefined-outer-name
-""" Test manager.py SchemaManager class """
+"""Test manager.py SchemaManager class"""
 import os
 import pytest
 from schema_enforcer.schemas.manager import SchemaManager

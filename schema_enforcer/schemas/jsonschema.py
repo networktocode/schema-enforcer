@@ -1,4 +1,5 @@
 """class to manage jsonschema type schema."""
+
 import copy
 import json
 import os

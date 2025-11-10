@@ -1,4 +1,5 @@
 """Tests for validator plugin support."""
+
 # pylint: disable=redefined-outer-name
 import os
 import pytest

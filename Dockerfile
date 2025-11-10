@@ -1,6 +1,6 @@
-ARG PYTHON_VER
+ARG PYTHON_VER=3.10
 
-FROM python:${PYTHON_VER} as base
+FROM python:${PYTHON_VER} AS base
 
 RUN pip install --upgrade pip && \
   pip install poetry
@@ -16,7 +16,7 @@ RUN poetry config virtualenvs.create false \
 # -----------------------------------------------------------------------------
 # Defines stage with ansible installed
 # -----------------------------------------------------------------------------
-FROM base as with_ansible
+FROM base AS with_ansible
 ARG ANSIBLE_PACKAGE=ansible-core
-ARG ANSIBLE_VER=2.11.7
+ARG ANSIBLE_VER=2.16.14
 RUN pip install $ANSIBLE_PACKAGE==$ANSIBLE_VER

@@ -174,7 +174,9 @@ def load_validators_path(
     """Load all validators from local path."""
     validators = {}
     for importer, module_name, _ in pkgutil.iter_modules([validators_path]):
-        module = importer.find_module(module_name).load_module(module_name)
+        spec = importer.find_spec(module_name)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
         for name, cls in inspect.getmembers(module, is_validator):
             # Default to class name if id doesn't exist
             if not hasattr(cls, "id"):
