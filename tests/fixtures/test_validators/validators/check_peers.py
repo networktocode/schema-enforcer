@@ -1,4 +1,5 @@
 """Test validator for ModelValidation class"""
+
 from schema_enforcer.schemas.validator import BaseValidation
 
 

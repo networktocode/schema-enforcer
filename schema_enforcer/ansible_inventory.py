@@ -1,4 +1,5 @@
 """Ansible Inventory class to generate final hostvars based on group_vars and host_vars."""
+
 from ansible.inventory.manager import InventoryManager  # pylint: disable=import-error
 from ansible.parsing.dataloader import DataLoader  # pylint: disable=import-error
 from ansible.vars.manager import VariableManager  # pylint: disable=import-error

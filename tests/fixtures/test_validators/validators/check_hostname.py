@@ -1,4 +1,5 @@
 """Validate hostname is valid."""
+
 from pydantic import BaseModel
 
 

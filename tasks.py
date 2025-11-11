@@ -1,19 +1,22 @@
 """Tasks for use with Invoke."""
+
 import os
 import sys
-from distutils.util import strtobool
 from invoke import task
 
 try:
-    import toml
+    import tomllib
 except ImportError:
-    sys.exit("Please make sure to `pip install toml` or enable the Poetry shell and run `poetry install`.")
+    try:
+        import tomli as tomllib
+    except ImportError:
+        sys.exit("Please make sure to `pip install tomli` or enable the Poetry shell and run `poetry install`.")
 
 
 def project_ver():
     """Find version from pyproject.toml to use for docker image tagging."""
-    with open("pyproject.toml", encoding="utf-8") as config_file:
-        return toml.load(config_file)["tool"]["poetry"].get("version", "latest")
+    with open("pyproject.toml", "rb") as config_file:
+        return tomllib.load(config_file)["tool"]["poetry"].get("version", "latest")
 
 
 def is_truthy(arg):
@@ -29,16 +32,24 @@ def is_truthy(arg):
     """
     if isinstance(arg, bool):
         return arg
-    return bool(strtobool(arg))
+
+    val = str(arg).lower()
+    if val in ("y", "yes", "t", "true", "on", "1"):
+        return True
+    elif val in ("n", "no", "f", "false", "off", "0"):
+        return False
+    else:
+        raise ValueError(f"Invalid truthy value: `{arg}`")
 
 
-PYPROJECT_CONFIG = toml.load("pyproject.toml")
+with open("pyproject.toml", "rb") as config_file:
+    PYPROJECT_CONFIG = tomllib.load(config_file)
 TOOL_CONFIG = PYPROJECT_CONFIG["tool"]["poetry"]
 
 # Can be set to a separate Python version to be used for launching or building image
-PYTHON_VER = os.getenv("PYTHON_VER", "3.8")
+PYTHON_VER = os.getenv("PYTHON_VER", "3.10")
 # Can be set to a separate ANsible version to be used for launching or building image
-ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.11.7")
+ANSIBLE_VER = os.getenv("ANSIBLE_VER", "2.16.14")
 ANSIBLE_PACKAGE = os.getenv("ANSIBLE_PACKAGE", "ansible-core")
 # Name of the docker image/image
 IMAGE_NAME = os.getenv("IMAGE_NAME", TOOL_CONFIG["name"])

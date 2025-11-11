@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.5.0 - 2025-11-10
+
+This housekeeping release updates the supported Python version to a 3.10 minimum and the optional Ansible dependency to 2.16. It also updated most dependencies, fixed tests, and CI.
+
+* #175 Update all dependencies and other housekeeping
+* #173 Fix Ubuntu runner version
+
 ## v1.4.0 - 2024-03-11
 
 - #165 Support Pydantic Models for Validation

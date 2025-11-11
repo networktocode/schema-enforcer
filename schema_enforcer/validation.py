@@ -1,4 +1,5 @@
 """Validation related classes."""
+
 from typing import List, Optional, Any
 from pydantic import BaseModel, ConfigDict, field_validator  # pylint: disable=no-name-in-module
 from termcolor import colored

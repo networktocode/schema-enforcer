@@ -1,4 +1,5 @@
 """Test validator for JmesPathModelValidation class"""
+
 from schema_enforcer.schemas.validator import JmesPathModelValidation
 
 
