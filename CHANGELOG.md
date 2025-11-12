@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.1 - 2025-11-12
+
+- #179 Added Python 3.13 support.
+
 ## v1.5.0 - 2025-11-10
 
 This housekeeping release updates the supported Python version to a 3.10 minimum and the optional Ansible dependency to 2.16. It also updated most dependencies, fixed tests, and CI.
