@@ -19,7 +19,7 @@ description = "Radically simple IT automation"
 optional = true
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version == \"3.10\" and extra == \"ansible\""
+markers = "extra == \"ansible\""
 files = [
     {file = "ansible-10.7.0-py3-none-any.whl", hash = "sha256:0089f08e047ceb70edd011be009f5c6273add613fbe491e9697c0556c989d8ea"},
     {file = "ansible-10.7.0.tar.gz", hash = "sha256:59d29e3de1080e740dfa974517d455217601b16d16880314d9be26145c68dc22"},
@@ -29,45 +29,13 @@ files = [
 ansible-core = ">=2.17.7,<2.18.0"
 
 [[package]]
-name = "ansible"
-version = "12.2.0"
-description = "Radically simple IT automation"
-optional = true
-python-versions = ">=3.11"
-groups = ["main"]
-markers = "python_version == \"3.11\" and extra == \"ansible\""
-files = [
-    {file = "ansible-12.2.0-py3-none-any.whl", hash = "sha256:daafa5c528317f60f68033ad70c59733f4a7548b6255759183cfc7cf422c7fda"},
-    {file = "ansible-12.2.0.tar.gz", hash = "sha256:0563dfd33ebd28caf6ccdc7a6d22a7fdafbd9c9c42fefcae5179616a53a35211"},
-]
-
-[package.dependencies]
-ansible-core = ">=2.19.4,<2.20.0"
-
-[[package]]
-name = "ansible"
-version = "13.0.0b1"
-description = "Radically simple IT automation"
-optional = true
-python-versions = ">=3.12"
-groups = ["main"]
-markers = "python_version >= \"3.12\" and extra == \"ansible\""
-files = [
-    {file = "ansible-13.0.0b1-py3-none-any.whl", hash = "sha256:0e2c416c0ea281df17686cf71bd882baf75d105c317b95538e9edb2ddda9dbd0"},
-    {file = "ansible-13.0.0b1.tar.gz", hash = "sha256:d155054537db0110b72e207338b1fcdf4ac8e022620e617c4a31d4875f6a65e6"},
-]
-
-[package.dependencies]
-ansible-core = ">=2.20.0,<2.21.0"
-
-[[package]]
 name = "ansible-core"
 version = "2.17.14"
 description = "Radically simple IT automation"
 optional = true
 python-versions = ">=3.10"
 groups = ["main"]
-markers = "python_version == \"3.10\" and (extra == \"ansible-core\" or extra == \"ansible\")"
+markers = "extra == \"ansible\" or extra == \"ansible-core\""
 files = [
     {file = "ansible_core-2.17.14-py3-none-any.whl", hash = "sha256:34a49582a57c2f2af17ede2cefd3b3602a2d55d22089f3928570d52030cafa35"},
     {file = "ansible_core-2.17.14.tar.gz", hash = "sha256:7c17fee39f8c29d70e3282a7e9c10bd70d5cd4fd13ddffc5dcaa52adbd142ff8"},
@@ -79,46 +47,6 @@ jinja2 = ">=3.0.0"
 packaging = "*"
 PyYAML = ">=5.1"
 resolvelib = ">=0.5.3,<1.1.0"
-
-[[package]]
-name = "ansible-core"
-version = "2.19.4"
-description = "Radically simple IT automation"
-optional = true
-python-versions = ">=3.11"
-groups = ["main"]
-markers = "python_version == \"3.11\" and (extra == \"ansible-core\" or extra == \"ansible\")"
-files = [
-    {file = "ansible_core-2.19.4-py3-none-any.whl", hash = "sha256:f218e2e8ce4cc95216c48c73badd9789f1dd6ea47e15667213491fb79589316c"},
-    {file = "ansible_core-2.19.4.tar.gz", hash = "sha256:888db6593f2fd42cd05bdbe546704d9c969dce99e3373a54498f6dbefcfa1917"},
-]
-
-[package.dependencies]
-cryptography = "*"
-jinja2 = ">=3.1.0"
-packaging = "*"
-PyYAML = ">=5.1"
-resolvelib = ">=0.5.3,<2.0.0"
-
-[[package]]
-name = "ansible-core"
-version = "2.20.0"
-description = "Radically simple IT automation"
-optional = true
-python-versions = ">=3.12"
-groups = ["main"]
-markers = "python_version >= \"3.12\" and (extra == \"ansible-core\" or extra == \"ansible\")"
-files = [
-    {file = "ansible_core-2.20.0-py3-none-any.whl", hash = "sha256:665f9e46401509f1f799b0fc624ce162127765885d61607c5e31a0f77652d7b6"},
-    {file = "ansible_core-2.20.0.tar.gz", hash = "sha256:cd73faf28a056c933bc1eee8f66ab597e7ec7309d42c8a6e5d6e4294c4a78b54"},
-]
-
-[package.dependencies]
-cryptography = "*"
-jinja2 = ">=3.1.0"
-packaging = "*"
-PyYAML = ">=5.1"
-resolvelib = ">=0.8.0,<2.0.0"
 
 [[package]]
 name = "arrow"
@@ -259,7 +187,7 @@ description = "Foreign Function Interface for Python calling C code."
 optional = true
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "platform_python_implementation != \"PyPy\" and (extra == \"ansible-core\" or extra == \"ansible\")"
+markers = "platform_python_implementation != \"PyPy\" and (extra == \"ansible\" or extra == \"ansible-core\")"
 files = [
     {file = "cffi-2.0.0-cp310-cp310-macosx_10_13_x86_64.whl", hash = "sha256:0cf2d91ecc3fcc0625c2c530fe004f82c110405f101548512cce44322fa8ac44"},
     {file = "cffi-2.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:f73b96c41e3b2adedc34a7356e64c8eb96e03a3782b535e043a986276ce12a49"},
@@ -508,7 +436,7 @@ description = "cryptography is a package which provides cryptographic recipes an
 optional = true
 python-versions = "!=3.9.0,!=3.9.1,>=3.8"
 groups = ["main"]
-markers = "extra == \"ansible-core\" or extra == \"ansible\""
+markers = "extra == \"ansible\" or extra == \"ansible-core\""
 files = [
     {file = "cryptography-46.0.3-cp311-abi3-macosx_10_9_universal2.whl", hash = "sha256:109d4ddfadf17e8e7779c39f9b18111a09efb969a301a31e987416a0191ed93a"},
     {file = "cryptography-46.0.3-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:09859af8466b69bc3c27bdf4f5d84a665e0f7ab5088412e9e2ec49758eca5cbc"},
@@ -1002,7 +930,7 @@ files = [
     {file = "packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"},
     {file = "packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"},
 ]
-markers = {main = "extra == \"ansible-core\" or extra == \"ansible\""}
+markers = {main = "extra == \"ansible\" or extra == \"ansible-core\""}
 
 [[package]]
 name = "pathspec"
@@ -1068,7 +996,7 @@ description = "C parser in Python"
 optional = true
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "platform_python_implementation != \"PyPy\" and (extra == \"ansible-core\" or extra == \"ansible\") and implementation_name != \"PyPy\""
+markers = "platform_python_implementation != \"PyPy\" and (extra == \"ansible\" or extra == \"ansible-core\") and implementation_name != \"PyPy\""
 files = [
     {file = "pycparser-2.23-py3-none-any.whl", hash = "sha256:e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934"},
     {file = "pycparser-2.23.tar.gz", hash = "sha256:78816d4f24add8f10a06d6f05b4d424ad9e96cfebf68a4ddc99c65c0720d00c2"},
@@ -1545,7 +1473,7 @@ description = "Resolve abstract dependencies into concrete ones"
 optional = true
 python-versions = "*"
 groups = ["main"]
-markers = "python_version == \"3.10\" and (extra == \"ansible-core\" or extra == \"ansible\")"
+markers = "extra == \"ansible\" or extra == \"ansible-core\""
 files = [
     {file = "resolvelib-1.0.1-py2.py3-none-any.whl", hash = "sha256:d2da45d1a8dfee81bdd591647783e340ef3bcb104b54c383f70d422ef5cc7dbf"},
     {file = "resolvelib-1.0.1.tar.gz", hash = "sha256:04ce76cbd63fded2078ce224785da6ecd42b9564b1390793f64ddecbe997b309"},
@@ -1556,24 +1484,6 @@ examples = ["html5lib", "packaging", "pygraphviz", "requests"]
 lint = ["black", "flake8", "isort", "mypy", "types-requests"]
 release = ["build", "towncrier", "twine"]
 test = ["commentjson", "packaging", "pytest"]
-
-[[package]]
-name = "resolvelib"
-version = "1.2.1"
-description = "Resolve abstract dependencies into concrete ones"
-optional = true
-python-versions = ">=3.9"
-groups = ["main"]
-markers = "python_version >= \"3.11\" and (extra == \"ansible-core\" or extra == \"ansible\")"
-files = [
-    {file = "resolvelib-1.2.1-py3-none-any.whl", hash = "sha256:fb06b66c8da04172d9e72a21d7d06186d8919e32ae5ab5cdf5b9d920be805ac2"},
-    {file = "resolvelib-1.2.1.tar.gz", hash = "sha256:7d08a2022f6e16ce405d60b68c390f054efcfd0477d4b9bd019cc941c28fad1c"},
-]
-
-[package.extras]
-lint = ["mypy", "ruff", "types-requests"]
-release = ["build", "towncrier", "twine"]
-test = ["packaging", "pytest"]
 
 [[package]]
 name = "rfc3339-validator"
@@ -1847,6 +1757,8 @@ files = [
     {file = "ruamel.yaml.clib-0.2.14-cp39-cp39-win32.whl", hash = "sha256:6d5472f63a31b042aadf5ed28dd3ef0523da49ac17f0463e10fda9c4a2773352"},
     {file = "ruamel.yaml.clib-0.2.14-cp39-cp39-win_amd64.whl", hash = "sha256:8dd3c2cc49caa7a8d64b67146462aed6723a0495e44bf0aa0a2e94beaa8432f6"},
     {file = "ruamel.yaml.clib-0.2.14.tar.gz", hash = "sha256:803f5044b13602d58ea378576dd75aa759f52116a0232608e8fdada4da33752e"},
+    {file = "ruamel_yaml_clib-0.2.14-cp314-cp314-win32.whl", hash = "sha256:9b4104bf43ca0cd4e6f738cb86326a3b2f6eef00f417bd1e7efb7bdffe74c539"},
+    {file = "ruamel_yaml_clib-0.2.14-cp314-cp314-win_amd64.whl", hash = "sha256:13997d7d354a9890ea1ec5937a219817464e5cc344805b37671562a401ca3008"},
 ]
 
 [[package]]
@@ -2022,21 +1934,21 @@ dev = ["flake8", "flake8-annotations", "flake8-bandit", "flake8-bugbear", "flake
 
 [[package]]
 name = "urllib3"
-version = "2.5.0"
+version = "2.6.3"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc"},
-    {file = "urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760"},
+    {file = "urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4"},
+    {file = "urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed"},
 ]
 
 [package.extras]
-brotli = ["brotli (>=1.0.9) ; platform_python_implementation == \"CPython\"", "brotlicffi (>=0.8.0) ; platform_python_implementation != \"CPython\""]
+brotli = ["brotli (>=1.2.0) ; platform_python_implementation == \"CPython\"", "brotlicffi (>=1.2.0.0) ; platform_python_implementation != \"CPython\""]
 h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
-zstd = ["zstandard (>=0.18.0)"]
+zstd = ["backports-zstd (>=1.0.0) ; python_version < \"3.14\""]
 
 [[package]]
 name = "webcolors"
