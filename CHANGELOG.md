@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.5.2 - 2026-04-09
+
+- #185 Added Python 3.14 support.
+- #187 Updated CI to use Python 3.14.
+- #187 Changed `load_file` to use `urlparse` to handle file URIs.
+
 ## v1.5.1 - 2025-11-12
 
 - #179 Added Python 3.13 support.
