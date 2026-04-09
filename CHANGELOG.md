@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.2 - 2026-04-09
+
+- #185 Added Python 3.14 support.
+
 ## v1.5.1 - 2025-11-12
 
 - #179 Added Python 3.13 support.
