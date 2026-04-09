@@ -5,7 +5,6 @@ import os
 from schema_enforcer.utils import load_file
 from schema_enforcer.schemas.jsonschema import JsonSchema
 
-
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_jsonschema")
 FORMAT_CHECK_ERROR_MESSAGE_MAPPING = {
     "incorrect_regex_format": "'[' is not a 'regex'",
