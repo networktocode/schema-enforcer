@@ -5,6 +5,7 @@ import json
 import glob
 from collections.abc import Mapping, Sequence
 import importlib
+from urllib import parse as urlparse
 
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
@@ -374,10 +375,9 @@ def load_file(filename, file_type=None):
     if not file_type:
         file_type = "json" if filename.endswith(".json") else "yaml"
 
-    # When called from JsonRef, filename will contain a URI not just a local file,
-    # but this function only handles local files. See jsonref.JsonLoader for a fuller implementation
-    if filename.startswith("file:///"):
-        filename = filename.replace("file://", "")
+    # When called from JsonRef, filename will contain a file URI not just a local path
+    if filename.startswith("file:"):
+        filename = urlparse.urlparse(filename).path
 
     handler = YAML_HANDLER if file_type == "yaml" else json
     with open(filename, "r", encoding="utf-8") as fileh:

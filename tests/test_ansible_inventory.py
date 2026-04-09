@@ -5,7 +5,6 @@ import pytest
 
 from schema_enforcer.ansible_inventory import AnsibleInventory
 
-
 INVENTORY_DIR = "tests/mocks/inventory"
 
 

@@ -1,5 +1,6 @@
 # pylint: disable=redefined-outer-name
 """Tests to validate functions defined in jsonschema.py"""
+
 import os
 import pytest
 
