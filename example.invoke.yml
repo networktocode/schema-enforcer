@@ -1,0 +1,7 @@
+---
+"schema-enforcer":
+  python_ver: "3.10"
+  local: false
+  # image_name: "schema-enforcer"
+  # image_ver: "latest"
+  # pwd: "."

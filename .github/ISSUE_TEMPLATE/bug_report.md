@@ -4,7 +4,11 @@ about: Report a reproducible bug in the current release of schema-enforcer
 ---
 
 ### Environment
+<<<<<<< HEAD
 * Python version:  <!-- Example: 3.7.7 -->
+=======
+* Python version:  <!-- Example: 3.10 -->
+>>>>>>> 31cc3ca (Cookie initially baked targeting develop by NetworkToCode Cookie Drift Manager Tool)
 * schema-enforcer version:  <!-- Example: 1.0.0 -->
 
 <!-- What did you expect to happen? -->
