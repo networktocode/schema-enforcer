@@ -1,6 +1,6 @@
 # Configuration
 
-Various settings can be configured in [TOML format](https://toml.io/en/) by use of a pyproject.toml file in the folder from which the tool is run. A set of intuitive default configuration values exist. If a pyproject.toml file is defined, it will override the defaults for settings it declares, and leave the defaults in place for settings it does not declare.
+Various settings can be configured in [TOML format](https://toml.io/en/) by use of a `pyproject.toml` file in the folder from which the tool is run. A set of intuitive default configuration values exist. If a `pyproject.toml` file is defined, it will override the defaults for settings it declares, and leave the defaults in place for settings it does not declare.
 
 ## Customizing Project Config
 
@@ -8,7 +8,7 @@ The CLI tool uses a configuration section beginning with `tool.schema_enforcer` 
 
 ### Default Configuration Settings
 
-The following parameters can be specified within the pyproject.toml file used to configure the `schema enforcer` tool. The below text snippet lists the default for each of these configuration parameters. If a pyproject.toml file defines a subset of the available parameters, this susbset defined will override the defaults. Any parameter not defined in the pyproject.toml file will fall back to it's default value (as listed below).
+The following parameters can be specified within the `pyproject.toml` file used to configure the `schema enforcer` tool. The below text snippet lists the default for each of these configuration parameters. If a `pyproject.toml` file defines a subset of the available parameters, this susbset defined will override the defaults. Any parameter not defined in the `pyproject.toml` file will fall back to it's default value (as listed below).
 
 ```toml
 [tool.schema_enforcer]

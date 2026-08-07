@@ -1,12 +1,9 @@
-<<<<<<< HEAD
-=======
 # Ansible Retry Files
 *.retry
 
 # Swap files
 *.swp
 
->>>>>>> 31cc3ca (Cookie initially baked targeting develop by NetworkToCode Cookie Drift Manager Tool)
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -137,12 +134,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-<<<<<<< HEAD
-=======
-# Editor
-.vscode/
-
->>>>>>> 31cc3ca (Cookie initially baked targeting develop by NetworkToCode Cookie Drift Manager Tool)
 ### macOS ###
 # General
 .DS_Store
@@ -299,10 +290,6 @@ fabric.properties
 
 ### vscode ###
 .vscode/*
-<<<<<<< HEAD
-
-*.code-workspace
-=======
 *.code-workspace
 
 # Rando
@@ -318,4 +305,3 @@ docs/CHANGELOG.md
 public
 /compose.yaml
 /dump.sql
->>>>>>> 31cc3ca (Cookie initially baked targeting develop by NetworkToCode Cookie Drift Manager Tool)

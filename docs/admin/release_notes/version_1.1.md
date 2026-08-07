@@ -1,44 +1,12 @@
-# Changelog
+# v1.1 Release Notes
 
-## v1.5.1 - 2025-11-12
+This document describes all new features and changes in the release `1.1`. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- #179 Added Python 3.13 support.
+## Release Overview
 
-## v1.5.0 - 2025-11-10
-
-This housekeeping release updates the supported Python version to a 3.10 minimum and the optional Ansible dependency to 2.16. It also updated most dependencies, fixed tests, and CI.
-
-* #175 Update all dependencies and other housekeeping
-* #173 Fix Ubuntu runner version
-
-## v1.4.0 - 2024-03-11
-
-- #165 Support Pydantic Models for Validation
-
-## v1.3.0 - 2024-02-13
-
-- #161 Migrate Schema enforcer to use pydanticv2
-
-## v1.2.2
-
-- #156 Add support for jsonschema 4.18
-- Remove support for python version 3.7
-
-## v1.2.1
-
-### Changes
-
-- #152 Update requirement for rich to `>=9.5`
-
-## v1.2.0 - 2023-06-05
-
-### Adds
-
-- Support for versions of jsonschema >= 4.6
-
-### Removes
-
-- Support for versions of jsonschema < 4.6. See #141 for details.
+- Adds information about jsonschema formats.
+- Changes required dependencies to options for Ansible.
+- Update CI and dev standards.
 
 ## v1.1.5 - 2022-07-27
 
@@ -95,7 +63,3 @@ This housekeeping release updates the supported Python version to a 3.10 minimum
 - `docs/mapping_schemas.md` renamed to `docs/mapping_data_files_to_schemas.md`
 - Simplifies the invoke tasks used for development
 - Schema enforcer now exits if an invalid schema is found while loading schemas [#99](https://github.com/networktocode/schema-enforcer/issues/99)
-
-## v1.0.0 - 2021-01-26
-
-Schema Enforcer Initial Release

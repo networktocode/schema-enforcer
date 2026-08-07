@@ -1,12 +1,8 @@
 ---
 extends: "default"
 rules:
-<<<<<<< HEAD
-  comments: "enable"
-=======
   comments:
     min-spaces-from-content: 1
->>>>>>> 31cc3ca (Cookie initially baked targeting develop by NetworkToCode Cookie Drift Manager Tool)
   empty-values: "enable"
   indentation:
     indent-sequences: "consistent"

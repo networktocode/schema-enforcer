@@ -1,16 +1,6 @@
 [tool.poetry]
-<<<<<<< HEAD
 name = "schema-enforcer"
 version = "1.5.2a0"
-description = "Tool/Framework for testing structured data against schema definitions"
-authors = ["Network to Code, LLC <info@networktocode.com>"]
-license = "Apache-2.0"
-readme = "README.md"
-homepage = "https://github.com/networktocode/schema-enforcer"
-repository = "https://github.com/networktocode/schema-enforcer"
-=======
-name = "schema_enforcer"
-version = "1.5.2"
 description = "Tool/Framework for testing structured data against schema definitions"
 authors = ["Network to Code, LLC <opensource@networktocode.com>"]
 readme = "README.md"
@@ -18,7 +8,6 @@ homepage = "https://schema-enforcer.readthedocs.io/"
 repository = "https://github.com/networktocode/schema-enforcer"
 documentation = "https://schema-enforcer.readthedocs.io/"
 license = "Apache-2.0"
->>>>>>> 31cc3ca (Cookie initially baked targeting develop by NetworkToCode Cookie Drift Manager Tool)
 classifiers = [
     "Intended Audience :: Developers",
     "Development Status :: 5 - Production/Stable",
@@ -27,14 +16,14 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-<<<<<<< HEAD
     "Programming Language :: Python :: 3.14",
 ]
+
 include = [
-    "CHANGELOG.md",
     "LICENSE",
     "README.md",
 ]
+
 packages = [
     { include = "schema_enforcer" },
 ]
@@ -64,60 +53,6 @@ ansible = ["ansible"]
 ansible-core = ["ansible-core"]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "*"
-requests_mock = "*"
-pyyaml = "*"
-black = "*"
-pylint = "*"
-pydocstyle = "*"
-yamllint = "*"
-bandit = "*"
-invoke = "*"
-flake8 = "*"
-
-[tool.poetry.scripts]
-schema-enforcer = "schema_enforcer.cli:main"
-
-[tool.black]
-line-length = 120
-include = '\.pyi?$'
-exclude = '''
-        /(
-          \.git
-        | \.tox
-        | \.venv
-        | env/
-        | _build
-        | build
-        | dist
-        )/
-    '''
-
-[tool.pylint.master]
-ignore=".venv"
-
-[tool.pylint.basic]
-# No docstrings required for private methods (pylint default) or for test_ functions.
-no-docstring-rgx="^(_|test_)"
-
-[tool.pylint.messages_control]
-# Line length is enforced by Black, so pylint doesn't need to check it.
-# Pylint and Black disagree about how to format multi-line arrays; Black wins.
-disable = """,
-    line-too-long,
-    """
-=======
-]
-include = [
-    "LICENSE",
-    "README.md",
-]
-
-[tool.poetry.dependencies]
-python = ">=3.10,<3.14"
-click = "*"
-
-[tool.poetry.group.dev.dependencies]
 coverage = "*"
 pytest = "*"
 mock = "*"
@@ -130,6 +65,7 @@ attrs = "^23.2.0"
 towncrier = ">=23.6.0,<=24.8.0"
 ruff = "*"
 Markdown = "*"
+requests_mock = "*"
 
 [tool.poetry.group.docs.dependencies]
 # Rendering docs to HTML
@@ -157,9 +93,7 @@ mkdocstrings-python = "1.13.0"
 griffe = "1.1.1"
 
 [tool.poetry.scripts]
-schema_enforcer = 'schema_enforcer.cli:main'
-
-
+schema-enforcer = "schema_enforcer.cli:main"
 
 [tool.ruff]
 line-length = 120
@@ -215,7 +149,6 @@ disable = [
     "duplicate-code",
     "cyclic-import",
     ]
->>>>>>> 31cc3ca (Cookie initially baked targeting develop by NetworkToCode Cookie Drift Manager Tool)
 
 [tool.pylint.miscellaneous]
 # Don't flag TODO as a failure, let us commit with things that still need to be done in the code
@@ -224,7 +157,6 @@ notes = """,
     XXX,
     """
 
-<<<<<<< HEAD
 [tool.pylint.SIMILARITIES]
 min-similarity-lines = 15
 
@@ -234,10 +166,6 @@ testpaths = [
 ]
 addopts = "-vv --doctest-modules"
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-=======
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
@@ -306,4 +234,3 @@ showcontent = true
 directory = "housekeeping"
 name = "Housekeeping"
 showcontent = true
->>>>>>> 31cc3ca (Cookie initially baked targeting develop by NetworkToCode Cookie Drift Manager Tool)
