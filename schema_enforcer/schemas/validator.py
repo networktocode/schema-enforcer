@@ -3,12 +3,15 @@
 # pylint: disable=no-member, too-few-public-methods
 # See PEP585 (https://www.python.org/dev/peps/pep-0585/)
 from __future__ import annotations
-from typing import List, Union
-import pkgutil
+
 import importlib
 import inspect
+import pkgutil
+from typing import List, Union
+
 import jmespath
 from pydantic import BaseModel, ValidationError
+
 from schema_enforcer.validation import ValidationResult
 
 
@@ -131,7 +134,7 @@ def pydantic_validation_factory(orig_model) -> PydanticValidation:
         (PydanticValidation,),
         {
             "id": f"{orig_model.id}",
-            "top_level_properties": set([property for property in orig_model.model_fields]),
+            "top_level_properties": set([property for property in orig_model.model_fields]),  # pylint: disable=consider-using-set-comprehension,unnecessary-comprehension
             "model": orig_model,
         },
     )

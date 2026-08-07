@@ -1,12 +1,13 @@
 """Test validator functions."""
 
 import pytest
+
 from schema_enforcer.schemas.validator import (
     BaseModel,
     BaseValidation,
-    is_validator,
     JmesPathModelValidation,
     PydanticValidation,
+    is_validator,
     pydantic_validation_factory,
 )
 

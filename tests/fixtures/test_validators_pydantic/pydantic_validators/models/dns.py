@@ -1,6 +1,7 @@
 """Validate DNS servers is valid."""
 
 from typing import List
+
 from pydantic import BaseModel, Field
 from pydantic.networks import IPvAnyAddress
 

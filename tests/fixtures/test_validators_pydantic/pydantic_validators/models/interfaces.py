@@ -1,19 +1,22 @@
 """Validate interfaces are valid."""
 
 from enum import Enum
-from typing import Dict, Optional
 from ipaddress import IPv4Address, IPv6Address
+from typing import Dict, Optional
+
 from pydantic import BaseModel
 
 
 class InterfaceTypes(str, Enum):
     """Interface types."""
 
-    access = "access"
-    core = "core"
+    access = "access"  # pylint: disable=invalid-name
+    core = "core"  # pylint: disable=invalid-name
 
 
 class Interface(BaseModel):
+    """Interface Pydantic Model."""
+
     ipv4: Optional[IPv4Address] = None
     ipv6: Optional[IPv6Address] = None
     peer: Optional[str] = None

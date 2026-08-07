@@ -2,11 +2,12 @@
 """Tests to validate functions defined in jsonschema.py"""
 
 import os
+
 import pytest
 
 from schema_enforcer.schemas.jsonschema import JsonSchema
-from schema_enforcer.validation import RESULT_PASS, RESULT_FAIL
 from schema_enforcer.utils import load_file
+from schema_enforcer.validation import RESULT_FAIL, RESULT_PASS
 
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_jsonschema")
 LOADED_SCHEMA_DATA = load_file(os.path.join(FIXTURES_DIR, "schema", "schemas", "dns.yml"))

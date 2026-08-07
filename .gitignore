@@ -305,3 +305,4 @@ docs/CHANGELOG.md
 public
 /compose.yaml
 /dump.sql
+/schema-enforcer/static/*

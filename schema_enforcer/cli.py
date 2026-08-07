@@ -48,8 +48,6 @@ def main():
 def validate(show_pass, show_checks, strict):
     """Validates instance files against defined schema.
 
-    \f
-
     Args:
         show_pass (bool): show successful schema validations
         show_checks (bool): show schemas which will be validated against each instance file
@@ -151,8 +149,6 @@ def validate(show_pass, show_checks, strict):
 def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):
     """Manage your schemas.
 
-    \f
-
     Args:
         check (bool): Validates that all schemas are valid (spec and unit tests)
         generate_invalid (bool): Generates expected invalid data from a given schema
@@ -160,13 +156,7 @@ def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):
         schema_id (str): Name of schema to evaluate
         dump_schemas (bool): Dump all schema data or a single schema if schema_id is provided
     """
-    if (
-        not check
-        and not generate_invalid
-        and not list_schemas
-        and not schema_id
-        and not dump_schemas
-    ):
+    if not check and not generate_invalid and not list_schemas and not schema_id and not dump_schemas:
         error(
             "The 'schema' command requires one or more arguments. You can run the command 'schema-enforcer schema --help' to see the arguments available."
         )
@@ -197,9 +187,7 @@ def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):
 
     if generate_invalid:
         if not schema_id:
-            sys.exit(
-                "Please indicate the schema you'd like to generate invalid data for using the --schema-id flag"
-            )
+            sys.exit("Please indicate the schema you'd like to generate invalid data for using the --schema-id flag")
         smgr.generate_invalid_tests_expected(schema_id=schema_id)
         sys.exit(0)
 
@@ -240,7 +228,6 @@ def ansible(inventory, limit, show_pass, show_checks):  # pylint: disable=too-ma
     not defined, the hostvars top level keys will be automatically mapped to a schema
     definition's top level properties to automatically infer which schema should be used
     to validate which hostvar.
-    \f
 
     Args:
         inventory (string): The name of the file used to construct an ansible inventory.
@@ -273,8 +260,8 @@ def ansible(inventory, limit, show_pass, show_checks):  # pylint: disable=too-ma
     # This has been left in the code until such a time as we implement the change to two packages so code will not need
     # to be re-written/
     try:
-        from schema_enforcer.ansible_inventory import (
-            AnsibleInventory,  # pylint: disable=import-outside-toplevel
+        from schema_enforcer.ansible_inventory import (  # pylint: disable=import-outside-toplevel
+            AnsibleInventory,
         )
     except ModuleNotFoundError:
         error(
@@ -332,9 +319,7 @@ def ansible(inventory, limit, show_pass, show_checks):  # pylint: disable=too-ma
         smgr.validate_schemas_exist(declared_schema_ids)
 
         # Acquire schemas applicable to the given host
-        applicable_schemas = inv.get_applicable_schemas(
-            hostvars, smgr, declared_schema_ids, automap
-        )
+        applicable_schemas = inv.get_applicable_schemas(hostvars, smgr, declared_schema_ids, automap)
         for schema_obj in applicable_schemas.values():
             # Combine host attributes into a single data structure matching to properties defined at the top level of the schema definition
             if not strict:

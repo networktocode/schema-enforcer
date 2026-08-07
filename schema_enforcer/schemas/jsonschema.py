@@ -6,8 +6,9 @@ import os
 from functools import cached_property
 
 from jsonschema import Draft7Validator  # pylint: disable=import-self
+
 from schema_enforcer.schemas.validator import BaseValidation
-from schema_enforcer.validation import ValidationResult, RESULT_FAIL, RESULT_PASS
+from schema_enforcer.validation import RESULT_FAIL, RESULT_PASS, ValidationResult
 
 
 class JsonSchema(BaseValidation):  # pylint: disable=too-many-instance-attributes

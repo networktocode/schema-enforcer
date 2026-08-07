@@ -53,8 +53,8 @@ This document describes all new features and changes in the release `1.1`. The f
 
 ### Adds
 
-- [Custom Validators](docs/custom_validators.md)
-- [Automatic mapping of schemas to data files](docs/mapping_data_files_to_schemas.md)
+- [Custom Validators](../../user/custom_validators.md)
+- [Automatic mapping of schemas to data files](../../user/mapping_data_files_to_schemas.md)
 - Automatic implementation of draft7 format checker to support [IPv4 and IPv6 format declarations](https://json-schema.org/understanding-json-schema/reference/string.html#id12) in a JSON Schema definition [#94](https://github.com/networktocode/schema-enforcer/issues/94)
 
 ### Changes

@@ -134,7 +134,6 @@ convention = "google"
     "S"
 ]
 
-
 [tool.pylint.master]
 ignore=[".venv", "tests"]
 
@@ -159,12 +158,6 @@ notes = """,
 
 [tool.pylint.SIMILARITIES]
 min-similarity-lines = 15
-
-[tool.pytest.ini_options]
-testpaths = [
-    "tests"
-]
-addopts = "-vv --doctest-modules"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

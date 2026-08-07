@@ -1,23 +1,21 @@
 """Schema manager."""
 
+import json
 import os
 import sys
-import json
-
-import jsonref
-from termcolor import colored
-from rich.console import Console
-from rich.table import Table
 from typing import List, Optional, Type
 
+import jsonref
 from pydantic import BaseModel
+from rich.console import Console
+from rich.table import Table
+from termcolor import colored
 
-from schema_enforcer.utils import load_file, find_file, find_files, dump_data_to_yaml
-from schema_enforcer.validation import ValidationResult, RESULT_PASS, RESULT_FAIL
-from schema_enforcer.exceptions import SchemaNotDefined, InvalidJSONSchema
-from schema_enforcer.utils import error, warn
+from schema_enforcer.exceptions import InvalidJSONSchema, SchemaNotDefined
 from schema_enforcer.schemas.jsonschema import JsonSchema
 from schema_enforcer.schemas.validator import load_validators
+from schema_enforcer.utils import dump_data_to_yaml, error, find_file, find_files, load_file, warn
+from schema_enforcer.validation import RESULT_FAIL, RESULT_PASS, ValidationResult
 
 
 class SchemaManager:
@@ -60,6 +58,7 @@ class SchemaManager:
         Args:
             root (string): Absolute location of the file in the filesystem.
             filename (string): Name of the file.
+            config (string): The Schema Enforcer Config.
 
         Returns:
             JsonSchema: JsonSchema object newly created.
@@ -154,6 +153,7 @@ class SchemaManager:
 
         Args:
             schema_id (str): The unique identifier of a schema.
+            strict (bool): Whether to fail in strict mode.
 
         Returns:
             list of ValidationResult.

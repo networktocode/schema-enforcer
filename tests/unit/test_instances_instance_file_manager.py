@@ -8,8 +8,8 @@ import os
 
 import pytest
 
-from schema_enforcer.instances.file import InstanceFileManager
 from schema_enforcer.config import Settings
+from schema_enforcer.instances.file import InstanceFileManager
 
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_instances")
 

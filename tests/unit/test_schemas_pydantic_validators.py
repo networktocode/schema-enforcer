@@ -4,12 +4,14 @@
 import os
 import sys
 from unittest import mock
+
 import pytest
 from click.testing import CliRunner
-from schema_enforcer.schemas.manager import SchemaManager
+
+from schema_enforcer import cli
 from schema_enforcer.config import Settings
 from schema_enforcer.instances.file import InstanceFileManager
-from schema_enforcer import cli
+from schema_enforcer.schemas.manager import SchemaManager
 
 FIXTURE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures")
 

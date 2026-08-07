@@ -1,10 +1,12 @@
 """InstanceFile and InstanceFileManager."""
 
+import itertools
 import os
 import re
-import itertools
 from pathlib import Path
+
 from ruamel.yaml.comments import CommentedMap
+
 from schema_enforcer.utils import find_files, load_file
 
 SCHEMA_TAG = "jsonschema"

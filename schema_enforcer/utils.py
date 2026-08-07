@@ -1,23 +1,20 @@
 """Library of utility functions."""
 
-import os
-import json
 import glob
-from collections.abc import Mapping, Sequence
 import importlib
+import json
+import os
+from collections.abc import Mapping, Sequence
 from urllib import parse as urlparse
 
+from click import Option, UsageError
+from jsonschema import (  # pylint: disable=no-name-in-module
+    Draft7Validator,
+    RefResolver,
+)
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
-from jsonschema import (  # pylint: disable=no-name-in-module
-    RefResolver,
-    Draft7Validator,
-)
-
 from termcolor import colored
-
-
-from click import Option, UsageError
 
 YAML_HANDLER = YAML()
 YAML_HANDLER.indent(sequence=4, offset=2)
@@ -147,7 +144,7 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
 
     Args:
         schema_root_dir (str): The full path to root directory of schema files.
-        schema_file_path (str): The path to a schema definition file.
+        schema_filepath (str): The path to a schema definition file.
 
     Returns:
         jsonschema.Validator: A Validator instance with schema loaded with a RefResolver and format_checker.
@@ -293,9 +290,7 @@ def dump_schema_vars(output_dir, schema_properties, variables):
             dump_data_to_yaml(schema_data, yaml_file)
 
 
-def find_files(
-    file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False
-):  # pylint: disable=dangerous-default-value
+def find_files(file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False):  # pylint: disable=dangerous-default-value
     """Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames.
 
     Args:
@@ -412,7 +407,7 @@ def find_file(filename, extensions=("yml", "yaml", "json")):
 
     Args:
         filename (str): Full filename of the file to search for, without the extension.
-        formats(Tuple[str]): Tuple of formats (file extensions) appended to the file to search for it's existence.
+        extensions(Tuple[str]): Tuple of formats (file extensions) appended to the file to search for it's existence.
 
     Returns:
         str or None: string of the filename found
@@ -470,7 +465,7 @@ class MutuallyExclusiveOption(Option):
         help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
         if self.mutually_exclusive:
             ex_str = ", ".join(self.mutually_exclusive)
-            kwargs["help"] = help + (" NOTE: This argument is mutually exclusive with " " arguments: [" + ex_str + "].")
+            kwargs["help"] = help + (" NOTE: This argument is mutually exclusive with  arguments: [" + ex_str + "].")
         super().__init__(*args, **kwargs)
 
     def handle_parse_result(self, ctx, opts, args):

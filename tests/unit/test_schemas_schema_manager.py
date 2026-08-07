@@ -2,10 +2,12 @@
 """Test manager.py SchemaManager class"""
 
 import os
+
 import pytest
-from schema_enforcer.schemas.manager import SchemaManager
+
 from schema_enforcer.config import Settings
 from schema_enforcer.exceptions import InvalidJSONSchema
+from schema_enforcer.schemas.manager import SchemaManager
 
 FIXTURE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures")
 

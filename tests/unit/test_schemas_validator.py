@@ -2,9 +2,11 @@
 
 # pylint: disable=redefined-outer-name
 import os
+
 import pytest
-from schema_enforcer.ansible_inventory import AnsibleInventory
+
 import schema_enforcer.schemas.validator as v
+from schema_enforcer.ansible_inventory import AnsibleInventory
 
 FIXTURE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_validators")
 

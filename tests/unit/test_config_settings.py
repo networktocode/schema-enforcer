@@ -1,9 +1,10 @@
 """Test Setting Configuration Parameters"""
 
-from unittest import mock
 import os
+from unittest import mock
 
 import pytest
+
 from schema_enforcer import config
 
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_config")

@@ -5,10 +5,10 @@ import os
 
 import pytest
 
-from schema_enforcer.schemas.manager import SchemaManager
-from schema_enforcer.instances.file import InstanceFile, InstanceFileManager
-from schema_enforcer.validation import ValidationResult
 from schema_enforcer.config import Settings
+from schema_enforcer.instances.file import InstanceFile, InstanceFileManager
+from schema_enforcer.schemas.manager import SchemaManager
+from schema_enforcer.validation import ValidationResult
 
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fixtures", "test_instances")
 

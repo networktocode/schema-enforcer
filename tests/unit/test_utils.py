@@ -1,7 +1,7 @@
 """Tests to validate functions defined in utils.py"""
 
-import os
 import json
+import os
 import shutil
 
 from schema_enforcer import utils
