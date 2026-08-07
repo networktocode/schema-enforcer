@@ -5,7 +5,6 @@ about: Propose a new feature or enhancement
 ---
 
 ### Environment
-* Python version:  <!-- Example: 3.7.7 -->
 * schema-enforcer version:  <!-- Example: 1.0.0 -->
 
 <!--

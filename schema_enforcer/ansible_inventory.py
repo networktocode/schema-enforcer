@@ -2,8 +2,8 @@
 
 from ansible.inventory.manager import InventoryManager  # pylint: disable=import-error
 from ansible.parsing.dataloader import DataLoader  # pylint: disable=import-error
-from ansible.vars.manager import VariableManager  # pylint: disable=import-error
 from ansible.template import Templar  # pylint: disable=import-error
+from ansible.vars.manager import VariableManager  # pylint: disable=import-error
 
 
 # Referenced https://github.com/fgiorgetti/qpid-dispatch-tests/ for the below class

@@ -1,0 +1,30 @@
+{
+    "cookiecutter": {
+        "codeowner_github_usernames": "@cmsirbu @glennmatthews",
+        "full_name": "Network to Code, LLC",
+        "email": "info@networktocode.com",
+        "github_org": "networktocode",
+        "description": "Tool/Framework for testing structured data against schema definitions",
+        "project_name": "Schema Enforcer",
+        "project_slug": "schema-enforcer",
+        "repo_url": "https://github.com/networktocode/schema-enforcer",
+        "base_url": "schema-enforcer",
+        "project_python_name": "schema_enforcer",
+        "project_python_base_version": "3.10",
+        "project_with_config_settings": "no",
+        "generate_docs": "yes",
+        "version": "1.5.2",
+        "original_publish_year": "2020",
+        "_drift_manager": {
+            "template": "https://github.com/networktocode-llc/cookiecutter-ntc.git",
+            "template_dir": "python",
+            "template_ref": "main",
+            "cookie_dir": "",
+            "pull_request_strategy": "create",
+            "post_actions": [],
+            "draft": false,
+            "baked_commit_ref": "0eee1191e60bc8680cc53a79f8296380048cd703",
+            "drift_managed_branch": "develop"
+        }
+    }
+}

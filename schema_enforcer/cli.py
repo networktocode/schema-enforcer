@@ -5,12 +5,11 @@ import sys
 import click
 from termcolor import colored
 
-from schema_enforcer.utils import MutuallyExclusiveOption
 from schema_enforcer import config
-from schema_enforcer.schemas.manager import SchemaManager
-from schema_enforcer.instances.file import InstanceFileManager
-from schema_enforcer.utils import error
 from schema_enforcer.exceptions import InvalidJSONSchema
+from schema_enforcer.instances.file import InstanceFileManager
+from schema_enforcer.schemas.manager import SchemaManager
+from schema_enforcer.utils import MutuallyExclusiveOption, error
 
 
 @click.group()
@@ -46,10 +45,8 @@ def main():
     show_default=True,
 )
 @main.command()
-def validate(show_pass, show_checks, strict):  # noqa D205
+def validate(show_pass, show_checks, strict):
     """Validates instance files against defined schema.
-
-    \f
 
     Args:
         show_pass (bool): show successful schema validations
@@ -149,10 +146,8 @@ def validate(show_pass, show_checks, strict):  # noqa D205
     help="The name of a schema.",
 )
 @main.command()
-def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # noqa: D417,D301,D205
+def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):
     """Manage your schemas.
-
-    \f
 
     Args:
         check (bool): Validates that all schemas are valid (spec and unit tests)
@@ -224,9 +219,7 @@ def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # n
     is_flag=True,
     show_default=True,
 )
-def ansible(
-    inventory, limit, show_pass, show_checks
-):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals,too-many-statements  # noqa: D417,D301
+def ansible(inventory, limit, show_pass, show_checks):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals,too-many-statements
     """Validate the hostvars for all hosts within an Ansible inventory.
 
     The hostvars are dynamically rendered based on groups to which each host belongs.
@@ -235,7 +228,6 @@ def ansible(
     not defined, the hostvars top level keys will be automatically mapped to a schema
     definition's top level properties to automatically infer which schema should be used
     to validate which hostvar.
-    \f
 
     Args:
         inventory (string): The name of the file used to construct an ansible inventory.
@@ -268,7 +260,9 @@ def ansible(
     # This has been left in the code until such a time as we implement the change to two packages so code will not need
     # to be re-written/
     try:
-        from schema_enforcer.ansible_inventory import AnsibleInventory  # pylint: disable=import-outside-toplevel
+        from schema_enforcer.ansible_inventory import (  # pylint: disable=import-outside-toplevel
+            AnsibleInventory,
+        )
     except ModuleNotFoundError:
         error(
             "ansible package not found, you can run the command 'pip install schema-enforcer[ansible]' to install the latest schema-enforcer sanctioned version."

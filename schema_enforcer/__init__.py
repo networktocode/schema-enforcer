@@ -1,5 +1,5 @@
 """Initialization file for library."""
 
-# pylint: disable=C0114
+from importlib import metadata
 
-__version__ = "1.1.3"
+__version__ = metadata.version(__name__)

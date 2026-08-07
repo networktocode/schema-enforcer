@@ -1,10 +1,11 @@
 """Validation related classes."""
 
-from typing import List, Optional, Any
+from typing import Any, List, Optional
+
 from pydantic import BaseModel, ConfigDict, field_validator  # pylint: disable=no-name-in-module
 from termcolor import colored
 
-RESULT_PASS = "PASS"  # nosec
+RESULT_PASS = "PASS"  # noqa: S105
 RESULT_FAIL = "FAIL"
 
 

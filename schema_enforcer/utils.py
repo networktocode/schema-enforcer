@@ -1,23 +1,20 @@
 """Library of utility functions."""
 
-import os
-import json
 import glob
-from collections.abc import Mapping, Sequence
 import importlib
+import json
+import os
+from collections.abc import Mapping, Sequence
 from urllib import parse as urlparse
 
+from click import Option, UsageError
+from jsonschema import (  # pylint: disable=no-name-in-module
+    Draft7Validator,
+    RefResolver,
+)
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
-from jsonschema import (  # pylint: disable=no-name-in-module
-    RefResolver,
-    Draft7Validator,
-)
-
 from termcolor import colored
-
-
-from click import Option, UsageError
 
 YAML_HANDLER = YAML()
 YAML_HANDLER.indent(sequence=4, offset=2)
@@ -35,7 +32,7 @@ def error(msg):
 
 
 def get_path_and_filename(filepath):
-    """Splits ``filepath`` into the directory path and filename w/o extesion.
+    """Splits ``filepath`` into the directory path and filename w/o extension.
 
     Args:
         filepath (str): The path to a file.
@@ -46,9 +43,9 @@ def get_path_and_filename(filepath):
     Example:
         >>> path, filename = get_path_and_filename("schema/json/schemas/ntp.json")
         >>> print(path)
-        'schema/json/schemas'
+        schema/json/schemas
         >>> print(filename)
-        'ntp'
+        ntp
         >>>
     """
     file, _ = os.path.splitext(filepath)
@@ -110,19 +107,6 @@ def get_conversion_filepaths(original_path, original_extension, conversion_path,
 
     Returns:
         list: A tuple of paths to the original and the conversion files.
-
-    Example:
-        >>> os.listdir("schema/yaml/schemas/")
-        ["ntp.yml", "snmp.yml"]
-        >>> conversion_paths = get_conversion_filepaths(
-        ...     "schema/yaml/", "yml", "schema/json", "json"
-        ... )
-        >>> for yaml_path, json_path in conversion_paths:
-        ...     print(f"Original: {yaml_path} -> Conversion: {json_path}")
-        ...
-        Original: schema/yaml/schemas/ntp.yml -> Conversion: schema/json/schemas/ntp.json
-        Original: schema/yaml/schemas/snmp.yml -> Conversion: schema/json/schemas/snmp.json
-        >>>
     """
     original_path = os.path.normpath(original_path)
     conversion_path = os.path.normpath(conversion_path)
@@ -147,18 +131,10 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
 
     Args:
         schema_root_dir (str): The full path to root directory of schema files.
-        schema_file_path (str): The path to a schema definition file.
+        schema_filepath (str): The path to a schema definition file.
 
     Returns:
         jsonschema.Validator: A Validator instance with schema loaded with a RefResolver and format_checker.
-
-    Example:
-        >>> schema_root_dir = "/home/users/admin/network-schema/schema/json"
-        >>> schema_filepath = "schema/json/schemas/ntp.json"
-        >>> validator = load_schema_from_json_file(schema_root_dir, schema_filepath)
-        >>> validator.schema
-        >>> {...}
-        >>>
     """
     base_uri = f"file:{schema_root_dir}/".replace("\\", "/")
     with open(os.path.join(schema_root_dir, schema_filepath), encoding="utf-8") as fileh:
@@ -183,15 +159,6 @@ def dump_data_to_yaml(data, yaml_path):
 
     Returns:
         None: Data is written to a file.
-
-    Example:
-        >>> os.listdir("hostvars/sw01/")
-        ["dns.yml", "snmp.yml"]
-        >>> data = {"ntp": {"servers": [{"address": "10.1.1.1", "vrf": "mgmt"}]}}
-        >>> yaml_file = "hostvars/sw01/ntp.yml"
-        >>> os.listdir("hostvars/sw01/")
-        ["dns.yml", "ntp.yml", "snmp.yml"]
-        >>>
     """
     data_formatted = ensure_strings_have_quotes_mapping(data)
     with open(yaml_path, "w", encoding="utf-8") as fileh:
@@ -207,15 +174,6 @@ def dump_data_to_json(data, json_path):
 
     Returns:
         None: Data is written to a file.
-
-    Example:
-        >>> os.listdir("hostvars/sw01/")
-        ["dns.json", "snmp.json"]
-        >>> data = {"ntp": {"servers": [{"address": "10.1.1.1", "vrf": "mgmt"}]}}
-        >>> json_file = "hostvars/sw01/json.yml"
-        >>> os.listdir("hostvars/sw01/")
-        ["dns.json", "ntp.json", "snmp.json"]
-        >>>
     """
     with open(json_path, "w", encoding="utf-8") as fileh:
         json.dump(data, fileh, indent=4)
@@ -230,18 +188,6 @@ def get_schema_properties(schema_files):
 
     Returns:
         dict: Schema filenames are the keys, and the values are list of property names.
-
-    Example:
-        >>> schema_files = [
-        ...     'schema/json/schemas/ntp.json', 'schema/json/schemas/snmp.json'
-        ... ]
-        >>> schema_property_map = get_schema_properties(schema_files)
-        >>> print(schema_property_map)
-        {
-            'ntp': ['ntp_servers', 'ntp_authentication'],
-            'snmp': ['snmp_servers']
-        }
-        >>>
     """
     schema_property_map = {}
     for schema_file in schema_files:
@@ -264,18 +210,6 @@ def dump_schema_vars(output_dir, schema_properties, variables):
 
     Returns:
         None: Files are written for each schema definition.
-
-    Example:
-        >>> output_dir = "inventory/hostvars/host1"
-        >>> schema_files = glob.glob("schema/json/schemas/*.json")
-        >>> schema_properties = get_schema_properties(schema_files)
-        >>> host_variables = magic_hostvar_generator()
-        >>> os.isdir(output_dir)
-        False
-        >>> dump_schema_vars(output_dir, schema_properties, host_variables)
-        >>> os.listdir(output_dir)
-        ['ntp.yml', 'snmp.yml']
-        >>>
     """
     os.makedirs(output_dir, exist_ok=True)
     # Somewhat of a hack to remove non basic object types from data structure
@@ -293,9 +227,7 @@ def dump_schema_vars(output_dir, schema_properties, variables):
             dump_data_to_yaml(schema_data, yaml_file)
 
 
-def find_files(
-    file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False
-):  # pylint: disable=dangerous-default-value
+def find_files(file_extensions, search_directories, excluded_filenames, excluded_directories=[], return_dir=False):  # pylint: disable=dangerous-default-value
     """Walk provided search directories and return the full filename for all files matching file_extensions except the excluded_filenames.
 
     Args:
@@ -412,7 +344,7 @@ def find_file(filename, extensions=("yml", "yaml", "json")):
 
     Args:
         filename (str): Full filename of the file to search for, without the extension.
-        formats(Tuple[str]): Tuple of formats (file extensions) appended to the file to search for it's existence.
+        extensions(Tuple[str]): Tuple of formats (file extensions) appended to the file to search for it's existence.
 
     Returns:
         str or None: string of the filename found
@@ -470,7 +402,7 @@ class MutuallyExclusiveOption(Option):
         help = kwargs.get("help", "")  # pylint: disable=redefined-builtin
         if self.mutually_exclusive:
             ex_str = ", ".join(self.mutually_exclusive)
-            kwargs["help"] = help + (" NOTE: This argument is mutually exclusive with " " arguments: [" + ex_str + "].")
+            kwargs["help"] = help + (" NOTE: This argument is mutually exclusive with  arguments: [" + ex_str + "].")
         super().__init__(*args, **kwargs)
 
     def handle_parse_result(self, ctx, opts, args):

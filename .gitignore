@@ -1,3 +1,9 @@
+# Ansible Retry Files
+*.retry
+
+# Swap files
+*.swp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -284,5 +290,19 @@ fabric.properties
 
 ### vscode ###
 .vscode/*
-
 *.code-workspace
+
+# Rando
+creds.env
+development/*.txt
+
+# Invoke overrides
+invoke.yml
+
+# Docs
+docs/README.md
+docs/CHANGELOG.md
+public
+/compose.yaml
+/dump.sql
+/schema-enforcer/static/*

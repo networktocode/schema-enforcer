@@ -1,0 +1,65 @@
+# v1.1 Release Notes
+
+This document describes all new features and changes in the release `1.1`. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Release Overview
+
+- Adds information about jsonschema formats.
+- Changes required dependencies to options for Ansible.
+- Update CI and dev standards.
+
+## v1.1.5 - 2022-07-27
+
+### Changes
+
+- Fixes #141 - Can not install schema-enforcer in environments which require a version of jsonschema < 4.6
+
+## v1.1.4 - 2022-07-13
+
+### Adds
+
+- Add format_nongpl extra to jsonschema install. This ensures draft7 format checkers validate format adherence as expected while also ensuring GPL-Licenced transitive dependencies are not installed.
+
+### Changes
+
+- Update jsonschema schema version dependency so that versions in the 4.x train are supported.
+
+### Removes
+
+- Automatic support for `iri` and `iri-reference` format checkers. This was removed because these format checkers require the `rfc3987` library, which is licensed under GPL. If you require these checkers, you can manually install `rfc3987` or install this package as `jsonschema[rfc3987]`.
+
+## v1.1.3 - 2022-05-31
+
+### Changes
+
+- jinja2 version dependency specification modified such that versions in the 3.x release are supported
+
+## v1.1.2 - 2022-01-10
+
+### Changes
+
+- Update dependencies
+- Switch from slim to full python docker base image
+
+## v1.1.1 - 2021-12-23
+
+### Changes
+
+- Minor updates to documentation
+- Update CI build environment to use github actions instead of Travis CI
+- Update version of ruamel from 0.16 to 0.17
+
+## v1.1.0 - 2021-05-25
+
+### Adds
+
+- [Custom Validators](../../user/custom_validators.md)
+- [Automatic mapping of schemas to data files](../../user/mapping_data_files_to_schemas.md)
+- Automatic implementation of draft7 format checker to support [IPv4 and IPv6 format declarations](https://json-schema.org/understanding-json-schema/reference/string.html#id12) in a JSON Schema definition [#94](https://github.com/networktocode/schema-enforcer/issues/94)
+
+### Changes
+
+- Removes Ansible as a mandatory dependency [#90](https://github.com/networktocode/schema-enforcer/issues/90)
+- `docs/mapping_schemas.md` renamed to `docs/mapping_data_files_to_schemas.md`
+- Simplifies the invoke tasks used for development
+- Schema enforcer now exits if an invalid schema is found while loading schemas [#99](https://github.com/networktocode/schema-enforcer/issues/99)

@@ -1,5 +1,0 @@
----
-dns_servers:
-  - address: "10.4.4.4"
-    vrf: "mgmt"
-  - address: "10.5.5.5"
