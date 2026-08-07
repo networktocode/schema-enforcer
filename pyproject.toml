@@ -171,7 +171,7 @@ testpaths = [
 addopts = "-vv --doctest-modules -p no:warnings --ignore-glob='*mock*'"
 
 [tool.towncrier]
-package = "schema-enforcer"
+package = "schema_enforcer"
 directory = "changes"
 filename = "docs/admin/release_notes/version_X.Y.md"
 template = "towncrier_template.j2"

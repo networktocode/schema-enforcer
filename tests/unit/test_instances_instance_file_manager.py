@@ -47,10 +47,10 @@ def test_print_instances_schema_mapping(ifm, capsys):
     print_string = (
         "Structured Data File                               Schema ID\n"
         "--------------------------------------------------------------------------------\n"
-        "/local/tests/fixtures/test_instances/hostvars/chi-beijing-rt1/dns.yml ['schemas/dns_servers']\n"
-        "/local/tests/fixtures/test_instances/hostvars/chi-beijing-rt1/syslog.yml []\n"
-        "/local/tests/fixtures/test_instances/hostvars/eng-london-rt1/dns.yaml []\n"
-        "/local/tests/fixtures/test_instances/hostvars/eng-london-rt1/ntp.yaml ['schemas/ntp']\n"
+        "/local/tests/unit/fixtures/test_instances/hostvars/chi-beijing-rt1/dns.yml ['schemas/dns_servers']\n"
+        "/local/tests/unit/fixtures/test_instances/hostvars/chi-beijing-rt1/syslog.yml []\n"
+        "/local/tests/unit/fixtures/test_instances/hostvars/eng-london-rt1/dns.yaml []\n"
+        "/local/tests/unit/fixtures/test_instances/hostvars/eng-london-rt1/ntp.yaml ['schemas/ntp']\n"
     )
     ifm.print_schema_mapping()
     captured = capsys.readouterr()

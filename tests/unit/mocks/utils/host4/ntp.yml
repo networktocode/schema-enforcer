@@ -1,3 +1,0 @@
----
-ntp_servers:
-  - address: "10.6.6.6"

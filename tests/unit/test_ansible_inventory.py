@@ -5,7 +5,7 @@ import pytest
 
 from schema_enforcer.ansible_inventory import AnsibleInventory
 
-INVENTORY_DIR = "tests/mocks/inventory"
+INVENTORY_DIR = "tests/unit/mocks/inventory"
 
 
 @pytest.fixture(scope="module")

@@ -32,7 +32,7 @@ def error(msg):
 
 
 def get_path_and_filename(filepath):
-    """Splits ``filepath`` into the directory path and filename w/o extesion.
+    """Splits ``filepath`` into the directory path and filename w/o extension.
 
     Args:
         filepath (str): The path to a file.
@@ -43,9 +43,9 @@ def get_path_and_filename(filepath):
     Example:
         >>> path, filename = get_path_and_filename("schema/json/schemas/ntp.json")
         >>> print(path)
-        'schema/json/schemas'
+        schema/json/schemas
         >>> print(filename)
-        'ntp'
+        ntp
         >>>
     """
     file, _ = os.path.splitext(filepath)
@@ -107,19 +107,6 @@ def get_conversion_filepaths(original_path, original_extension, conversion_path,
 
     Returns:
         list: A tuple of paths to the original and the conversion files.
-
-    Example:
-        >>> os.listdir("schema/yaml/schemas/")
-        ["ntp.yml", "snmp.yml"]
-        >>> conversion_paths = get_conversion_filepaths(
-        ...     "schema/yaml/", "yml", "schema/json", "json"
-        ... )
-        >>> for yaml_path, json_path in conversion_paths:
-        ...     print(f"Original: {yaml_path} -> Conversion: {json_path}")
-        ...
-        Original: schema/yaml/schemas/ntp.yml -> Conversion: schema/json/schemas/ntp.json
-        Original: schema/yaml/schemas/snmp.yml -> Conversion: schema/json/schemas/snmp.json
-        >>>
     """
     original_path = os.path.normpath(original_path)
     conversion_path = os.path.normpath(conversion_path)
@@ -148,14 +135,6 @@ def load_schema_from_json_file(schema_root_dir, schema_filepath):
 
     Returns:
         jsonschema.Validator: A Validator instance with schema loaded with a RefResolver and format_checker.
-
-    Example:
-        >>> schema_root_dir = "/home/users/admin/network-schema/schema/json"
-        >>> schema_filepath = "schema/json/schemas/ntp.json"
-        >>> validator = load_schema_from_json_file(schema_root_dir, schema_filepath)
-        >>> validator.schema
-        >>> {...}
-        >>>
     """
     base_uri = f"file:{schema_root_dir}/".replace("\\", "/")
     with open(os.path.join(schema_root_dir, schema_filepath), encoding="utf-8") as fileh:
@@ -180,15 +159,6 @@ def dump_data_to_yaml(data, yaml_path):
 
     Returns:
         None: Data is written to a file.
-
-    Example:
-        >>> os.listdir("hostvars/sw01/")
-        ["dns.yml", "snmp.yml"]
-        >>> data = {"ntp": {"servers": [{"address": "10.1.1.1", "vrf": "mgmt"}]}}
-        >>> yaml_file = "hostvars/sw01/ntp.yml"
-        >>> os.listdir("hostvars/sw01/")
-        ["dns.yml", "ntp.yml", "snmp.yml"]
-        >>>
     """
     data_formatted = ensure_strings_have_quotes_mapping(data)
     with open(yaml_path, "w", encoding="utf-8") as fileh:
@@ -204,15 +174,6 @@ def dump_data_to_json(data, json_path):
 
     Returns:
         None: Data is written to a file.
-
-    Example:
-        >>> os.listdir("hostvars/sw01/")
-        ["dns.json", "snmp.json"]
-        >>> data = {"ntp": {"servers": [{"address": "10.1.1.1", "vrf": "mgmt"}]}}
-        >>> json_file = "hostvars/sw01/json.yml"
-        >>> os.listdir("hostvars/sw01/")
-        ["dns.json", "ntp.json", "snmp.json"]
-        >>>
     """
     with open(json_path, "w", encoding="utf-8") as fileh:
         json.dump(data, fileh, indent=4)
@@ -227,18 +188,6 @@ def get_schema_properties(schema_files):
 
     Returns:
         dict: Schema filenames are the keys, and the values are list of property names.
-
-    Example:
-        >>> schema_files = [
-        ...     'schema/json/schemas/ntp.json', 'schema/json/schemas/snmp.json'
-        ... ]
-        >>> schema_property_map = get_schema_properties(schema_files)
-        >>> print(schema_property_map)
-        {
-            'ntp': ['ntp_servers', 'ntp_authentication'],
-            'snmp': ['snmp_servers']
-        }
-        >>>
     """
     schema_property_map = {}
     for schema_file in schema_files:
@@ -261,18 +210,6 @@ def dump_schema_vars(output_dir, schema_properties, variables):
 
     Returns:
         None: Files are written for each schema definition.
-
-    Example:
-        >>> output_dir = "inventory/hostvars/host1"
-        >>> schema_files = glob.glob("schema/json/schemas/*.json")
-        >>> schema_properties = get_schema_properties(schema_files)
-        >>> host_variables = magic_hostvar_generator()
-        >>> os.isdir(output_dir)
-        False
-        >>> dump_schema_vars(output_dir, schema_properties, host_variables)
-        >>> os.listdir(output_dir)
-        ['ntp.yml', 'snmp.yml']
-        >>>
     """
     os.makedirs(output_dir, exist_ok=True)
     # Somewhat of a hack to remove non basic object types from data structure

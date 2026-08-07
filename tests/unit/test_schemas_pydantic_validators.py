@@ -103,12 +103,12 @@ def test_pydantic_manager_validate_correct_checks_mapping_cli_success(_load):
     assert result.exit_code == 0
     expected = """Structured Data File                               Schema ID
 --------------------------------------------------------------------------------
-/local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml ['Hostname', 'Interfaces', 'pydantic/Hostname', 'pydantic/Interfaces']
-/local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/dns.yml ['pydantic/Dns']
-/local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml ['Hostname', 'Interfaces', 'pydantic/Hostname', 'pydantic/Interfaces']
-/local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml ['Hostname', 'Interfaces', 'pydantic/Hostname', 'pydantic/Interfaces']
-/local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/dns.yml ['pydantic/Dns']
-/local/tests/fixtures/test_validators_pydantic/inventory/inventory.yml []
+/local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml ['Hostname', 'Interfaces', 'pydantic/Hostname', 'pydantic/Interfaces']
+/local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/dns.yml ['pydantic/Dns']
+/local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml ['Hostname', 'Interfaces', 'pydantic/Hostname', 'pydantic/Interfaces']
+/local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml ['Hostname', 'Interfaces', 'pydantic/Hostname', 'pydantic/Interfaces']
+/local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/dns.yml ['pydantic/Dns']
+/local/tests/unit/fixtures/test_validators_pydantic/inventory/inventory.yml []
 """
     assert expected == result.output
 
@@ -121,32 +121,32 @@ def test_pydantic_manager_validate_show_pass_cli(_load):
     _load.assert_called_once()
     assert result.exit_code == 0
     assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/base.yml\n"
         in result.output
     )
     assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/dns.yml"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe01/dns.yml"
         in result.output
     )
     assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/base.yml\n"
         in result.output
     )
     assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/dns.yml"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/co_den_p01/dns.yml"
         in result.output
     )
     assert (
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
-        "PASS | [FILE] /local/tests/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
+        "PASS | [FILE] /local/tests/unit/fixtures/test_validators_pydantic/inventory/host_vars/az_phx_pe02/base.yml\n"
         in result.output
     )
     assert "ALL SCHEMA VALIDATION CHECKS PASSED" in result.output

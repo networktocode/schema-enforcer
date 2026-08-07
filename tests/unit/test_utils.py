@@ -62,14 +62,14 @@ def test_get_path_and_filename():
 
 def test_ensure_yaml_output_format():
     data_formatted = utils.ensure_strings_have_quotes_mapping(TEST_DATA)
-    yaml_path = "tests/mocks/utils/.formatted.yml"
+    yaml_path = "tests/unit/mocks/utils/.formatted.yml"
     with open(yaml_path, "w", encoding="utf-8") as fileh:
         utils.YAML_HANDLER.dump(data_formatted, fileh)
 
     with open(yaml_path, encoding="utf-8") as fileh:
         actual = fileh.read()
 
-    with open("tests/mocks/utils/formatted.yml", encoding="utf-8") as fileh:
+    with open("tests/unit/mocks/utils/formatted.yml", encoding="utf-8") as fileh:
         mock = fileh.read()
 
     mock = remove_comments_from_yaml_string(mock)
@@ -80,7 +80,7 @@ def test_ensure_yaml_output_format():
 
 
 def test_get_conversion_filepaths():
-    yaml_path = "tests/mocks/schema/yaml"
+    yaml_path = "tests/unit/mocks/schema/yaml"
     json_path = yaml_path.replace("yaml", "json")
     actual = utils.get_conversion_filepaths(yaml_path, "yml", json_path, "json")
     expected_defs = [
@@ -99,16 +99,16 @@ def test_get_conversion_filepaths():
 
 
 def test_load_schema_from_json_file():
-    schema_root_dir = os.path.realpath("tests/mocks/schema/json")
+    schema_root_dir = os.path.realpath("tests/unit/mocks/schema/json")
     schema_filepath = f"{schema_root_dir}/schemas/ntp.json"
     validator = utils.load_schema_from_json_file(schema_root_dir, schema_filepath)
-    with open("tests/mocks/ntp/valid/full_implementation.json", encoding="utf-8") as fileh:
+    with open("tests/unit/mocks/ntp/valid/full_implementation.json", encoding="utf-8") as fileh:
         # testing validation tests that the RefResolver works as expected
         validator.validate(json.load(fileh))
 
 
 def test_dump_data_to_yaml():
-    test_file = "tests/mocks/utils/.test_data.yml"
+    test_file = "tests/unit/mocks/utils/.test_data.yml"
     if os.path.isfile(test_file):
         os.remove(test_file)
 
@@ -116,7 +116,7 @@ def test_dump_data_to_yaml():
     utils.dump_data_to_yaml(TEST_DATA, test_file)
     with open(test_file, encoding="utf-8") as fileh:
         actual = fileh.read()
-    with open("tests/mocks/utils/formatted.yml", encoding="utf-8") as fileh:
+    with open("tests/unit/mocks/utils/formatted.yml", encoding="utf-8") as fileh:
         mock = fileh.read()
 
     mock = remove_comments_from_yaml_string(mock)
@@ -127,12 +127,12 @@ def test_dump_data_to_yaml():
 
 
 def test_dump_data_json():
-    test_file = "tests/mocks/utils/.test_data.json"
+    test_file = "tests/unit/mocks/utils/.test_data.json"
     assert not os.path.isfile(test_file)
     utils.dump_data_to_json(TEST_DATA, test_file)
     with open(test_file, encoding="utf-8") as fileh:
         actual = fileh.read()
-    with open("tests/mocks/utils/formatted.json", encoding="utf-8") as fileh:
+    with open("tests/unit/mocks/utils/formatted.json", encoding="utf-8") as fileh:
         mock = fileh.read()
     assert actual == mock
     os.remove(test_file)
@@ -140,7 +140,7 @@ def test_dump_data_json():
 
 
 def test_get_schema_properties():
-    schema_files = [f"tests/mocks/schema/json/schemas/{schema}.json" for schema in ("dns", "ntp")]
+    schema_files = [f"tests/unit/mocks/schema/json/schemas/{schema}.json" for schema in ("dns", "ntp")]
     actual = utils.get_schema_properties(schema_files)
     mock = {
         "dns": ["dns_servers"],
@@ -150,7 +150,7 @@ def test_get_schema_properties():
 
 
 def test_dump_schema_vars():
-    output_dir = "tests/mocks/utils/hostvar"
+    output_dir = "tests/unit/mocks/utils/hostvar"
     assert not os.path.isdir(output_dir)
     schema_properties = {
         "dns": ["dns_servers"],
@@ -161,7 +161,7 @@ def test_dump_schema_vars():
     for file in ("dns.yml", "ntp.yml"):
         with open(f"{output_dir}/{file}", encoding="utf-8") as fileh:
             actual = fileh.read()
-        with open(f"tests/mocks/utils/host1/{file}", encoding="utf-8") as fileh:
+        with open(f"tests/unit/mocks/utils/host1/{file}", encoding="utf-8") as fileh:
             mock = fileh.read()
 
         assert actual == mock

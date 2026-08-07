@@ -181,9 +181,6 @@ def coverage(context):
 )
 def pytest(context, pattern=None, label=None):
     """Run pytest test cases."""
-    exec_cmd = "pytest -vv --doctest-modules schema_enforcer/ && coverage run --source=schema_enforcer -m pytest && coverage report"
-    run_command(context, exec_cmd)
-
     doc_test_cmd = "pytest -vv --doctest-modules schema_enforcer/"
     pytest_cmd = "coverage run --source=schema_enforcer -m pytest"
     if pattern:
