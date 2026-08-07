@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """main cli commands."""
 
 import sys
@@ -6,12 +5,11 @@ import sys
 import click
 from termcolor import colored
 
-from schema_enforcer.utils import MutuallyExclusiveOption
 from schema_enforcer import config
-from schema_enforcer.schemas.manager import SchemaManager
-from schema_enforcer.instances.file import InstanceFileManager
-from schema_enforcer.utils import error
 from schema_enforcer.exceptions import InvalidJSONSchema
+from schema_enforcer.instances.file import InstanceFileManager
+from schema_enforcer.schemas.manager import SchemaManager
+from schema_enforcer.utils import MutuallyExclusiveOption, error
 
 
 @click.group()
@@ -47,7 +45,7 @@ def main():
     show_default=True,
 )
 @main.command()
-def validate(show_pass, show_checks, strict):  # noqa D205
+def validate(show_pass, show_checks, strict):
     """Validates instance files against defined schema.
 
     \f
@@ -150,7 +148,7 @@ def validate(show_pass, show_checks, strict):  # noqa D205
     help="The name of a schema.",
 )
 @main.command()
-def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # noqa: D417,D301,D205
+def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):
     """Manage your schemas.
 
     \f
@@ -162,7 +160,13 @@ def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # n
         schema_id (str): Name of schema to evaluate
         dump_schemas (bool): Dump all schema data or a single schema if schema_id is provided
     """
-    if not check and not generate_invalid and not list_schemas and not schema_id and not dump_schemas:
+    if (
+        not check
+        and not generate_invalid
+        and not list_schemas
+        and not schema_id
+        and not dump_schemas
+    ):
         error(
             "The 'schema' command requires one or more arguments. You can run the command 'schema-enforcer schema --help' to see the arguments available."
         )
@@ -193,7 +197,9 @@ def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # n
 
     if generate_invalid:
         if not schema_id:
-            sys.exit("Please indicate the schema you'd like to generate invalid data for using the --schema-id flag")
+            sys.exit(
+                "Please indicate the schema you'd like to generate invalid data for using the --schema-id flag"
+            )
         smgr.generate_invalid_tests_expected(schema_id=schema_id)
         sys.exit(0)
 
@@ -225,9 +231,7 @@ def schema(check, generate_invalid, list_schemas, schema_id, dump_schemas):  # n
     is_flag=True,
     show_default=True,
 )
-def ansible(
-    inventory, limit, show_pass, show_checks
-):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals,too-many-statements  # noqa: D417,D301
+def ansible(inventory, limit, show_pass, show_checks):  # pylint: disable=too-many-branches,too-many-locals,too-many-locals,too-many-statements
     """Validate the hostvars for all hosts within an Ansible inventory.
 
     The hostvars are dynamically rendered based on groups to which each host belongs.
@@ -269,7 +273,9 @@ def ansible(
     # This has been left in the code until such a time as we implement the change to two packages so code will not need
     # to be re-written/
     try:
-        from schema_enforcer.ansible_inventory import AnsibleInventory  # pylint: disable=import-outside-toplevel
+        from schema_enforcer.ansible_inventory import (
+            AnsibleInventory,  # pylint: disable=import-outside-toplevel
+        )
     except ModuleNotFoundError:
         error(
             "ansible package not found, you can run the command 'pip install schema-enforcer[ansible]' to install the latest schema-enforcer sanctioned version."
@@ -326,7 +332,9 @@ def ansible(
         smgr.validate_schemas_exist(declared_schema_ids)
 
         # Acquire schemas applicable to the given host
-        applicable_schemas = inv.get_applicable_schemas(hostvars, smgr, declared_schema_ids, automap)
+        applicable_schemas = inv.get_applicable_schemas(
+            hostvars, smgr, declared_schema_ids, automap
+        )
         for schema_obj in applicable_schemas.values():
             # Combine host attributes into a single data structure matching to properties defined at the top level of the schema definition
             if not strict:
@@ -359,32 +367,3 @@ def ansible(
         print(colored("ALL SCHEMA VALIDATION CHECKS PASSED", "green"))
     else:
         sys.exit(1)
-=======
-"""Example cli using click."""
-
-import logging
-
-import click
-
-from schema_enforcer.log import initialize_logging
-
-# Import necessary project related things to use in CLI
-
-log = logging.getLogger(__name__)
-
-
-@click.command()
-@click.option("--test", default="Test Output", help="Test argument")
-@click.option(
-    "--log-level",
-    default="INFO",
-    type=click.Choice(["NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
-    help="Logging level",
-)
-@click.option("--log-file", default=None, help="Log file to output to debug logs to.")
-def main(test, log_level, log_file):
-    """Entrypoint into CLI app."""
-    initialize_logging(level=log_level, filename=log_file)
-    log.info("Entrypoint of the CLI app.")
-    print(test)
->>>>>>> 31cc3ca (Cookie initially baked targeting develop by NetworkToCode Cookie Drift Manager Tool)
